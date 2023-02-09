@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "cmd_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/example/project/crud-service/cmd",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_go_kit_log//:go_default_library",
+        "@com_github_joho_godotenv//:go_default_library",
+        "@com_github_tommycalvy_forefinder_crud_service//:go_default_library",
+        "@com_github_tommycalvy_forefinder_crud_service//profile:go_default_library",
+        "@com_github_tommycalvy_forefinder_crud_service//user:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "cmd",
+    embed = [":cmd_lib"],
+    visibility = ["//visibility:public"],
+)

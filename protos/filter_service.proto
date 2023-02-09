@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+
+service FilterService {
+
+    rpc GetHotPostsNearMe(Filters) returns (PostIDs) {}
+
+    rpc CreatePost(Post) returns (Error) {}
+
+    rpc ReadPost(PostID) returns (Error) {}
+
+    rpc UpdatePost(Post) returns (Error) {}
+
+    rpc DeletePost(PostID) returns (Error) {}
+}
+
+message GeoLocation {
+    int32 latitude = 1;
+    int32 longitude = 2;
+}
+
+message Attributes {
+    int32 time = 1;
+    GeoLocation location = 2;
+    string channel1 = 3;
+    string channel2 = 4;
+}
+
+message Filters {
+    Attributes attributes = 1;
+    int32 range = 2;
+}
+
+message PostIDs {
+    repeated PostID posts = 1;
+}
+
+message PostID {
+    string postID = 1;
+}
+
+message Error {
+    bool success = 1;
+    optional string err = 2;
+}
+
+
+
+message Post {
+    PostID postID = 2;
+    Filters filters = 1;
+}

@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "crud_service",
+    srcs = [
+        "endpoint.go",
+        "logger.go",
+        "service.go",
+        "transport.go",
+    ],
+    importpath = "github.com/example/project/crud-service",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_go_kit_kit//endpoint:go_default_library",
+        "@com_github_go_kit_kit//log:go_default_library",
+        "@com_github_go_kit_kit//transport:go_default_library",
+        "@com_github_go_kit_kit//transport/http:go_default_library",
+        "@com_github_go_kit_log//:go_default_library",
+        "@com_github_gorilla_mux//:go_default_library",
+        "@com_github_tommycalvy_forefinder_crud_service//profile:go_default_library",
+        "@com_github_tommycalvy_forefinder_crud_service//user:go_default_library",
+    ],
+)

@@ -1,0 +1,10 @@
+
+
+proto_library(
+    name = "filter_service_proto",
+    srcs = ["filter_service.proto"],
+    visibility = ["//visibility:public"],
+)
+
+
+

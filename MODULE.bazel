@@ -1,0 +1,4 @@
+module(
+    name = "smltown",
+    version = "1.0",
+)
