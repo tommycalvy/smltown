@@ -5,13 +5,13 @@ service FilterService {
 
     rpc GetHotPostsNearMe(Filters) returns (PostIDs) {}
 
-    rpc CreatePost(Post) returns (Error) {}
+    rpc CreatePost(Post) returns (Post) {}
 
-    rpc ReadPost(PostID) returns (Error) {}
+    rpc ReadPost(PostID) returns (Post) {}
 
-    rpc UpdatePost(Post) returns (Error) {}
+    rpc UpdatePost(Post) returns (Post) {}
 
-    rpc DeletePost(PostID) returns (Error) {}
+    rpc DeletePost(PostID) returns (Post) {}
 }
 
 message GeoLocation {
@@ -43,8 +43,6 @@ message Error {
     bool success = 1;
     optional string err = 2;
 }
-
-
 
 message Post {
     PostID postID = 2;

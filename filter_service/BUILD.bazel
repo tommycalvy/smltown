@@ -4,7 +4,7 @@ load("@rules_proto_grpc//cpp:defs.bzl", "cpp_grpc_library")
 package(default_visibility = ["//visibility:public"])
 
 cpp_grpc_library(
-    name = "filter_service_cpp_proto",
+    name = "filter_service_proto",
     protos = ["//protos:filter_service_proto"],
 )
 
@@ -14,6 +14,6 @@ cc_binary(
     linkstatic = True,
     deps = [
         "//filter_service/phtree",
-        ":filter_service_cpp_proto"
+        ":filter_service_proto"
     ],
 )

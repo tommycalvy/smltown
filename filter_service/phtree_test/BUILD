@@ -1,13 +1,12 @@
-package(default_visibility = ["//visibility:private"])
 
 cc_binary(
-    name = "smltown",
-    srcs = ["smltown.cc"],
+    name = "phtree_test",
+    srcs = ["phtree_test.cc"],
     linkstatic = True,
     visibility = [
         "//visibility:public",
     ],
     deps = [
-        "//phtree",
+        "//filter_service/phtree",
     ],
 )

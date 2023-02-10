@@ -4,17 +4,31 @@
 #include "phtree/phtree.h"
 #include "phtree/phtree_multimap.h"
 
-
+#include <grpc/grpc.h>
+#include <grpcpp/server.h>
+#include <grpcpp/server_builder.h>
+#include <grpcpp/server_context.h>
+#include <grpcpp/security/server_credentials.h>
+#include "protos/filter_service.grpc.pb.h"
 
 using namespace improbable::phtree;
 
-struct Post {
-    std::string                                                   id;
-    v16::Entry<2, b_plus_tree_hash_set<Post*>, scalar_64_t>*      entry;
+using grpc::Server;
+using grpc::ServerBuilder;
+using grpc::ServerContext;
+using grpc::ServerReader;
+using grpc::ServerWriter;
+using grpc::Status;
+
+
+
+struct PostEntry {
+    std::string                                                     id;
+    v16::Entry<2, b_plus_tree_hash_set<PostEntry*>, scalar_64_t>*      entry;
 };
 
-using PostMap = std::unordered_map<std::string, Post*>;
-using PhTreeMM = PhTreeMultiMap<2, Post*>;
+using PostMap = std::unordered_map<std::string, PostEntry*>;
+using PhTreeMM = PhTreeMultiMap<2, PostEntry*>;
 
 
 int get_posts() {
@@ -30,7 +44,7 @@ void print_map(std::unordered_map<K, V> const &m)
     }
 }
 
-int add_post(PostMap& pMap, PhTreeMM& phTree, Post *post, PhPoint<2>& point) {
+int add_post(PostMap& pMap, PhTreeMM& phTree, PostEntry *post, PhPoint<2>& point) {
     std::cout << "Post ID: " << post->id << std::endl;
     std::cout << "Post mem: " << post << std::endl;
     auto pair1 = pMap.emplace(post->id, post);
@@ -70,16 +84,39 @@ std::string gen_random(const int len) {
 
 std::string create_rand_post(PostMap& postMap, PhTreeMM& phTree) {
     std::string id = gen_random(12);
-    Post *post = new Post({id, NULL});
+    PostEntry *post = new PostEntry({id, NULL});
     PhPoint<2> p1({rand() % 100000, rand() % 100000});
     add_post(postMap, phTree, post, p1);
     return id;
 }
 
-/*
+class FilterServiceImpl final : public FilterService::Service {
+    
+    Status CreatePost(ServerContext* context, const Post* postP, Post* postS) override {
+        std::cout << "Created PostID: " << postP->postid() << std::endl;
+        std::cout << "Latitude: " << postP->filters().attributes().location().latitude() << std::endl;
+        postS->set_allocated_postid(postP->postid());
+        postS->set_allocated_filters(postP->filters());
+        return Status::OK;
+    }
+};
+
+
+
+std::string getServerAddress() {
+  std::string server_host("0.0.0.0");
+  std::string server_port("50051");
+  if (std::getenv("SERVER_PORT")) {
+    server_port = std::getenv("SERVER_PORT");
+  }
+  std::string server_address = server_host + ":" + server_port;
+  return server_address;
+}
+
+
 void RunServer() {
   std::string server_address("0.0.0.0:50051");
-  RouteGuideImpl service();
+  FilterServiceImpl service();
 
   ServerBuilder builder;
   builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
@@ -88,9 +125,9 @@ void RunServer() {
   std::cout << "Server listening on " << server_address << std::endl;
   server->Wait();
 }
-*/
 
-int main() {
+
+void phtree_test() {
     int numPosts = 10;
     PostMap pMap;
     auto tree = PhTreeMM();
@@ -118,7 +155,7 @@ int main() {
             std::cout << "Couldn't find key: " << key << " from postid: " << got->first << std::endl;
             continue;
         }
-        Post *post = iter.operator*();
+        PostEntry *post = iter.operator*();
         if (post->id == got->first) {
             std::cout << post->id << " == " << got->first << " Post Ids Equal!" << std::endl;
         } else {
@@ -130,6 +167,10 @@ int main() {
     for (auto post : pMap) {
         delete post.second;
     }
+}
 
+int main() {
+    
+    RunServer();
     return 0;
 }
