@@ -1,4 +1,5 @@
 #include <string>
+#include <functional>
 #include <unordered_map>
 #include <iostream>
 #include "phtree/phtree.h"
@@ -19,16 +20,17 @@ using grpc::ServerContext;
 using grpc::ServerReader;
 using grpc::ServerWriter;
 using grpc::Status;
+using filterservice::FilterService;
 
-
+// PhPoint<6> p({time, latitude, longitude, channel1, channel2, upVotes})
 
 struct PostEntry {
     std::string                                                     id;
-    v16::Entry<2, b_plus_tree_hash_set<PostEntry*>, scalar_64_t>*      entry;
+    v16::Entry<6, b_plus_tree_hash_set<PostEntry*>, scalar_64_t>*   entry;
 };
 
 using PostMap = std::unordered_map<std::string, PostEntry*>;
-using PhTreeMM = PhTreeMultiMap<2, PostEntry*>;
+using PhTreeMM = PhTreeMultiMap<6, PostEntry*>;
 
 
 int get_posts() {
@@ -44,7 +46,7 @@ void print_map(std::unordered_map<K, V> const &m)
     }
 }
 
-int add_post(PostMap& pMap, PhTreeMM& phTree, PostEntry *post, PhPoint<2>& point) {
+int add_post(PostMap& pMap, PhTreeMM& phTree, PostEntry *post, PhPoint<6>& point) {
     std::cout << "Post ID: " << post->id << std::endl;
     std::cout << "Post mem: " << post << std::endl;
     auto pair1 = pMap.emplace(post->id, post);
@@ -91,12 +93,30 @@ std::string create_rand_post(PostMap& postMap, PhTreeMM& phTree) {
 }
 
 class FilterServiceImpl final : public FilterService::Service {
-    
-    Status CreatePost(ServerContext* context, const Post* postP, Post* postS) override {
-        std::cout << "Created PostID: " << postP->postid() << std::endl;
-        std::cout << "Latitude: " << postP->filters().attributes().location().latitude() << std::endl;
-        postS->set_allocated_postid(postP->postid());
-        postS->set_allocated_filters(postP->filters());
+  private:
+    PostMap pMap;
+    PhTreeMM phTree;
+
+  public:
+    FilterServiceImpl() {
+        phTree = PhTreeMM();
+    }
+
+
+    Status CreatePost(ServerContext* context, const filterservice::Post* nPost, filterservice::Post* cPost) override {
+        
+        std::string id = nPost->id();
+        int64_t time = nPost->time();
+        int64_t lat = nPost->latitude();
+        int64_t lon = nPost->longitude();
+        int64_t chan1 = std::hash<std::string>{}(nPost->channel1());
+        int64_t chan2 = std::hash<std::string>{}(nPost->channel2());
+        //std::cout << "Created New Post with ID: " << postP->postid() << std::endl;
+        //std::cout << "Latitude: " << postP->filters().attributes().location().latitude() << std::endl;
+        //cPost->set_id
+        PostEntry *post = new PostEntry({id, NULL});
+        PhPoint<6> p({time, lat, lon, chan1, chan2, 0});
+        add_post(pMap, phTree, post, p);
         return Status::OK;
     }
 };

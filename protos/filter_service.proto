@@ -1,9 +1,9 @@
 syntax = "proto3";
 
+package filterservice;
+
 
 service FilterService {
-
-    rpc GetHotPostsNearMe(Filters) returns (PostIDs) {}
 
     rpc CreatePost(Post) returns (Post) {}
 
@@ -12,39 +12,41 @@ service FilterService {
     rpc UpdatePost(Post) returns (Post) {}
 
     rpc DeletePost(PostID) returns (Post) {}
-}
 
-message GeoLocation {
-    int32 latitude = 1;
-    int32 longitude = 2;
-}
+    rpc UpVotePost(PostID) returns (UpVotes) {}
 
-message Attributes {
-    int32 time = 1;
-    GeoLocation location = 2;
-    string channel1 = 3;
-    string channel2 = 4;
+    rpc DownVotePost(PostID) returns (UpVotes) {}
+
+    rpc GetHotPostsNearMe(Filters) returns (PostIDs) {}
 }
 
 message Filters {
-    Attributes attributes = 1;
-    int32 range = 2;
-}
-
-message PostIDs {
-    repeated PostID posts = 1;
+    int32       time = 2;
+    int32       latitude = 3;
+    int32       longitude = 4;
+    string      channel1 = 5;
+    string      channel2 = 6;
+    int32       range = 7;
 }
 
 message PostID {
-    string postID = 1;
+    string id = 1;
 }
 
-message Error {
-    bool success = 1;
-    optional string err = 2;
+message PostIDs {
+    repeated string id = 1;
 }
 
 message Post {
-    PostID postID = 2;
-    Filters filters = 1;
+    string      id = 1;
+    int32       time = 2;
+    int32       latitude = 3;
+    int32       longitude = 4;
+    string      channel1 = 5;
+    string      channel2 = 6;
 }
+
+message UpVotes {
+    int32       upVotes = 1;
+}
+
