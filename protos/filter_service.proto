@@ -44,6 +44,7 @@ message Post {
     int32       longitude = 4;
     string      channel1 = 5;
     string      channel2 = 6;
+    int32       upVotes = 7;
 }
 
 message UpVotes {
