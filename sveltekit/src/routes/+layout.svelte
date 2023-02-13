@@ -6,6 +6,7 @@
 	import MoreOutlined from "$lib/components/icons/more-outlined.svelte";
 	import ForefinderGolf from "$lib/components/icons/forefinder-golf.svelte";
 	import MessageIcon from "$lib/components/icons/message-icon.svelte";
+	import SmltownIcon from "$lib/components/icons/smltown-icon.svelte";
 
     export let data: LayoutServerData;
 
@@ -24,8 +25,8 @@
 <main>
     <div class="navbar">
         <div class="top-nav">
-            <a href="/messages" class="rounded-box">
-                <MessageIcon width={3.5} height={3.5} />
+            <a href="/messages">
+                <SmltownIcon width={20} height={20}/>
             </a>
             <div class="community-separator" />
             <a href="/golf/home">
@@ -45,7 +46,7 @@
 <style>
     main {
         display: grid;
-        grid-template-columns: 8rem auto;
+        grid-template-columns: 20rem auto;
         height: 100vh;
     }
 
