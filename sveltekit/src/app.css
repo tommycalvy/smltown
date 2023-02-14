@@ -1,14 +1,17 @@
 :root {
 	font-size: 62.5%;
 	font-family: Helvetica, Arial, sans-serif;
-	--background-community-main-dark: rgb(42, 44, 47);
-	--background-community-accent-dark: rgb(82, 84, 87);
-	--background-community-nav-dark: rgb(92, 94, 97);
+	--color-background-community-main-dark: rgb(42, 44, 47);
+	--color-background-community-accent-dark: rgb(82, 84, 87);
+	--color-background-community-nav-dark: rgb(92, 94, 97);
 
-	--background-community-main-light: rgb(227, 229, 232);
-	--background-community-accent-light: rgb(199, 202, 206);
-	--background-community-nav-light: rgb(243, 243, 245);
-	--forefinder-green: #99D420;
+	--color-background-content-light: rgb(247, 247, 248);
+	--color-background-accent-light: rgb(199, 202, 206);
+	--color-background-nav-light: rgb(239, 239, 241);
+	--color-background-base-light: rgb(255, 255, 255);
+
+
+	--shadow-elevation-1: 0 1px 2px,0 0px 2px;
 }
 
 body {

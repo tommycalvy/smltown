@@ -7,7 +7,7 @@
 
 
 <section>
-	<h1>forefinder <br /> Hello World</h1>
+	
 	<br />
 	<br />
 
@@ -18,59 +18,6 @@
 		<p>or</p>
 		<a href="/registration"><button>Sign Up</button></a>
 	{/if}
-	<br>
-	<br>
-	<br>
-	<div class="crud-service">
-		<form class="create-profile" method="POST" action="/profile/create" enctype="application/x-www-form-urlencoded">
-			<input placeholder="ID" name="id"/>
-			<input type="hidden" name="pType" value="golf" />
-			<input placeholder="Profile Type" name="pType" />
-			<input placeholder="Name" name="name" />
-			<input placeholder="Status" name="status" />
-			<input type="number" placeholder="Average Score" name="avgScore" />
-			<input type="number" placeholder="Age" name="age" />
-			<p>What is your gender?</p>
-			<div class="radio-field">
-				<div class="radio-option">
-					<input type="radio" id="gender" name="gender" value="0"/>
-					<label for="gender">Male</label>
-				</div>
-				<div class="radio-option">
-					<input type="radio" id="gender" name="gender" value="1"/>
-					<label for="gender">Female</label>
-				</div>
-				<div class="radio-option">
-					<input type="radio" id="gender" name="gender" value="2"/>
-					<label for="gender">Other</label>
-				</div>	
-			</div>
-			<br>
-			<input placeholder="Bio" name="bio" />
-			<p>How do you like to play golf?</p>
-			<div class="radio-field">
-				<div class="radio-option">
-					<input type="radio" id="gender" name="playStyle" value="0"/>
-					<label for="gender">Social</label>
-				</div>
-				<div class="radio-option">
-					<input type="radio" id="gender" name="playStyle" value="1"/>
-					<label for="gender">Network</label>
-				</div>
-				<div class="radio-option">
-					<input type="radio" id="gender" name="playStyle" value="2"/>
-					<label for="gender">Laid back</label>
-				</div>
-				<div class="radio-option">
-					<input type="radio" id="gender" name="playStyle" value="3"/>
-					<label for="gender">Competitive</label>
-				</div>	
-			</div>
-			<input type="color"/>
-			<br>
-			<button>Create Profile</button>
-		</form>
-	</div>
 	
 </section>
 

@@ -23,93 +23,63 @@
 {/if}
 
 <main>
-    <div class="navbar">
-        <div class="top-nav">
-            <a href="/messages">
-                <SmltownIcon width={20} height={20}/>
-            </a>
-            <div class="community-separator" />
-            <a href="/golf/home">
-                <ForefinderGolf />
-                <h4>Golf</h4>
-            </a>
-        </div>
-        <div class="bottom-nav">
-            <button class="rounded-box">
-                <MoreOutlined width={3.5} height={3.5} />
-            </button>
-        </div>
+    <div class="home">
+        <a href="/">
+            <SmltownIcon width={20} height={20} />
+        </a>
     </div>
-    <slot />
+    <div class="local">
+
+    </div>
+    <nav>
+
+    </nav>
+    <div class="content">
+        <slot />
+    </div>
 </main>
 
 <style>
     main {
         display: grid;
-        grid-template-columns: 20rem auto;
+        grid-template-columns: 25rem auto;
+        grid-template-rows: 5.5rem auto;
+        grid-template-areas:
+			'home local'
+			'nav content';
         height: 100vh;
+        background-color: var(--color-background-accent-light);
+        row-gap: 0.1rem;
     }
 
-    .navbar {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        background-color: var(--background-community-nav-light);
-    }
-
-    .top-nav {
-        margin: 1.5rem 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        text-align: center;
-        align-items: center;
-        font-family: Georgia, 'Times New Roman', Times, serif;
-        letter-spacing: 0.1rem;
-    }
-
-    .bottom-nav {
-        margin: 2rem 0;
-        display: flex;
-        justify-content: center;
-    }
-
-    .rounded-box {
+    .home {
+        grid-area: home;
         display: flex;
         justify-content: center;
         align-items: center;
-        text-align: center;
-        background-color: white;
-        border-radius: 0.8rem;
-        padding: 0.7rem;
-        box-shadow: 0 0.4rem 1rem -0.3rem rgb(217, 219, 222);
+        padding-right: 1rem;
+        background-color: var(--color-background-base-light);
     }
 
-    .community-separator {
-        width: 6rem;
-        height: 0.5rem;
-        margin: 2rem 2rem;
-        background-color: var(--background-community-accent-light);
-        border-radius: 0.5rem;
-    }
+    nav {
+		grid-area: nav;
+		display: flex;
+		flex-direction: column;
+		justify-content: first;
+        background-color: var(--color-background-nav-light);
+	}
 
-    .top-nav h4 {
-        padding: 0;
-        margin: 0;
-        color: var(--forefinder-green);
-    }
+    .local {
+		grid-area: local;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+        background-color: var(--color-background-base-light);
+	}
 
-    button {
-        border: none;
-        background-color: none;
-        padding: none;
-        margin: none;
-        cursor: pointer;
-    }
-
-    a {
-        width: inherit;
-        text-decoration: none;
+    .content {
+        grid-area: content;
+        background-color: var(--color-background-content-light);
     }
 
 </style>
