@@ -1,85 +1,35 @@
-<script lang="ts">
-    import { page } from '$app/stores';
-    import Header from "$lib/components/header/header.svelte";
-    import type { LayoutServerData } from './$types';
-    import '../app.css';
-	import MoreOutlined from "$lib/components/icons/more-outlined.svelte";
-	import ForefinderGolf from "$lib/components/icons/forefinder-golf.svelte";
-	import MessageIcon from "$lib/components/icons/message-icon.svelte";
-	import SmltownIcon from "$lib/components/icons/smltown-icon.svelte";
+<script>
+	import '../app.css';
+</script>
 
-    export let data: LayoutServerData;
-
-  </script>
-
-<svelte:head>
-    <title>{$page.data.pageTitle}</title>
-</svelte:head>
-
-
-
-{#if data.user}
-    <Header user={data.user} logoutToken={data.logout_token} />
-{/if}
-
-<main>
-    <div class="home">
-        <a href="/">
-            <SmltownIcon width={20} height={20} />
-        </a>
-    </div>
-    <div class="local">
-
-    </div>
-    <nav>
-
-    </nav>
-    <div class="content">
-        <slot />
-    </div>
-</main>
-
-<style>
-    main {
-        display: grid;
-        grid-template-columns: 25rem auto;
-        grid-template-rows: 5.5rem auto;
-        grid-template-areas:
-			'home local'
-			'nav content';
-        height: 100vh;
-        background-color: var(--color-background-accent-light);
-        row-gap: 0.1rem;
-    }
-
-    .home {
-        grid-area: home;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding-right: 1rem;
-        background-color: var(--color-background-base-light);
-    }
-
-    nav {
-		grid-area: nav;
-		display: flex;
-		flex-direction: column;
-		justify-content: first;
-        background-color: var(--color-background-nav-light);
-	}
-
-    .local {
-		grid-area: local;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-        background-color: var(--color-background-base-light);
-	}
-
-    .content {
-        grid-area: content;
-        background-color: var(--color-background-content-light);
-    }
-
-</style>
+<div class="navbar bg-base-100">
+	<div class="flex-1">
+		<a class="btn btn-ghost normal-case text-xl">daisyUI</a>
+	</div>
+	<div class="flex-none gap-2">
+		<div class="form-control">
+			<input type="text" placeholder="Search" class="input input-bordered" />
+		</div>
+		<div class="dropdown dropdown-end">
+			<label tabindex="0" class="btn btn-ghost btn-circle avatar">
+				<div class="w-10 rounded-full">
+					<img src="/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+				</div>
+			</label>
+			<ul
+				tabindex="0"
+				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52"
+			>
+				<li>
+					<a class="justify-between">
+						Profile
+						<span class="badge">New</span>
+					</a>
+				</li>
+				<li><a>Settings</a></li>
+				<li><a>Logout</a></li>
+			</ul>
+		</div>
+	</div>
+</div>
+<slot />

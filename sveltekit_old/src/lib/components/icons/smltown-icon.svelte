@@ -8,7 +8,7 @@
 	<rect
 		id="shape0"
 		transform="translate(4.8, 96.0000000000001)"
-		fill="#358757"
+		fill="#3e92cc"
 		stroke="#ffffff"
 		stroke-width="2.4"
 		stroke-linecap="square"
@@ -54,6 +54,6 @@
 		text-anchor="middle"
 		word-spacing="0"
 	>
-		<tspan x="12.7109375">Rd</tspan>
+		<tspan x="12.7109375">PLZ</tspan>
 	</text>
 </svg>
