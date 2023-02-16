@@ -2,3 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+.btn {
+    @apply outline-none;
+    @apply duration-150; 
+}
+
+.input {
+    @apply outline-none;
+    @apply focus:border-primary;
+    @apply hover:border-primary;
+    @apply focus:outline-primary;
+    @apply duration-75;
+}

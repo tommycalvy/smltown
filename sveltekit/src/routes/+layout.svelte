@@ -1,5 +1,6 @@
 <script>
 	import ProfileIcon from '$lib/icons/profile-icon.svelte';
+	import SmltownIcon from "$lib/icons/smltown-icon.svelte";
 	import '../app.css';
 	
 </script>
@@ -22,12 +23,12 @@
 <div class="bg-base-200 w-screen h-screen">
 	<nav class="navbar bg-base-100 min-h-12">
 		<div class="flex-1">
-			<a href="/" class="btn btn-ghost btn-sm normal-case text-xl">daisyUI</a>
+			<a href="/" class="px-1"><SmltownIcon /></a>
 		</div>
 		<div class="flex-none gap-2">
 			
 			<div class="dropdown dropdown-bottom">
-				<input type="text" placeholder="Search" class="input input-sm input-bordered focus:border-primary hover:border-primary focus:outline-primary duration-75" />
+				<input type="text" placeholder="Search" class="input input-sm input-bordered" />
 				<ul
 					
 					class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52"
@@ -44,7 +45,7 @@
 			</div>
 			<label for="modal-signup" class="btn btn-primary btn-sm normal-case">Sign Up</label>
 			<div class="dropdown dropdown-end">
-				<label tabindex="0" class="btn btn-ghost btn-square btn-sm avatar duration-150 outline-none active:bg-opacity-30">
+				<label tabindex="0" class="btn btn-ghost btn-square btn-sm avatar active:bg-opacity-30">
 					<ProfileIcon class="inline-block w-6 h-6 stroke-current" />
 				</label>
 				<ul
