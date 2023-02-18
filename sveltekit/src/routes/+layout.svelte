@@ -32,13 +32,13 @@
 </div>
 
 <div class="bg-base-300 w-screen h-screen">
-	<nav class="navbar bg-base-100 min-h-12">
-		<div class="flex-1">
-			<a href="/" class="px-2"><h1 class="font-logo text-2xl text-primary">SMLTOWN</h1></a>
-		</div>
+	<nav class="navbar bg-base-300 min-h-12 justify-center px-4">
 		<div class="flex-none gap-2">
+			<a href="/" class="px-2"><h1 class="font-logo text-2xl text-sky-500">SMLTOWN</h1></a>
+		</div>
+		<div class="flex-1 justify-center">
 			<div class="dropdown dropdown-bottom">
-				<input type="text" placeholder="Search" class="input input-sm input-bordered" />
+				<input type="search" placeholder="Search" class="input input-bordered input-sm w-96" />
 				<ul class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52">
 					<li>
 						<a href="/profile" class="justify-between">
@@ -50,6 +50,9 @@
 					<li><a href="/logout">Logout</a></li>
 				</ul>
 			</div>
+		</div>
+		<div class="flex-none gap-4">
+			
 			<label for="modal-signup" class="btn btn-primary btn-sm">Sign Up</label>
 			<div class="dropdown dropdown-end">
 				<label tabindex="0" class="btn btn-ghost btn-square btn-sm avatar active:bg-opacity-30">

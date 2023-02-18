@@ -14,13 +14,15 @@ module.exports = {
 			{
 				light: {
 					...require('daisyui/src/colors/themes')['[data-theme=light]'],
-					primary: '#38bdf8'
+					primary: '#0284c7'
 				}
 			},
 			{
 				dark: {
 					...require('daisyui/src/colors/themes')['[data-theme=dark]'],
-					primary: '#38bdf8'
+					primary: '#0284c7',
+					'base-200': '#181B23',
+					'base-300': '#0E1119'
 				}
 			}
 		]
