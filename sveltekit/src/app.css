@@ -5,6 +5,7 @@
 .btn {
     @apply outline-none;
     @apply duration-150; 
+    @apply normal-case;
 }
 
 .input {
@@ -13,4 +14,8 @@
     @apply hover:border-primary;
     @apply focus:outline-primary;
     @apply duration-75;
+}
+
+.menu {
+    @apply outline-none;
 }

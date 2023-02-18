@@ -2,7 +2,11 @@
 module.exports = {
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 	theme: {
-		extend: {}
+		extend: {
+      fontFamily: {
+        'logo': ['"Highway Gothic"', 'ui-sans-serif', 'system-ui']
+      }
+    }
 	},
 	plugins: [require('@tailwindcss/typography'), require('daisyui')],
 	daisyui: {
