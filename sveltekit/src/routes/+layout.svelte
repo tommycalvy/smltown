@@ -32,18 +32,27 @@
 </div>
 
 <div class="bg-base-300 w-screen h-screen">
-	<nav class="navbar bg-base-300 min-h-12 justify-between px-4">
-		<div class=" basis-1/6 flex-initial flex justify-start gap-4">
-			<a href="/" class="px-2"><h1 class="font-logo text-3xl text-sky-500">SMLTOWN</h1></a>
+	<nav class="navbar bg-base-200 min-h-12 justify-between px-4">
+		<div class=" basis-1/3 flex-initial flex justify-start gap-4">
+			<a href="/"><h1 class="font-logo text-[1.75rem] text-sky-500">SMLTOWN</h1></a>
 		</div>
-		<div class="flex-auto justify-center">
-			<div class="dropdown dropdown-bottom">
-				<div class="form-control">
-					<input type="text" placeholder="Search" class="input h-10 input-bordered" />
-				</div>
-				<button
+		<div class="flex flex-1 justify-center w-full">
+			<div class="dropdown dropdown-bottom w-full">
+				<input type="text" placeholder="Search" class="input w-full h-10 input-bordered focus:outline-none rounded-r-none" />
+				<ul class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-full">
+					<li>
+						<a href="/profile" class="justify-between">
+							Profile
+							<span class="badge">New</span>
+						</a>
+					</li>
+					<li><a href="/settings">Settings</a></li>
+					<li><a href="/logout">Logout</a></li>
+				</ul>
+			</div>
+			<button
 					type="submit"
-					class="absolute top-0 right-0 p-2.5 h-10 text-sm font-medium bg-base-100 rounded-r-lg border border-base-content border-opacity-20 focus:outline-none"
+					class="p-2.5 h-10 text-sm font-medium bg-base-100 rounded-r-lg border border-base-content border-l-0 border-opacity-20"
 				>
 					<svg
 						aria-hidden="true"
@@ -57,22 +66,8 @@
 							clip-rule="evenodd"
 						/></svg
 					>
-
-					<span class="sr-only">Search</span>
-				</button>
-				<ul class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52">
-					<li>
-						<a href="/profile" class="justify-between">
-							Profile
-							<span class="badge">New</span>
-						</a>
-					</li>
-					<li><a href="/settings">Settings</a></li>
-					<li><a href="/logout">Logout</a></li>
-				</ul>
-			</div>
 		</div>
-		<div class="basis-1/6 flex-initial flex justify-end gap-4">
+		<div class=" basis-1/3 flex-initial flex justify-end gap-4">
 			<label for="modal-signup" class="btn btn-primary btn-sm">Sign Up</label>
 			<div class="dropdown dropdown-end">
 				<label tabindex="0" class="btn btn-ghost btn-square btn-sm avatar active:bg-opacity-30">
