@@ -32,13 +32,34 @@
 </div>
 
 <div class="bg-base-300 w-screen h-screen">
-	<nav class="navbar bg-base-300 min-h-12 justify-center px-4">
-		<div class="flex-none gap-2">
-			<a href="/" class="px-2"><h1 class="font-logo text-2xl text-sky-500">SMLTOWN</h1></a>
+	<nav class="navbar bg-base-300 min-h-12 justify-between px-4">
+		<div class=" basis-1/6 flex-initial flex justify-start gap-4">
+			<a href="/" class="px-2"><h1 class="font-logo text-3xl text-sky-500">SMLTOWN</h1></a>
 		</div>
-		<div class="flex-1 justify-center">
+		<div class="flex-auto justify-center">
 			<div class="dropdown dropdown-bottom">
-				<input type="search" placeholder="Search" class="input input-bordered input-sm w-96" />
+				<div class="form-control">
+					<input type="text" placeholder="Search" class="input h-10 input-bordered" />
+				</div>
+				<button
+					type="submit"
+					class="absolute top-0 right-0 p-2.5 h-10 text-sm font-medium bg-base-100 rounded-r-lg border border-base-content border-opacity-20 focus:outline-none"
+				>
+					<svg
+						aria-hidden="true"
+						class="w-5 h-5 text-gray-500 dark:text-gray-400"
+						fill="currentColor"
+						viewBox="0 0 20 20"
+						xmlns="http://www.w3.org/2000/svg"
+						><path
+							fill-rule="evenodd"
+							d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+							clip-rule="evenodd"
+						/></svg
+					>
+
+					<span class="sr-only">Search</span>
+				</button>
 				<ul class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52">
 					<li>
 						<a href="/profile" class="justify-between">
@@ -51,8 +72,7 @@
 				</ul>
 			</div>
 		</div>
-		<div class="flex-none gap-4">
-			
+		<div class="basis-1/6 flex-initial flex justify-end gap-4">
 			<label for="modal-signup" class="btn btn-primary btn-sm">Sign Up</label>
 			<div class="dropdown dropdown-end">
 				<label tabindex="0" class="btn btn-ghost btn-square btn-sm avatar active:bg-opacity-30">
