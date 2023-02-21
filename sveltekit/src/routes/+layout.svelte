@@ -1,17 +1,16 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
-	import type { Theme, WithTarget } from '$lib/types';
 	import '../app.css';
-	import ProfileIcon from '$lib/icons/profile-icon.svelte';
-
-	const setTheme = (event: WithTarget<MouseEvent, HTMLInputElement>) => {
-		const checked = event.currentTarget.checked;
-		const theme: Theme = checked ? 'dark' : 'light';
-		document.documentElement.setAttribute('data-theme', theme);
-		document.cookie = `theme=${theme};max-age=31536000;path="/";samesite=strict;secure`;
-	};
+	import NavSearch from '$lib/components/nav-search.svelte';
+	import HamburgerMenuIcon from '$lib/icons/hamburger-menu-icon.svelte';
+	import ProfileButton from '$lib/components/profile-button.svelte';
 
 	export let data: LayoutData;
+	let drawerVisible = true;
+
+    function toggleDrawerVisibility() {
+        drawerVisible = !drawerVisible
+    }
 </script>
 
 <svelte:head>
@@ -32,74 +31,38 @@
 </div>
 
 <div class="bg-base-300 w-screen h-screen">
-	<nav class="navbar bg-base-200 min-h-12 justify-between px-4">
-		<div class=" basis-1/3 flex-initial flex justify-start gap-4">
+	<nav class="navbar bg-base-200 justify-between px-4">
+		<div class="basis-1/3 flex justify-start gap-4">
+			<button class=" btn btn-ghost btn-square active:bg-opacity-30" on:click={toggleDrawerVisibility}>
+				<HamburgerMenuIcon />
+			</button>
 			<a href="/"><h1 class="font-logo text-[1.75rem] text-sky-500">SMLTOWN</h1></a>
 		</div>
-		<div class="flex flex-1 justify-center w-full">
-			<div class="dropdown dropdown-bottom w-full">
-				<input type="text" placeholder="Search" class="input w-full h-10 input-bordered focus:outline-none rounded-r-none" />
-				<ul class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-full">
-					<li>
-						<a href="/profile" class="justify-between">
-							Profile
-							<span class="badge">New</span>
-						</a>
-					</li>
-					<li><a href="/settings">Settings</a></li>
-					<li><a href="/logout">Logout</a></li>
-				</ul>
-			</div>
-			<button
-					type="submit"
-					class="p-2.5 h-10 text-sm font-medium bg-base-100 rounded-r-lg border border-base-content border-l-0 border-opacity-20"
-				>
-					<svg
-						aria-hidden="true"
-						class="w-5 h-5 text-gray-500 dark:text-gray-400"
-						fill="currentColor"
-						viewBox="0 0 20 20"
-						xmlns="http://www.w3.org/2000/svg"
-						><path
-							fill-rule="evenodd"
-							d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-							clip-rule="evenodd"
-						/></svg
-					>
+		<div class="basis-1/3 flex justify-center">
+			<NavSearch />
 		</div>
-		<div class=" basis-1/3 flex-initial flex justify-end gap-4">
+
+		<div class=" basis-1/3 flex justify-end gap-4">
 			<label for="modal-signup" class="btn btn-primary btn-sm">Sign Up</label>
-			<div class="dropdown dropdown-end">
-				<label tabindex="0" class="btn btn-ghost btn-square btn-sm avatar active:bg-opacity-30">
-					<ProfileIcon class="inline-block w-6 h-6 stroke-current" />
-				</label>
-				<ul
-					tabindex="0"
-					class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52"
-				>
-					<li>
-						<a href="/profile" class="justify-between">
-							Profile
-							<span class="badge badge-secondary">New</span>
-						</a>
-					</li>
-					<li><a href="/settings">Settings</a></li>
-					<li><a href="/logout">Logout</a></li>
-					<li>
-						<label class="label cursor-pointer w-full px-4 py-1.5">
-							<span class="label-text active:text-white">Dark Mode</span>
-							<!--Need to fix Dark Mode text on active-->
-							<input
-								type="checkbox"
-								class="toggle toggle-primary"
-								checked={data.theme == 'dark' ? true : false}
-								on:click={setTheme}
-							/>
-						</label>
-					</li>
-				</ul>
-			</div>
+			<ProfileButton theme={data.theme} />
 		</div>
 	</nav>
-	<slot />
+	<div class="flex gap-4">
+		{#if drawerVisible}
+			<div class="w-40 flex-none">
+				<ul>
+					<li>Hello</li>
+					<li>hi</li>
+					<li>mommy</li>
+				</ul>
+			</div>
+			<main class="w-full -ml-44">
+				<slot />
+			</main>
+		{:else}
+		<main class="w-full">
+			<slot />
+		</main>
+		{/if}
+	</div>
 </div>
