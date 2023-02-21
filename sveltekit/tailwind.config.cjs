@@ -3,10 +3,14 @@ module.exports = {
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 	theme: {
 		extend: {
-      fontFamily: {
-        'logo': ['"Highway Gothic"', 'ui-sans-serif', 'system-ui']
-      }
-    }
+			fontFamily: {
+				logo: ['"Highway Gothic"', 'ui-sans-serif', 'system-ui']
+			},
+			transitionDuration: {
+				0:	'0ms',
+				25: '25ms'
+			}
+		}
 	},
 	plugins: [require('@tailwindcss/typography'), require('daisyui')],
 	daisyui: {

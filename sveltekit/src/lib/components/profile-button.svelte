@@ -25,7 +25,7 @@
 </script>
 			
             <div class="dropdown dropdown-end" on:focusout={handleDropdownFocusLost}>
-				<button tabindex="0" class="btn btn-ghost btn-square avatar active:bg-opacity-30" on:click = {handleDropdownClick}>
+				<button tabindex="0" class="btn btn-ghost btn-square btn-sm avatar active:bg-opacity-30" on:click = {handleDropdownClick}>
 					<ProfileIcon class="inline-block w-6 h-6 stroke-current" />
                 </button>
 				<ul

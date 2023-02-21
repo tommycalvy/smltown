@@ -8,14 +8,23 @@
     @apply normal-case;
 }
 
+.btn-square:where(.btn-sm) {
+    @apply h-10;
+    @apply w-10;
+}
+
 .input {
     @apply outline-none;
     @apply focus:border-primary;
     @apply hover:border-primary;
     @apply focus:outline-primary;
-    @apply duration-75;
 }
 
 .menu {
     @apply outline-none;
 }
+
+.dropdown .dropdown-content {
+    @apply duration-0;
+}
+
