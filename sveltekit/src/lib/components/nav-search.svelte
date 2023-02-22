@@ -2,7 +2,7 @@
 	<input
 		type="text"
 		placeholder="Search"
-		class="input w-full h-10 input-bordered focus:outline-none rounded-r-none"
+		class="input w-full input-bordered rounded-r-none"
 	/>
 	<ul class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-full">
 		<li>

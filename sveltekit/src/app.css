@@ -17,7 +17,8 @@
     @apply outline-none;
     @apply focus:border-primary;
     @apply hover:border-primary;
-    @apply focus:outline-primary;
+    @apply focus:outline-none;
+    @apply h-10;
 }
 
 .menu {
