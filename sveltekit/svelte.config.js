@@ -8,8 +8,10 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter()
-	}
+		adapter: adapter(),
+		env: "../"
+	},
+
 };
 
 export default config;

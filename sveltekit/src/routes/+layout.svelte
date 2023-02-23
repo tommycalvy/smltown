@@ -14,6 +14,7 @@
 	function toggleDrawerVisibility() {
 		drawerVisible = !drawerVisible;
 	}
+	
 </script>
 
 <svelte:head>
