@@ -3,6 +3,8 @@ services:
     postgres:
         image: postgres
         restart: unless-stopped
+        env_file:
+            - ../.env
         environment:
             POSTGRES_USER: ${POSTGRES_USER}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -44,6 +46,8 @@ services:
                 type: bind
                 source: ./kratos
                 target: /etc/config/kratos
+        env_file:
+            - ../.env
         ports:
             - 4433:4433
             - 4434:4434

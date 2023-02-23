@@ -6,6 +6,7 @@
 	import ProfileButton from '$lib/components/profile-button.svelte';
 	import SignupButton from "$lib/components/signup-button.svelte";
 	import LoginButton from "$lib/components/login-button.svelte";
+	import { page } from '$app/stores';
 
 	export let data: LayoutData;
 	let drawerVisible = true;
@@ -16,7 +17,7 @@
 </script>
 
 <svelte:head>
-	<title>SMLTOWN</title>
+	<title>{$page.data.title}</title>
 </svelte:head>
 
 
@@ -25,7 +26,7 @@
 	<nav class="navbar bg-base-200 px-4 min-h-6">
 		<div class="basis-1/3 flex justify-start gap-4">
 			<button
-				class=" btn btn-ghost btn-square btn-sm active:bg-opacity-30"
+				class=" btn btn-ghost btn-square btn-sm"
 				on:click={toggleDrawerVisibility}
 			>
 				<HamburgerMenuIcon />
@@ -37,9 +38,9 @@
 		</div>
 
 		<div class=" basis-1/3 flex justify-end gap-4">
-			<LoginButton />
-			<SignupButton/>
-			<ProfileButton theme={data.theme} />
+			<LoginButton ui={data.loginUi}/>
+			<SignupButton ui={data.signupUi}/>
+			<ProfileButton theme={data.theme} user={data.user} />
 		</div>
 	</nav>
 	<div class="flex gap-4">

@@ -1,3 +1,12 @@
+<script lang="ts">
+	import type { UiContainer } from "@ory/kratos-client";
+
+
+    
+    export let ui: UiContainer;
+</script>
+
+
 <label for="modal-signup" class="btn btn-primary btn-sm">Sign Up</label>
 <input type="checkbox" id="modal-signup" class="modal-toggle" />
 <label for="modal-signup" class="modal duration-0 bg-opacity-80">
