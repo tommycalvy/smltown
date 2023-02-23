@@ -1,6 +1,9 @@
 <script lang="ts">
 	import type { UiContainer } from '@ory/kratos-client';
 	import Messages from "$lib/components/auth/messages.svelte";
+	import InputText from "$lib/components/auth/input-text.svelte";
+	import ButtonSubmit from "$lib/components/auth/button-submit.svelte";
+	import { isUiNodeInputAttributes } from "$lib/utils";
 
 	export let ui: UiContainer;
 </script>
@@ -40,18 +43,38 @@
 				<Messages messages={ui.messages} />
 			{/if}
 			<div class="form-control w-full">
-				<label class="label">
-					<span class="label-text">Username</span>
-				</label>
-				<input type="text" placeholder="" class="input input-bordered w-full" />
-				<label class="label">
-					<span class="label-text">Password</span>
-				</label>
-				<input type="text" placeholder="" class="input input-bordered w-full" />
-			</div>
-			<div class="modal-action">
-				<label for="modal-signup" class="btn btn-block btn-primary">Log In</label>
-			</div>
+				{#each ui.nodes as { attributes, messages }}
+				{#if isUiNodeInputAttributes(attributes)}
+					{#if attributes.name === 'csrf_token'}
+						<input
+							name={attributes.name}
+							type="hidden"
+							value={attributes.value}
+							required={attributes.required}
+							disabled={attributes.disabled}
+						/>
+					{/if}
+					{#if attributes.name === 'identifier'}
+						<InputText
+							label="Email Address"
+							type="email"
+							{attributes}
+							{messages}
+						/>
+					{/if}
+					{#if attributes.name === 'password'}
+						<InputText
+							label="Password"
+							type="password"
+							{attributes}
+							{messages}
+						/>
+					{/if}
+					{#if attributes.type === 'submit'}
+						<ButtonSubmit label="Log In" {attributes} {messages} />
+					{/if}
+				{/if}
+			{/each}
 		</form>
 	</label>
 </label>
