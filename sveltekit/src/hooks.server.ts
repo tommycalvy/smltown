@@ -1,6 +1,6 @@
 import type { Handle } from '@sveltejs/kit';
 import { isTheme } from '$lib/types';
-import { auth } from '$lib/auth';
+import { auth } from '$lib/server/auth';
 
 export const handle = (async ({ event, resolve }) => {
 	const cookieEncoded = event.request.headers.get('cookie') ?? undefined;
@@ -11,8 +11,8 @@ export const handle = (async ({ event, resolve }) => {
 		} = await auth.toSession({ cookie });
 		event.locals.user = {
 			id: identity.id,
+			username: identity.traits.name.first,
 			email: identity.traits.email,
-			name: identity.traits.name.first,
 			verified: identity.verifiable_addresses?.[0].verified ?? false,
 			color: identity.traits.color
 		};

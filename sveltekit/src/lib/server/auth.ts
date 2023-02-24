@@ -1,9 +1,8 @@
 import { Configuration, FrontendApi } from '@ory/kratos-client';
-import config from '$lib/config';
-
+import { KRATOS_PUBLIC_URL } from '$env/static/private';
 export const auth = new FrontendApi(
 	new Configuration({
-		basePath: config.kratos.public,
+		basePath: KRATOS_PUBLIC_URL,
 		baseOptions: {
 			withCredentials: true
 		}
@@ -12,8 +11,8 @@ export const auth = new FrontendApi(
 
 export interface User {
 	id: string;
+	username: string;
 	email: string;
-	name: string;
 	verified: boolean;
 	color: string;
 }

@@ -1,0 +1,2 @@
+FROM oryd/kratos:v0.10.1
+COPY ./kratos.yml /home/ory

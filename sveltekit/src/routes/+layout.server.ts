@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from './$types';
-import { auth, modifyAction } from "$lib/auth";
+import { auth, modifyAction } from "$lib/server/auth";
 
 export const load = (async ({ locals, setHeaders}) => {
     
@@ -18,7 +18,7 @@ export const load = (async ({ locals, setHeaders}) => {
 	loginData.data.ui.action = modifyAction('/login', loginData.data.ui.action);
 
 	const signupData = await auth.createBrowserRegistrationFlow();
-	signupData.data.ui.action = modifyAction('/login', signupData.data.ui.action);
+	signupData.data.ui.action = modifyAction('/signup', signupData.data.ui.action);
 	return {
 		theme: locals.theme,
 		user: undefined,

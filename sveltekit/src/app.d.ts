@@ -1,5 +1,5 @@
 import { Theme } from "$lib/types";
-import { User } from "$lib/auth";
+import { User } from "$lib/server/auth";
 
 declare global {
 	namespace App {

@@ -1,9 +1,7 @@
 <script lang="ts">
 	import type { UiContainer } from '@ory/kratos-client';
-	import Messages from "$lib/components/auth/messages.svelte";
-	import InputText from "$lib/components/auth/input-text.svelte";
-	import ButtonSubmit from "$lib/components/auth/button-submit.svelte";
-	import { isUiNodeInputAttributes } from "$lib/utils";
+	import Messages from '$lib/components/auth/messages.svelte';
+	import { isUiNodeInputAttributes } from '$lib/utils';
 
 	export let ui: UiContainer;
 </script>
@@ -34,47 +32,69 @@
 				Log in to <span class="font-logo text-3xl text-sky-500">SMLTOWN</span>
 			</h1>
 		</div>
-		<form
-			action={ui.action}
-			method={ui.method}
-			enctype="application/x-www-form-urlencoded"
-		>
+		<form action={ui.action} method="POST" enctype="application/x-www-form-urlencoded">
 			{#if ui.messages}
 				<Messages messages={ui.messages} />
 			{/if}
 			<div class="form-control w-full">
 				{#each ui.nodes as { attributes, messages }}
-				{#if isUiNodeInputAttributes(attributes)}
-					{#if attributes.name === 'csrf_token'}
-						<input
-							name={attributes.name}
-							type="hidden"
-							value={attributes.value}
-							required={attributes.required}
-							disabled={attributes.disabled}
-						/>
+					{#if isUiNodeInputAttributes(attributes)}
+						{#if attributes.name === 'csrf_token'}
+							<input
+								name={attributes.name}
+								type="hidden"
+								value={attributes.value}
+								required={attributes.required}
+								disabled={attributes.disabled}
+							/>
+						{/if}
+						{#if attributes.name === 'identifier'}
+							<fieldset>
+								<label class="label">
+									<span class="label-text">Username</span>
+								</label>
+								<input
+									type="text"
+									name="identifier"
+									required
+									disabled={attributes.disabled}
+									class="input input-bordered w-full"
+								/>
+								{#if messages}
+									<Messages {messages} />
+								{/if}
+							</fieldset>
+						{/if}
+						{#if attributes.name === 'password'}
+							<label class="label">
+								<span class="label-text">Password</span>
+							</label>
+							<input
+								type="password"
+								name="password"
+								required
+								disabled={attributes.disabled}
+								class="input input-bordered w-full"
+							/>
+							{#if messages}
+								<Messages {messages} />
+							{/if}
+						{/if}
+						{#if attributes.type === 'submit'}
+							<button
+								type="submit"
+								name={'auth_' + attributes.name}
+								value={attributes.value}
+								disabled={attributes.disabled}
+								class="btn btn-block btn-primary">Log In</button
+							>
+							{#if messages}
+								<Messages {messages} />
+							{/if}
+						{/if}
 					{/if}
-					{#if attributes.name === 'identifier'}
-						<InputText
-							label="Email Address"
-							type="email"
-							{attributes}
-							{messages}
-						/>
-					{/if}
-					{#if attributes.name === 'password'}
-						<InputText
-							label="Password"
-							type="password"
-							{attributes}
-							{messages}
-						/>
-					{/if}
-					{#if attributes.type === 'submit'}
-						<ButtonSubmit label="Log In" {attributes} {messages} />
-					{/if}
-				{/if}
-			{/each}
+				{/each}
+			</div>
 		</form>
 	</label>
 </label>
