@@ -19,5 +19,5 @@ export interface User {
 
 export const modifyAction = (base: string, action: string): string => {
 	const params = action.split('?');
-	return base + '?' + params[1];
+	return base + params[1];
 };

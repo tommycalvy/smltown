@@ -6,17 +6,27 @@ export const handle = (async ({ event, resolve }) => {
 	const cookieEncoded = event.request.headers.get('cookie') ?? undefined;
 	if (cookieEncoded) {
 		const cookie = decodeURIComponent(cookieEncoded);
-		const {
-			data: { identity }
-		} = await auth.toSession({ cookie });
-		event.locals.user = {
-			id: identity.id,
-			username: identity.traits.name.first,
-			email: identity.traits.email,
-			verified: identity.verifiable_addresses?.[0].verified ?? false,
-			color: identity.traits.color
-		};
+		await auth.toSession({ cookie }).then(({ data: { identity }}) => {
+			event.locals.user = {
+				id: identity.id,
+				username: identity.traits.name.first,
+				email: identity.traits.email,
+				verified: identity.verifiable_addresses?.[0].verified ?? false,
+				color: identity.traits.color
+			};
+		},
+		({ response }) => {
+			event.locals.user = undefined;
+			if (response.status === 401) {
+				console.log('User has cookie but is not authenticated');
+			} else {
+				const err = new Error('Error with ory toSession call');
+				console.log(err);
+				console.log(response);
+			}
+		});
 	} else {
+		console.log('User has no cookie and is therefore not authenticated')
 		event.locals.user = undefined;
 	}
 

@@ -58,7 +58,7 @@
 									name="identifier"
 									required
 									disabled={attributes.disabled}
-									class="input input-bordered w-full"
+									class="input input-bordered w-full mb-2"
 								/>
 								{#if messages}
 									<Messages {messages} />
@@ -74,7 +74,7 @@
 								name="password"
 								required
 								disabled={attributes.disabled}
-								class="input input-bordered w-full"
+								class="input input-bordered w-full mb-2"
 							/>
 							{#if messages}
 								<Messages {messages} />
@@ -86,7 +86,7 @@
 								name={'auth_' + attributes.name}
 								value={attributes.value}
 								disabled={attributes.disabled}
-								class="btn btn-block btn-primary">Log In</button
+								class="btn btn-block btn-primary mt-6 mb-2">Log In</button
 							>
 							{#if messages}
 								<Messages {messages} />
