@@ -2,16 +2,17 @@
 	import type { UiContainer } from '@ory/kratos-client';
 	import Messages from '$lib/components/auth/messages.svelte';
 	import { isUiNodeInputAttributes } from '$lib/utils';
+	import { enhance } from "$app/forms";
 
 	export let ui: UiContainer;
 </script>
 
-<label for="modal-signup" class="btn btn-sm">Log In</label>
-<input type="checkbox" id="modal-signup" class="modal-toggle" />
-<label for="modal-signup" class="modal duration-0 bg-black bg-opacity-80">
+<label for="modal-login" class="btn btn-sm">Log In</label>
+<input type="checkbox" id="modal-login" class="modal-toggle" />
+<label for="modal-login" class="modal duration-0 bg-black bg-opacity-80">
 	<label class="modal-box relative duration-0" for="">
 		<div class=" modal-action absolute top-0 right-0 m-1">
-			<label for="modal-signup" class="btn btn-circle btn-sm btn-ghost">
+			<label for="modal-login" class="btn btn-circle btn-sm btn-ghost">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					class="h-6 w-6"
@@ -56,7 +57,7 @@
 								<input
 									type="text"
 									name="identifier"
-									required
+									required={attributes.required}
 									disabled={attributes.disabled}
 									class="input input-bordered w-full mb-2"
 								/>
@@ -72,7 +73,7 @@
 							<input
 								type="password"
 								name="password"
-								required
+								required={attributes.required}
 								disabled={attributes.disabled}
 								class="input input-bordered w-full mb-2"
 							/>
@@ -83,7 +84,7 @@
 						{#if attributes.type === 'submit'}
 							<button
 								type="submit"
-								name={'auth_' + attributes.name}
+								name="auth_method"
 								value={attributes.value}
 								disabled={attributes.disabled}
 								class="btn btn-block btn-primary mt-6 mb-2">Log In</button

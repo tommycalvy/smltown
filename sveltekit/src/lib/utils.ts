@@ -78,7 +78,7 @@ export const SetCookies = (cookieArray: [string], cookies: Cookies) => {
 			const maxAge = maxAgeString ? parseInt(maxAgeString, 10) : 31536000;
 			const httpOnlyString = cookieMap.get('HttpOnly');
 			const httpOnly = httpOnlyString ? JSON.parse(httpOnlyString) : true;
-			const sameSite = isSameSite(cookieMap.get('SameSite') ?? 'strict');
+			const sameSite = isSameSite(cookieMap.get('SameSite') ?? 'strict'); 
 			cookies.set(firstKey, firstVal, {
 				path: cookieMap.get('Path'),
 				maxAge: maxAge,

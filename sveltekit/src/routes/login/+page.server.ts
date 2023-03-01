@@ -1,30 +1,31 @@
-import type { UpdateLoginFlowBody } from '@ory/kratos-client';
+import type { UpdateLoginFlowBody, LoginFlow } from '@ory/kratos-client';
 import type { Actions, PageServerLoad } from './$types';
 import { auth } from '$lib/server/auth';
 import { error, redirect } from '@sveltejs/kit';
 import { SetCookies } from '$lib/utils';
 import { modifyAction } from '$lib/server/auth';
+import { fail } from "@sveltejs/kit";
 
 export const load = (async ({ locals, request, url, cookies }) => {
-	const flowId = url.searchParams.get('flow') ?? undefined;
 	const refresh = url.searchParams.get('refresh') === 'true' ? true : false;
-	const aal = url.searchParams.get('aal') ?? undefined;
-	const returnTo = url.searchParams.get('returnTo') ?? undefined;
+	
 
 	if (!refresh) {
 		if (locals.user) {
 			console.log('User detected. Redirecting to /');
-			throw redirect(307, '/');
+			throw redirect(303, '/');
 		}
 	}
-	let cookie = request.headers.get('cookie') ?? undefined;
-	if (cookie) cookie = decodeURIComponent(cookie);
+	const aal = url.searchParams.get('aal') ?? undefined;
+	const returnTo = url.searchParams.get('returnTo') ?? undefined;
+	const flowId = url.searchParams.get('flow') ?? undefined;
+	const cookie = request.headers.get('cookie') ?? undefined;
 
 	if (!flowId) {
 		return await auth.createBrowserLoginFlow({ refresh, aal, returnTo, cookie }).then(
 			({ headers, data }) => {
 				SetCookies(headers['set-cookie'], cookies);
-				data.ui.action = modifyAction(`/login?flow=${data.id}&`, data.ui.action);
+				data.ui.action = modifyAction('/login?', data.ui.action);
 				return {
 					ui: data.ui
 				};
@@ -46,15 +47,16 @@ export const load = (async ({ locals, request, url, cookies }) => {
 		.then(
 			({ headers, data }) => {
 				SetCookies(headers['set-cookie'], cookies);
-				data.ui.action = modifyAction(`/login?flow=${data.id}&`, data.ui.action);
+				data.ui.action = modifyAction('/login?', data.ui.action);
 				return {
 					ui: data.ui
 				};
 			},
 			({ response }) => {
 				console.log('Status: ', response.status);
+				console.log(response.data);
 				if (response.status === 403) {
-					throw redirect(307, '/login');
+					throw redirect(303, '/login');
 				}
 				const err = 'Error with getLoginFlow';
 				console.log(err);
@@ -67,8 +69,8 @@ export const load = (async ({ locals, request, url, cookies }) => {
 export const actions = {
 	default: async ({ request, url, cookies }) => {
 		// TODO log the user in
+		console.log('login/+page.server.ts default action ran');
 		const flowId = url.searchParams.get('flow') ?? undefined;
-
 		if (typeof flowId !== 'string') {
 			const err = new Error('No flow id');
 			console.log(err);
@@ -124,13 +126,7 @@ export const actions = {
 		}
 
 		let cookie = request.headers.get('cookie') ?? undefined;
-		if (typeof cookie === 'string') {
-			cookie = decodeURIComponent(cookie);
-		} else {
-			const err = new Error('Login method not supported');
-			console.log(err);
-			throw error(400, 'Incorrect Login');
-		}
+		if (cookie) cookie = decodeURIComponent(cookie);
 
 		return await auth
 			.updateLoginFlow({
@@ -149,15 +145,20 @@ export const actions = {
 						throw redirect(302, '/');
 					}
 				},
-				({ response }) => {
-					if (response) {
-						if (response.status === 400) {
-							throw redirect(303, `/login?flow=${flowId}`);
-						}
-						console.log('Unhandled ory kratos error');
-					}
-					throw error(500, 'Error with Login');
+				({ response: { data } }) => {
+					console.log(data);
+					if (isLoginFlow(data)) {
+						return fail(400, {
+							ui: data.ui
+						});
+					} 
+					
 				}
 			);
 	}
 } satisfies Actions;
+
+
+const isLoginFlow = (response: object): response is LoginFlow => {
+	return (response as LoginFlow).ui !== undefined
+}

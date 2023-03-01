@@ -18,7 +18,7 @@ export const handle = (async ({ event, resolve }) => {
 		({ response }) => {
 			event.locals.user = undefined;
 			if (response.status === 401) {
-				console.log('User has cookie but is not authenticated');
+				console.log('User has cookies but is not authenticated');
 			} else {
 				const err = new Error('Error with ory toSession call');
 				console.log(err);
@@ -26,12 +26,11 @@ export const handle = (async ({ event, resolve }) => {
 			}
 		});
 	} else {
-		console.log('User has no cookie and is therefore not authenticated')
+		console.log('User has no cookie and is therefore not authenticated');
 		event.locals.user = undefined;
 	}
 
 	const theme = event.cookies.get('theme');
-
 	if (theme != undefined && isTheme(theme)) {
 		event.locals.theme = theme;
 		const response = await resolve(event, {
