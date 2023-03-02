@@ -50,7 +50,7 @@
 					<SignupButton ui={data.signupUi} open={data.openSignupModal}/>
 				{/if}
 			{/if}
-			<ProfileButton theme={data.theme} user={data.user} />
+			<ProfileButton theme={data.theme} user={data.user} logoutToken={data.logoutToken}/>
 		</div>
 	</nav>
 	<div class="flex gap-4">

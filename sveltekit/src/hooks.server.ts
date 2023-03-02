@@ -9,10 +9,9 @@ export const handle = (async ({ event, resolve }) => {
 		await auth.toSession({ cookie }).then(({ data: { identity }}) => {
 			event.locals.user = {
 				id: identity.id,
-				username: identity.traits.name.first,
+				username: identity.traits.username,
 				email: identity.traits.email,
 				verified: identity.verifiable_addresses?.[0].verified ?? false,
-				color: identity.traits.color
 			};
 		},
 		({ response }) => {

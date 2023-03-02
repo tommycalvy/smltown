@@ -8,7 +8,7 @@ import type {
 	UpdateRegistrationFlowBody
 } from '@ory/kratos-client';
 import { redirect, fail } from '@sveltejs/kit';
-import { GetCookieByPrefix, SetCookies } from '$lib/utils';
+import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
 
 export const load = (async ({ parent }) => {
 	const { user } = await parent();
@@ -77,12 +77,8 @@ export const actions = {
 			throw error(400, 'Incorrect Login');
 		}
 
-		let cookie = request.headers.get('cookie') ?? undefined;
-
-		if (cookie) {
-			cookie = decodeURIComponent(cookie);
-			cookie = GetCookieByPrefix(cookie, { prefix: 'login_csrf_token', remove: 'login_' });
-		}
+		const cookieHeader = request.headers.get('cookie') ?? undefined;
+		const cookie = GetCookieByPrefix(cookieHeader, { prefix: 'login_csrf_token', remove: 'login_' });
 
 		return await auth
 			.updateLoginFlow({
@@ -92,8 +88,9 @@ export const actions = {
 			})
 			.then(
 				({ headers }) => {
+					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'signup_csrf_token'});
+					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'login_csrf_token'});
 					SetCookies(headers['set-cookie'], { cookies });
-
 					if (headers['location']) {
 						throw redirect(302, headers['location']);
 					} else {
@@ -139,10 +136,8 @@ export const actions = {
 					provider,
 					method: authMethod,
 					traits: {
-						email: values.get('traits.email') ?? undefined,
-						name: {
-							first: values.get('traits.name.first') ?? undefined
-						},
+						username: values.get('traits.username') ?? undefined,
+						email: values.get('traits.email') ?? undefined
 					}
 				};
 			} else {
@@ -158,10 +153,8 @@ export const actions = {
 					password,
 					method: authMethod,
 					traits: {
-						email: values.get('traits.email'),
-						name: {
-							first: values.get('traits.name.first')
-						},
+						username: values.get('traits.username') ?? undefined,
+						email: values.get('traits.email')
 					}
 				};
 			} else {
@@ -175,17 +168,20 @@ export const actions = {
 			throw error(400, 'Registration method not supported');
 		}
 
-		let cookie = request.headers.get('cookie') ?? undefined;
-		if (cookie) cookie = decodeURIComponent(cookie);
+		const cookieHeader = request.headers.get('cookie') ?? undefined;
+		const cookie = GetCookieByPrefix(cookieHeader, { prefix: 'signup_csrf_token', remove: 'signup_' });
 
 		return await auth
 			.updateRegistrationFlow({
 				flow: flowId,
-				updateRegistrationFlowBody: flowBody
+				updateRegistrationFlowBody: flowBody,
+				cookie: cookie
 			})
 			.then(
 				({ headers }) => {
 					// TODO: Need to set color of default avatar background using ory admin api
+					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'signup_csrf_token'});
+					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'login_csrf_token'});
 					SetCookies(headers['set-cookie'], { cookies });
 					if (headers['location']) {
 						throw redirect(302, headers['location']);
@@ -201,6 +197,38 @@ export const actions = {
 							signupUi: data.ui
 						});
 					}
+				}
+			);
+	},
+	logout: async ({ url, request, locals, cookies }) => {
+		const values = await request.formData();
+		const logoutToken = values.get('logout_token') ?? undefined;
+		console.log('LogoutToken:', logoutToken);
+		const cookieHeader = request.headers.get('cookie') ?? undefined;
+		return await auth
+			.updateLogoutFlow({
+				token: typeof logoutToken === 'string' ? logoutToken : undefined,
+				returnTo: url.searchParams.get('returnTo') ?? undefined
+			}, {
+				headers: {
+					'cookie': cookieHeader ? decodeURIComponent(cookieHeader) : undefined
+				}
+			})
+			.then(
+				({ headers }) => {
+					cookies.delete('ory_kratos_session');
+					locals.user = undefined;
+					if (headers['location']) {
+						throw redirect(302, headers['location']);
+					} else {
+						throw redirect(302, '/');
+					}
+				},
+				({ response: { data } }) => {
+					const err = new Error('Error with updateLogoutFlow');
+					console.log(err);
+					console.log(data);
+					throw error(500, 'Error logging out');
 				}
 			);
 	}

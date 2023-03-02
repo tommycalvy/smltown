@@ -51,34 +51,34 @@
 						{/if}
 						{#if attributes.name === 'traits.username'}
 							<fieldset>
-								<label class="label">
-									<span class="label-text">Username</span>
+								<label class="label flex-col items-start">
+									<span class="label-text py-1">Username</span>
+									<input
+										type={attributes.type}
+										name={attributes.name}
+										required={attributes.required}
+										disabled={attributes.disabled}
+										value={attributes.value ? attributes.value : ''}
+										class="input input-bordered w-full mb-2"
+									/>
 								</label>
-								<input
-									type={attributes.type}
-									name={attributes.name}
-									required={attributes.required}
-									disabled={attributes.disabled}
-									value={attributes.value ? attributes.value : ''}
-									class="input input-bordered w-full mb-2"
-								/>
 								{#if messages}
 									<Messages {messages} />
 								{/if}
 							</fieldset>
 						{/if}
 						{#if attributes.name === 'password'}
-							<label class="label">
-								<span class="label-text">Password</span>
+							<label class="label flex-col items-start">
+								<span class="label-text py-1">Password</span>
+								<input
+									type="password"
+									name="password"
+									required={attributes.required}
+									disabled={attributes.disabled}
+									value={attributes.value ? attributes.value : ''}
+									class="input input-bordered w-full mb-2"
+								/>
 							</label>
-							<input
-								type="password"
-								name="password"
-								required={attributes.required}
-								disabled={attributes.disabled}
-								value={attributes.value ? attributes.value : ''}
-								class="input input-bordered w-full mb-2"
-							/>
 							{#if messages}
 								<Messages {messages} />
 							{/if}
@@ -86,17 +86,17 @@
 						{#if attributes.name === 'traits.email'}
 							<fieldset>
 								<p class="my-4">An email for account recovery.</p>
-								<label class="label">
-									<span class="label-text">Email</span>
+								<label class="label flex-col items-start">
+									<span class="label-text py-1">Email</span>
+									<input
+										type={attributes.type}
+										name={attributes.name}
+										required={attributes.required}
+										disabled={attributes.disabled}
+										value={attributes.value ? attributes.value : ''}
+										class="input input-bordered w-full mb-2"
+									/>
 								</label>
-								<input
-									type={attributes.type}
-									name={attributes.name}
-									required={attributes.required}
-									disabled={attributes.disabled}
-									value={attributes.value ? attributes.value : ''}
-									class="input input-bordered w-full mb-2"
-								/>
 								{#if messages}
 									<Messages {messages} />
 								{/if}

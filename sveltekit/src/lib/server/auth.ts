@@ -9,13 +9,7 @@ export const auth = new FrontendApi(
 	})
 );
 
-export interface User {
-	id: string;
-	username: string;
-	email: string;
-	verified: boolean;
-	color: string;
-}
+
 
 export const modifyAction = (base: string, action: string): string => {
 	const params = action.split('?');

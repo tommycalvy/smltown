@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { User } from '$lib/auth';
+	import type { User } from '$lib/types';
 	import ProfileIcon from '$lib/icons/profile-icon.svelte';
 	import type { Theme, WithTarget } from '$lib/types';
 
@@ -11,6 +11,7 @@
 	};
 
 	export let user: User | undefined;
+	export let logoutToken: string | undefined;
 	export let theme: Theme;
 
 	let isDropdownOpen = false; // default state (dropdown close)
@@ -32,9 +33,7 @@
 <div class="dropdown dropdown-end" on:focusout={handleDropdownFocusLost}>
 	{#if user}
 		<button tabindex="0" class="btn btn-ghost btn-circle avatar" on:click={handleDropdownClick}>
-			<div class="flex justify-center" style="background-color: {user.color}">
-				<span>{user.name.charAt(0).toUpperCase()}</span>
-			</div>
+			<h1 class=" text-base-content text-[1.75rem]">{user.username.charAt(0).toUpperCase()}</h1>
 		</button>
 	{:else}
 		<button
@@ -50,14 +49,23 @@
 		class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52"
 		style:visibility={isDropdownOpen ? 'visible' : 'hidden'}
 	>
-		<li>
-			<a href="/profile" class="justify-between">
-				Profile
-				<span class="badge badge-secondary">New</span>
-			</a>
-		</li>
-		<li><a href="/settings">Settings</a></li>
-		<li><a href="/logout">Logout</a></li>
+		{#if user}
+			<li>
+				<a href="/profile" class="justify-between">
+					Profile
+					<span class="badge badge-secondary">New</span>
+				</a>
+			</li>
+			<li><a href="/settings">Settings</a></li>
+			{#if logoutToken}
+				<li>
+					<form action="?/logout" method="POST" enctype="application/x-www-form-urlencoded">
+						<input type="hidden" name="logout_token" value={logoutToken} />
+						<button type="submit"> Logout </button>
+					</form>
+				</li>
+			{/if}
+		{/if}
 		<li>
 			<label class="label cursor-pointer w-full px-4 py-1.5">
 				<span class="label-text active:text-white">Dark Mode</span>

@@ -97,12 +97,16 @@ export const SetCookies = (cookieArray: [string], { prefix, cookies }: SetCookie
 interface GetCookiesByPrefixParams {
 	prefix: string;
 	remove?: string;
+	justKey?: false;
 }
 
 export const GetCookieByPrefix = (
-	cookieHeader: string,
+	cookieHeader: string | undefined,
 	{ prefix, remove }: GetCookiesByPrefixParams
 ): string | undefined => {
+	if (typeof cookieHeader === 'undefined') {
+		return undefined;
+	}
 	const cookieMap = parseCookies(cookieHeader);
 	for (const cookie of cookieMap) {
 		if (cookie[0].includes(prefix)) {
@@ -111,3 +115,26 @@ export const GetCookieByPrefix = (
 	}
 	return undefined;
 };
+
+interface DeleteCookiesByPrefixParams {
+	cookies: Cookies;
+	prefix: string;
+}
+
+export const DeleteCookiesByPrefix = ( cookieHeader: string | undefined, { cookies, prefix } : DeleteCookiesByPrefixParams ) => {
+	if (typeof cookieHeader === 'undefined') {
+		return
+	}
+	const cookieMap = parseCookies(cookieHeader);
+	let allGone = false;
+	while (!allGone) {
+		allGone = true;
+		for (const cookie of cookieMap) {
+			if (cookie[0].includes(prefix)) {
+				cookies.delete(cookie[0]);
+				cookieMap.delete(cookie[0]);
+				allGone = false;
+			}
+		}
+	}
+}
