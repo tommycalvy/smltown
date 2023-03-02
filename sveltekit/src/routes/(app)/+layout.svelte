@@ -9,14 +9,12 @@
 	import { page } from '$app/stores';
 
 	export let data: LayoutData;
-	export let form: ActionData;
 
 	let drawerVisible = true;
 
 	function toggleDrawerVisibility() {
 		drawerVisible = !drawerVisible;
 	}
-	
 </script>
 
 <svelte:head>
@@ -37,8 +35,20 @@
 
 		<div class=" basis-1/3 flex justify-end gap-4">
 			{#if !data.user}
-				<LoginButton ui={data.loginUi} />
-				<SignupButton ui={data.signupUi} />
+				{#if $page.form}
+					{#if $page.form.loginUi}
+						<LoginButton ui={$page.form.loginUi} open={true} />
+					{/if}
+					{#if $page.form.signupUi}
+						<SignupButton ui={$page.form.signupUi} open={true} />
+					{/if}
+				{/if}
+				{#if data.loginUi}
+					<LoginButton ui={data.loginUi} open={data.openLoginModal}/>
+				{/if}
+				{#if data.signupUi}
+					<SignupButton ui={data.signupUi} open={data.openSignupModal}/>
+				{/if}
 			{/if}
 			<ProfileButton theme={data.theme} user={data.user} />
 		</div>
@@ -53,11 +63,11 @@
 				</ul>
 			</div>
 			<main class="w-full -ml-44">
-				<slot />
+				<slot/>
 			</main>
 		{:else}
 			<main class="w-full">
-				<slot />
+				<slot/>
 			</main>
 		{/if}
 	</div>

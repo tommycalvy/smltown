@@ -4,10 +4,11 @@
 	import { isUiNodeInputAttributes } from '$lib/utils';
 
 	export let ui: UiContainer;
+	export let open: boolean = false;
 </script>
 
 <label for="modal-signup" class="btn btn-primary btn-sm">Sign Up</label>
-<input type="checkbox" id="modal-signup" class="modal-toggle" />
+<input type="checkbox" id="modal-signup" class="modal-toggle" checked={open} />
 <label for="modal-signup" class="modal duration-0 bg-black bg-opacity-80">
 	<label class="modal-box relative duration-0" for="">
 		<div class=" modal-action absolute top-0 right-0 m-1">
@@ -48,16 +49,17 @@
 								disabled={attributes.disabled}
 							/>
 						{/if}
-						{#if attributes.name === 'identifier'}
+						{#if attributes.name === 'traits.username'}
 							<fieldset>
 								<label class="label">
 									<span class="label-text">Username</span>
 								</label>
 								<input
-									type="text"
-									name="identifier"
+									type={attributes.type}
+									name={attributes.name}
 									required={attributes.required}
 									disabled={attributes.disabled}
+									value={attributes.value ? attributes.value : ''}
 									class="input input-bordered w-full mb-2"
 								/>
 								{#if messages}
@@ -74,15 +76,35 @@
 								name="password"
 								required={attributes.required}
 								disabled={attributes.disabled}
+								value={attributes.value ? attributes.value : ''}
 								class="input input-bordered w-full mb-2"
 							/>
 							{#if messages}
 								<Messages {messages} />
 							{/if}
 						{/if}
+						{#if attributes.name === 'traits.email'}
+							<fieldset>
+								<p class="my-4">An email for account recovery.</p>
+								<label class="label">
+									<span class="label-text">Email</span>
+								</label>
+								<input
+									type={attributes.type}
+									name={attributes.name}
+									required={attributes.required}
+									disabled={attributes.disabled}
+									value={attributes.value ? attributes.value : ''}
+									class="input input-bordered w-full mb-2"
+								/>
+								{#if messages}
+									<Messages {messages} />
+								{/if}
+							</fieldset>
+						{/if}
 						{#if attributes.type === 'submit'}
 							<button
-								type="submit"
+								type={attributes.type}
 								name="auth_method"
 								value={attributes.value}
 								disabled={attributes.disabled}

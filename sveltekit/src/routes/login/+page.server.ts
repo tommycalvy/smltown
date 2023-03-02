@@ -24,7 +24,7 @@ export const load = (async ({ locals, request, url, cookies }) => {
 	if (!flowId) {
 		return await auth.createBrowserLoginFlow({ refresh, aal, returnTo, cookie }).then(
 			({ headers, data }) => {
-				SetCookies(headers['set-cookie'], cookies);
+				SetCookies(headers['set-cookie'], { cookies });
 				data.ui.action = modifyAction('/login?', data.ui.action);
 				return {
 					ui: data.ui
@@ -46,7 +46,7 @@ export const load = (async ({ locals, request, url, cookies }) => {
 		})
 		.then(
 			({ headers, data }) => {
-				SetCookies(headers['set-cookie'], cookies);
+				SetCookies(headers['set-cookie'], {cookies});
 				data.ui.action = modifyAction('/login?', data.ui.action);
 				return {
 					ui: data.ui
@@ -137,7 +137,7 @@ export const actions = {
 			.then(
 				({ headers }) => {
 
-					SetCookies(headers['set-cookie'], cookies);
+					SetCookies(headers['set-cookie'], { cookies });
 
 					if (headers['location']) {
 						throw redirect(302, headers['location']);

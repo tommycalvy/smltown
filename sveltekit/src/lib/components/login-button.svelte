@@ -5,10 +5,11 @@
 	import { enhance } from "$app/forms";
 
 	export let ui: UiContainer;
+	export let open: boolean = false;
 </script>
 
 <label for="modal-login" class="btn btn-sm">Log In</label>
-<input type="checkbox" id="modal-login" class="modal-toggle" />
+<input type="checkbox" id="modal-login" class="modal-toggle" checked={open}/>
 <label for="modal-login" class="modal duration-0 bg-black bg-opacity-80">
 	<label class="modal-box relative duration-0" for="">
 		<div class=" modal-action absolute top-0 right-0 m-1">
@@ -43,7 +44,7 @@
 						{#if attributes.name === 'csrf_token'}
 							<input
 								name={attributes.name}
-								type="hidden"
+								type={attributes.type}
 								value={attributes.value}
 								required={attributes.required}
 								disabled={attributes.disabled}
@@ -55,10 +56,11 @@
 									<span class="label-text">Username</span>
 								</label>
 								<input
-									type="text"
-									name="identifier"
+									type={attributes.type}
+									name={attributes.name}
 									required={attributes.required}
 									disabled={attributes.disabled}
+									value={attributes.value}
 									class="input input-bordered w-full mb-2"
 								/>
 								{#if messages}
@@ -71,8 +73,8 @@
 								<span class="label-text">Password</span>
 							</label>
 							<input
-								type="password"
-								name="password"
+								type={attributes.type}
+								name={attributes.name}
 								required={attributes.required}
 								disabled={attributes.disabled}
 								class="input input-bordered w-full mb-2"
@@ -83,7 +85,7 @@
 						{/if}
 						{#if attributes.type === 'submit'}
 							<button
-								type="submit"
+								type={attributes.type}
 								name="auth_method"
 								value={attributes.value}
 								disabled={attributes.disabled}

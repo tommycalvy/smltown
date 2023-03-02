@@ -1,5 +1,5 @@
 import type { UiNodeAttributes, UiNodeInputAttributes } from '@ory/kratos-client';
-import type { Cookies } from "@sveltejs/kit";
+import type { Cookies } from '@sveltejs/kit';
 
 export const isUiNodeInputAttributes = (
 	attributes: UiNodeAttributes
@@ -20,8 +20,7 @@ const tryDecode = (str: string) => {
 };
 
 export const parseCookies = (str: string) => {
-	
-	const cookieMap = new Map<string,string>();
+	const cookieMap = new Map<string, string>();
 	let index = 0;
 	while (index < str.length) {
 		const eqIdx = str.indexOf('=', index);
@@ -60,26 +59,31 @@ export const parseCookies = (str: string) => {
 	return cookieMap;
 };
 
-const allSameSite = ["strict", "lax", "none"] as const;
+const allSameSite = ['strict', 'lax', 'none'] as const;
 type SameSite = (typeof allSameSite)[number];
 
 function isSameSite(value: string): value is SameSite {
 	return allSameSite.includes(value as SameSite);
 }
 
+interface SetCookieParams {
+	prefix?: string;
+	cookies: Cookies;
+}
 
-export const SetCookies = (cookieArray: [string], cookies: Cookies) => {
+export const SetCookies = (cookieArray: [string], { prefix, cookies }: SetCookieParams) => {
+	if (cookieArray === null || cookieArray === undefined) return;
 	for (const cookie of cookieArray) {
 		const cookieMap = parseCookies(cookie);
 		const firstKey = cookieMap.keys().next().value;
 		const firstVal = cookieMap.get(firstKey);
-		if (firstVal) {
+		if (firstVal && typeof firstKey === 'string') {
 			const maxAgeString = cookieMap.get('Max-Age');
 			const maxAge = maxAgeString ? parseInt(maxAgeString, 10) : 31536000;
 			const httpOnlyString = cookieMap.get('HttpOnly');
 			const httpOnly = httpOnlyString ? JSON.parse(httpOnlyString) : true;
-			const sameSite = isSameSite(cookieMap.get('SameSite') ?? 'strict'); 
-			cookies.set(firstKey, firstVal, {
+			const sameSite = isSameSite(cookieMap.get('SameSite') ?? 'strict');
+			cookies.set(prefix ? prefix + firstKey : firstKey, firstVal, {
 				path: cookieMap.get('Path'),
 				maxAge: maxAge,
 				httpOnly: httpOnly,
@@ -87,4 +91,23 @@ export const SetCookies = (cookieArray: [string], cookies: Cookies) => {
 			});
 		}
 	}
+	return
+};
+
+interface GetCookiesByPrefixParams {
+	prefix: string;
+	remove?: string;
 }
+
+export const GetCookieByPrefix = (
+	cookieHeader: string,
+	{ prefix, remove }: GetCookiesByPrefixParams
+): string | undefined => {
+	const cookieMap = parseCookies(cookieHeader);
+	for (const cookie of cookieMap) {
+		if (cookie[0].includes(prefix)) {
+			return cookie[0].slice(remove?.length) + '=' + cookie[1] + ';';
+		}
+	}
+	return undefined;
+};
