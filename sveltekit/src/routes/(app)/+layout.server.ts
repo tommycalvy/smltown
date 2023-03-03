@@ -10,8 +10,39 @@ export const load = (async ({ locals, cookies, request, url }) => {
 	const decodedCookies = cookieHeader ? decodeURIComponent(cookieHeader) : undefined;
 
 	if (locals.user) {
-		return auth.createBrowserLogoutFlow({ cookie: decodedCookies }).then(
-			({ data: { logout_token } }) => {
+		if (locals.user.verified) {
+			return auth.createBrowserLogoutFlow({ cookie: decodedCookies }).then(
+				({ data: { logout_token } }) => {
+					return {
+						theme: locals.theme,
+						user: locals.user,
+						loginUi: undefined,
+						signupUi: undefined,
+						openLoginModal: false,
+						openSignupModal: false,
+						logoutToken: logout_token,
+						verifyEmailUi: undefined
+					};
+				},
+				({ request: { data } }) => {
+					const err = 'Error with createLogoutFlow';
+					console.log(err);
+					console.log(data);
+					throw error(500, 'Internal Error');
+				}
+			);
+		}
+		const createLogoutFlow = auth.createBrowserLogoutFlow({ cookie: decodedCookies });
+		const createVerificationFlow = auth.createBrowserVerificationFlow();
+		return Promise.all([createLogoutFlow, createVerificationFlow]).then(
+			([
+				{
+					data: { logout_token }
+				},
+				{
+					data: { ui }
+				}
+			]) => {
 				return {
 					theme: locals.theme,
 					user: locals.user,
@@ -19,14 +50,9 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					signupUi: undefined,
 					openLoginModal: false,
 					openSignupModal: false,
-					logoutToken: logout_token
+					logoutToken: logout_token,
+					verifyEmailUi: ui
 				};
-			},
-			({ request: { data } }) => {
-				const err = 'Error with createLogoutFlow';
-				console.log(err);
-				console.log(data);
-				throw error(500, 'Internal Error');
 			}
 		);
 	}
@@ -48,7 +74,8 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						signupUi: ui,
 						openLoginModal: true,
 						openSignupModal: false,
-						logoutToken: undefined
+						logoutToken: undefined,
+						verifyEmailUi: undefined,
 					};
 				},
 				({ response: { data } }) => {
@@ -70,7 +97,8 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						signupUi: undefined,
 						openLoginModal: false,
 						openSignupModal: true,
-						logoutToken: undefined
+						logoutToken: undefined,
+						verifyEmailUi: undefined,
 					};
 				},
 				({ response: { data } }) => {
@@ -85,9 +113,11 @@ export const load = (async ({ locals, cookies, request, url }) => {
 
 	if (flowId) {
 		if (typeof loginMethod === 'string') {
-			
-			const loginCookie = GetCookieByPrefix(cookieHeader, { prefix: 'login_csrf_token', remove: 'login_' });
-			
+			const loginCookie = GetCookieByPrefix(cookieHeader, {
+				prefix: 'login_csrf_token',
+				remove: 'login_'
+			});
+
 			const getLoginFlow = auth.getLoginFlow({ id: flowId, cookie: loginCookie });
 			const createRegistrationFlow = auth.createBrowserRegistrationFlow();
 			return Promise.all([getLoginFlow, createRegistrationFlow]).then(
@@ -105,7 +135,8 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						signupUi: signupData.ui,
 						openLoginModal: true,
 						openSignupModal: false,
-						logoutToken: undefined
+						logoutToken: undefined,
+						verifyEmailUi: undefined,
 					};
 				},
 				({ response: { data, status } }) => {
@@ -116,7 +147,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					if (data.use_flow_id) {
 						throw redirect(303, `?/login&flow=${data.use_flow_id}`);
 					} else if (status === 403) {
-						DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'csrf_token'});
+						DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'csrf_token' });
 					}
 					throw redirect(303, '?/login');
 				}
@@ -124,9 +155,12 @@ export const load = (async ({ locals, cookies, request, url }) => {
 		}
 		if (typeof signupMethod === 'string') {
 			const createLoginFlow = auth.createBrowserLoginFlow({ cookie: decodedCookies });
-			
-			const signupCookie = GetCookieByPrefix(cookieHeader, { prefix: 'signup_csrf_token', remove: 'signup' });
-			
+
+			const signupCookie = GetCookieByPrefix(cookieHeader, {
+				prefix: 'signup_csrf_token',
+				remove: 'signup'
+			});
+
 			const getRegistrationFlow = auth.getRegistrationFlow({ id: flowId, cookie: signupCookie });
 			return Promise.all([createLoginFlow, getRegistrationFlow]).then(
 				([
@@ -143,7 +177,8 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						signupUi: signupData.ui,
 						openLoginModal: false,
 						openSignupModal: true,
-						logoutToken: undefined
+						logoutToken: undefined,
+						verifyEmailUi: undefined,
 					};
 				},
 				({ response: { data, status } }) => {
@@ -154,7 +189,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					if (data.use_flow_id) {
 						throw redirect(303, `?/signup&flow=${data.use_flow_id}`);
 					} else if (status === 403) {
-						DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'csrf_token'});
+						DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'csrf_token' });
 					}
 					throw redirect(303, '?/signup');
 				}
@@ -181,7 +216,8 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					signupUi: signupData.ui,
 					openLoginModal: true,
 					openSignupModal: false,
-					logoutToken: undefined
+					logoutToken: undefined,
+					verifyEmailUi: undefined,
 				};
 			}
 			if (typeof signupMethod === 'string') {
@@ -191,7 +227,8 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					signupUi: signupData.ui,
 					openLoginModal: false,
 					openSignupModal: true,
-					logoutToken: undefined
+					logoutToken: undefined,
+					verifyEmailUi: undefined,
 				};
 			}
 			return {
@@ -200,7 +237,8 @@ export const load = (async ({ locals, cookies, request, url }) => {
 				signupUi: signupData.ui,
 				openLoginModal: false,
 				openSignupModal: false,
-				logoutToken: undefined
+				logoutToken: undefined,
+				verifyEmailUi: undefined,
 			};
 		},
 		({ response }) => {

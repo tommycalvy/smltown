@@ -7,12 +7,15 @@
 	export let open: boolean = false;
 </script>
 
-<label for="modal-login" class="btn btn-sm">Log In</label>
-<input type="checkbox" id="modal-login" class="modal-toggle" checked={open}/>
-<label for="modal-login" class="modal duration-0 bg-black bg-opacity-80">
+<label for="modal-verify-email" class="w-full h-full text-start px-4 py-2 flex justify-between">
+    Verify Email
+    <span class="badge badge-secondary">PLZ</span>
+</label>
+<input type="checkbox" id="modal-verify-email" class="modal-toggle" checked={open}/>
+<label for="modal-verify-email" class="modal duration-0 bg-black bg-opacity-80">
 	<label class="modal-box relative duration-0" for="">
 		<div class=" modal-action absolute top-0 right-0 m-1">
-			<label for="modal-login" class="btn btn-circle btn-sm btn-ghost">
+			<label for="modal-verify-email" class="btn btn-circle btn-sm btn-ghost">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					class="h-6 w-6"
@@ -30,8 +33,12 @@
 		</div>
 		<div class="flex justify-center items-end gap-2 py-4">
 			<h1 class=" text-2xl font-bold">
-				Log in to <span class="font-logo text-3xl text-sky-500">SMLTOWN</span>
+				Verify your <span class="font-logo text-3xl text-sky-500">SMLTOWN</span> account
 			</h1>
+            <p>
+                Didn't receive your verification email? Please enter the email address associated with your
+                SMLTOWN account, and we'll send you another email containing a verification link.
+            </p>
 		</div>
 		<form action={ui.action} method="POST" enctype="application/x-www-form-urlencoded">
 			{#if ui.messages}
@@ -49,10 +56,10 @@
 								disabled={attributes.disabled}
 							/>
 						{/if}
-						{#if attributes.name === 'identifier'}
+						{#if attributes.name === 'email'}
 							<fieldset>
 								<label class="label flex-col items-start">
-									<span class="label-text py-1">Username</span>
+									<span class="label-text py-1">Email</span>
 									<input
 										type={attributes.type}
 										name={attributes.name}
@@ -66,21 +73,6 @@
 									<Messages {messages} />
 								{/if}
 							</fieldset>
-						{/if}
-						{#if attributes.name === 'password'}
-							<label class="label flex-col items-start">
-								<span class="label-text py-1">Password</span>
-								<input
-									type={attributes.type}
-									name={attributes.name}
-									required={attributes.required}
-									disabled={attributes.disabled}
-									class="input input-bordered w-full mb-2"
-								/>
-							</label>
-							{#if messages}
-								<Messages {messages} />
-							{/if}
 						{/if}
 						{#if attributes.type === 'submit'}
 							<button

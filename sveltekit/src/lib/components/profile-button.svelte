@@ -2,6 +2,8 @@
 	import type { User } from '$lib/types';
 	import ProfileIcon from '$lib/icons/profile-icon.svelte';
 	import type { Theme, WithTarget } from '$lib/types';
+	import VerifyEmailButton from './verify-email-button.svelte';
+	import type { UiContainer } from '@ory/kratos-client';
 
 	const setTheme = (event: WithTarget<MouseEvent, HTMLInputElement>) => {
 		const checked = event.currentTarget.checked;
@@ -13,6 +15,7 @@
 	export let user: User | undefined;
 	export let logoutToken: string | undefined;
 	export let theme: Theme;
+	export let verifyEmailUi: UiContainer | undefined;
 
 	let isDropdownOpen = false; // default state (dropdown close)
 
@@ -53,13 +56,22 @@
 			<li>
 				<a href="/profile" class="justify-between">
 					Profile
-					<span class="badge badge-secondary">New</span>
 				</a>
 			</li>
+			{#if verifyEmailUi}
+				<li>
+					<VerifyEmailButton ui={verifyEmailUi} />
+				</li>
+			{/if}
 			<li><a href="/settings">Settings</a></li>
 			{#if logoutToken}
 				<li>
-					<form action="?/logout" method="POST" enctype="application/x-www-form-urlencoded" class="p-0 w-full h-full">
+					<form
+						action="?/logout"
+						method="POST"
+						enctype="application/x-www-form-urlencoded"
+						class="p-0 w-full h-full"
+					>
 						<input type="hidden" name="logout_token" value={logoutToken} />
 						<button type="submit" class="w-full h-full text-start px-4 py-2"> Logout </button>
 					</form>
