@@ -1,7 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 import { auth, modifyAction } from '$lib/server/auth';
-import { GetCookieByPrefix, SetCookies } from '$lib/utils';
-import { error } from '@sveltejs/kit';
+import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
+import { error, redirect } from '@sveltejs/kit';
 
 export const load = (async ({ locals, cookies, request, url }) => {
 	console.log('(app)/+layout.server.ts load function ran');
@@ -33,7 +33,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 
 	const loginMethod = url.searchParams.get('/login') ?? undefined;
 	const signupMethod = url.searchParams.get('/signup') ?? undefined;
-	
+
 	const flowId = url.searchParams.get('flow') ?? undefined;
 
 	if (request.method === 'POST') {
@@ -108,11 +108,17 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						logoutToken: undefined
 					};
 				},
-				({ response: { data } }) => {
+				({ response: { data, status } }) => {
 					const err = 'Error with getLoginFlow or createRegistrationFlow';
 					console.log(err);
+					console.log(status);
 					console.log(data);
-					throw error(500, 'Internal Error');
+					if (data.use_flow_id) {
+						throw redirect(303, `?/login&flow=${data.use_flow_id}`);
+					} else if (status === 403) {
+						DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'csrf_token'});
+					}
+					throw redirect(303, '?/login');
 				}
 			);
 		}
@@ -140,11 +146,17 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						logoutToken: undefined
 					};
 				},
-				({ response: { data } }) => {
+				({ response: { data, status } }) => {
 					const err = 'Error with getRegistrationFlow or createLoginFlow';
 					console.log(err);
+					console.log('Status: ', status);
 					console.log(data);
-					throw error(500, 'Internal Error');
+					if (data.use_flow_id) {
+						throw redirect(303, `?/signup&flow=${data.use_flow_id}`);
+					} else if (status === 403) {
+						DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'csrf_token'});
+					}
+					throw redirect(303, '?/signup');
 				}
 			);
 		}

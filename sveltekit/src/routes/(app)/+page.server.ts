@@ -78,7 +78,10 @@ export const actions = {
 		}
 
 		const cookieHeader = request.headers.get('cookie') ?? undefined;
-		const cookie = GetCookieByPrefix(cookieHeader, { prefix: 'login_csrf_token', remove: 'login_' });
+		const cookie = GetCookieByPrefix(cookieHeader, {
+			prefix: 'login_csrf_token',
+			remove: 'login_'
+		});
 
 		return await auth
 			.updateLoginFlow({
@@ -88,8 +91,8 @@ export const actions = {
 			})
 			.then(
 				({ headers }) => {
-					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'signup_csrf_token'});
-					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'login_csrf_token'});
+					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'signup_csrf_token' });
+					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'login_csrf_token' });
 					SetCookies(headers['set-cookie'], { cookies });
 					if (headers['location']) {
 						throw redirect(302, headers['location']);
@@ -97,15 +100,21 @@ export const actions = {
 						throw redirect(302, '/');
 					}
 				},
-				({ response: { data } }) => {
+				({ response: { data, status } }) => {
+					console.log('Status: ', status);
+					console.log(data);
 					if (isLoginFlow(data)) {
 						data.ui.action = modifyAction('?/login&', data.ui.action);
 						return fail(400, {
 							loginUi: data.ui
 						});
-					} else {
-						console.log(data);
+					} else if (data.use_flow_id) {
+						throw redirect(303, `?/login&flow=${data.use_flow_id}`);
+					} else if (data.error.id === 'security_csrf_violation') {
+						DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'csrf_token' });
+						throw redirect(303, '?/login');
 					}
+					throw error(500, 'Internal Error');
 				}
 			);
 	},
@@ -169,7 +178,10 @@ export const actions = {
 		}
 
 		const cookieHeader = request.headers.get('cookie') ?? undefined;
-		const cookie = GetCookieByPrefix(cookieHeader, { prefix: 'signup_csrf_token', remove: 'signup_' });
+		const cookie = GetCookieByPrefix(cookieHeader, {
+			prefix: 'signup_csrf_token',
+			remove: 'signup_'
+		});
 
 		return await auth
 			.updateRegistrationFlow({
@@ -180,8 +192,8 @@ export const actions = {
 			.then(
 				({ headers }) => {
 					// TODO: Need to set color of default avatar background using ory admin api
-					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'signup_csrf_token'});
-					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'login_csrf_token'});
+					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'signup_csrf_token' });
+					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'login_csrf_token' });
 					SetCookies(headers['set-cookie'], { cookies });
 					if (headers['location']) {
 						throw redirect(302, headers['location']);
@@ -189,34 +201,44 @@ export const actions = {
 						throw redirect(302, '/');
 					}
 				},
-				({ response: { data } }) => {
+				({ response: { data, status } }) => {
+					console.log('Status: ', status);
 					console.log(data);
 					if (isRegistrationFlow(data)) {
 						data.ui.action = modifyAction('?/signup&', data.ui.action);
 						return fail(400, {
 							signupUi: data.ui
 						});
+					} else if (data.use_flow_id) {
+						throw redirect(303, `?/signup&flow=${data.use_flow_id}`);
+					} else if (data.error.id === 'security_csrf_violation') {
+						DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'csrf_token' });
+						throw redirect(303, '?/signup');
 					}
+					throw error(500, 'Internal Error');
 				}
 			);
 	},
 	logout: async ({ url, request, locals, cookies }) => {
 		const values = await request.formData();
 		const logoutToken = values.get('logout_token') ?? undefined;
-		console.log('LogoutToken:', logoutToken);
 		const cookieHeader = request.headers.get('cookie') ?? undefined;
 		return await auth
-			.updateLogoutFlow({
-				token: typeof logoutToken === 'string' ? logoutToken : undefined,
-				returnTo: url.searchParams.get('returnTo') ?? undefined
-			}, {
-				headers: {
-					'cookie': cookieHeader ? decodeURIComponent(cookieHeader) : undefined
+			.updateLogoutFlow(
+				{
+					token: typeof logoutToken === 'string' ? logoutToken : undefined,
+					returnTo: url.searchParams.get('returnTo') ?? undefined
+				},
+				{
+					headers: {
+						cookie: cookieHeader ? decodeURIComponent(cookieHeader) : undefined
+					}
 				}
-			})
+			)
 			.then(
 				({ headers }) => {
 					cookies.delete('ory_kratos_session');
+					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'csrf_token' });
 					locals.user = undefined;
 					if (headers['location']) {
 						throw redirect(302, headers['location']);

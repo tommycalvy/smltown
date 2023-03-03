@@ -59,9 +59,9 @@
 			<li><a href="/settings">Settings</a></li>
 			{#if logoutToken}
 				<li>
-					<form action="?/logout" method="POST" enctype="application/x-www-form-urlencoded">
+					<form action="?/logout" method="POST" enctype="application/x-www-form-urlencoded" class="p-0 w-full h-full">
 						<input type="hidden" name="logout_token" value={logoutToken} />
-						<button type="submit"> Logout </button>
+						<button type="submit" class="w-full h-full text-start px-4 py-2"> Logout </button>
 					</form>
 				</li>
 			{/if}
