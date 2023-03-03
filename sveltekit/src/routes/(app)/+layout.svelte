@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { LayoutData, ActionData } from './$types';
+	import type { LayoutData } from './$types';
 	import '$lib/app.css';
 	import NavSearch from '$lib/components/nav-search.svelte';
 	import HamburgerMenuIcon from '$lib/icons/hamburger-menu-icon.svelte';
@@ -50,7 +50,7 @@
 					<SignupButton ui={data.signupUi} open={data.openSignupModal}/>
 				{/if}
 			{/if}
-			<ProfileButton theme={data.theme} user={data.user} logoutToken={data.logoutToken} verifyEmailUi={data.verifyEmailUi}/>
+			<ProfileButton theme={data.theme} user={data.user} logoutToken={data.logoutToken} verifyEmailUi={data.verifyEmailUi} openVerifyEmailModal={data.openVerifyEmailModal}/>
 		</div>
 	</nav>
 	<div class="flex gap-4">

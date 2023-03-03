@@ -9,6 +9,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 	const cookieHeader = request.headers.get('cookie') ?? undefined;
 	const decodedCookies = cookieHeader ? decodeURIComponent(cookieHeader) : undefined;
 
+	
 	if (locals.user) {
 		if (locals.user.verified) {
 			return auth.createBrowserLogoutFlow({ cookie: decodedCookies }).then(
@@ -21,7 +22,8 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openLoginModal: false,
 						openSignupModal: false,
 						logoutToken: logout_token,
-						verifyEmailUi: undefined
+						verifyEmailUi: undefined,
+						openVerifyEmailModal: false,
 					};
 				},
 				({ request: { data } }) => {
@@ -34,6 +36,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 		}
 		const createLogoutFlow = auth.createBrowserLogoutFlow({ cookie: decodedCookies });
 		const createVerificationFlow = auth.createBrowserVerificationFlow();
+		const verifyEmailMethod = url.searchParams.get('/verification') ?? undefined;
 		return Promise.all([createLogoutFlow, createVerificationFlow]).then(
 			([
 				{
@@ -43,6 +46,19 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					data: { ui }
 				}
 			]) => {
+				if (typeof verifyEmailMethod === 'string') {
+					return {
+						theme: locals.theme,
+						user: locals.user,
+						loginUi: undefined,
+						signupUi: undefined,
+						openLoginModal: false,
+						openSignupModal: false,
+						logoutToken: logout_token,
+						verifyEmailUi: ui,
+						openVerifyEmailModal: true,
+					};
+				}
 				return {
 					theme: locals.theme,
 					user: locals.user,
@@ -51,8 +67,10 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					openLoginModal: false,
 					openSignupModal: false,
 					logoutToken: logout_token,
-					verifyEmailUi: ui
+					verifyEmailUi: ui,
+					openVerifyEmailModal: false,
 				};
+
 			}
 		);
 	}
@@ -76,6 +94,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openSignupModal: false,
 						logoutToken: undefined,
 						verifyEmailUi: undefined,
+						openVerifyEmailModal: false,
 					};
 				},
 				({ response: { data } }) => {
@@ -99,6 +118,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openSignupModal: true,
 						logoutToken: undefined,
 						verifyEmailUi: undefined,
+						openVerifyEmailModal: false,
 					};
 				},
 				({ response: { data } }) => {
@@ -137,6 +157,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openSignupModal: false,
 						logoutToken: undefined,
 						verifyEmailUi: undefined,
+						openVerifyEmailModal: false,
 					};
 				},
 				({ response: { data, status } }) => {
@@ -179,6 +200,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openSignupModal: true,
 						logoutToken: undefined,
 						verifyEmailUi: undefined,
+						openVerifyEmailModal: false,
 					};
 				},
 				({ response: { data, status } }) => {
@@ -218,6 +240,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					openSignupModal: false,
 					logoutToken: undefined,
 					verifyEmailUi: undefined,
+					openVerifyEmailModal: false,
 				};
 			}
 			if (typeof signupMethod === 'string') {
@@ -229,6 +252,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					openSignupModal: true,
 					logoutToken: undefined,
 					verifyEmailUi: undefined,
+					openVerifyEmailModal: false,
 				};
 			}
 			return {
@@ -239,6 +263,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 				openSignupModal: false,
 				logoutToken: undefined,
 				verifyEmailUi: undefined,
+				openVerifyEmailModal: false,
 			};
 		},
 		({ response }) => {

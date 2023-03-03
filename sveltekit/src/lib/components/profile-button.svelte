@@ -2,8 +2,9 @@
 	import type { User } from '$lib/types';
 	import ProfileIcon from '$lib/icons/profile-icon.svelte';
 	import type { Theme, WithTarget } from '$lib/types';
-	import VerifyEmailButton from './verify-email-button.svelte';
 	import type { UiContainer } from '@ory/kratos-client';
+	import Messages from "$lib/components/auth/messages.svelte";
+	import { isUiNodeInputAttributes } from "$lib/utils";
 
 	const setTheme = (event: WithTarget<MouseEvent, HTMLInputElement>) => {
 		const checked = event.currentTarget.checked;
@@ -16,6 +17,7 @@
 	export let logoutToken: string | undefined;
 	export let theme: Theme;
 	export let verifyEmailUi: UiContainer | undefined;
+	export let openVerifyEmailModal: false;
 
 	let isDropdownOpen = false; // default state (dropdown close)
 
@@ -60,7 +62,10 @@
 			</li>
 			{#if verifyEmailUi}
 				<li>
-					<VerifyEmailButton ui={verifyEmailUi} />
+					<label for="modal-verify-email" class="w-full h-full text-start px-4 py-2 flex justify-between">
+						Verify Email
+						<span class="badge badge-secondary">PLZ</span>
+					</label>
 				</li>
 			{/if}
 			<li><a href="/settings">Settings</a></li>
@@ -92,3 +97,88 @@
 		</li>
 	</ul>
 </div>
+
+{#if verifyEmailUi}
+<input type="checkbox" id="modal-verify-email" class="modal-toggle" checked={openVerifyEmailModal}/>
+<label for="modal-verify-email" class="modal duration-0 bg-black bg-opacity-80">
+	<label class="modal-box relative duration-0" for="">
+		<div class=" modal-action absolute top-0 right-0 m-1">
+			<label for="modal-verify-email" class="btn btn-circle btn-sm btn-ghost">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-6 w-6"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					><path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M6 18L18 6M6 6l12 12"
+					/></svg
+				>
+			</label>
+		</div>
+		<div class="flex justify-center flex-col gap-2 py-4">
+			<h1 class=" text-2xl font-bold">
+				Verify your <span class="font-logo text-3xl text-sky-500">SMLTOWN</span> account
+			</h1>
+            <p>
+                Didn't receive your verification email? Please enter the email address associated with your
+                SMLTOWN account, and we'll send you another email containing a verification link.
+            </p>
+		</div>
+		<form action={verifyEmailUi.action} method="POST" enctype="application/x-www-form-urlencoded">
+			{#if verifyEmailUi.messages}
+				<Messages messages={verifyEmailUi.messages} />
+			{/if}
+			<div class="form-control w-full">
+				{#each verifyEmailUi.nodes as { attributes, messages }}
+					{#if isUiNodeInputAttributes(attributes)}
+						{#if attributes.name === 'csrf_token'}
+							<input
+								name={attributes.name}
+								type={attributes.type}
+								value={attributes.value}
+								required={attributes.required}
+								disabled={attributes.disabled}
+							/>
+						{/if}
+						{#if attributes.name === 'email'}
+							<fieldset>
+								<label class="label flex-col items-start">
+									<span class="label-text py-1">Email</span>
+									<input
+										type={attributes.type}
+										name={attributes.name}
+										required={attributes.required}
+										disabled={attributes.disabled}
+										value={attributes.value}
+										class="input input-bordered w-full mb-2"
+									/>
+								</label>
+								{#if messages}
+									<Messages {messages} />
+								{/if}
+							</fieldset>
+						{/if}
+						{#if attributes.type === 'submit'}
+							<button
+								type={attributes.type}
+								name="auth_method"
+								value={attributes.value}
+								disabled={attributes.disabled}
+								class="btn btn-block btn-primary mt-6 mb-2">Log In</button
+							>
+							{#if messages}
+								<Messages {messages} />
+							{/if}
+						{/if}
+					{/if}
+				{/each}
+			</div>
+		</form>
+	</label>
+</label>
+{/if}
+
