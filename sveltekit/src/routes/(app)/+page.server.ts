@@ -5,7 +5,9 @@ import type {
 	LoginFlow,
 	RegistrationFlow,
 	UpdateLoginFlowBody,
-	UpdateRegistrationFlowBody
+	UpdateRegistrationFlowBody,
+	UpdateVerificationFlowBody,
+	VerificationFlow
 } from '@ory/kratos-client';
 import { redirect, fail } from '@sveltejs/kit';
 import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
@@ -93,7 +95,7 @@ export const actions = {
 				({ headers }) => {
 					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'signup_csrf_token' });
 					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'login_csrf_token' });
-					SetCookies(headers['set-cookie'], { cookies });
+					SetCookies(headers['set-cookie'], { cookies }); // Sets a csrf_token
 					if (headers['location']) {
 						throw redirect(302, headers['location']);
 					} else {
@@ -194,7 +196,7 @@ export const actions = {
 					// TODO: Need to set color of default avatar background using ory admin api
 					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'signup_csrf_token' });
 					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'login_csrf_token' });
-					SetCookies(headers['set-cookie'], { cookies });
+					SetCookies(headers['set-cookie'], { cookies }); // Sets a csrf_token
 					if (headers['location']) {
 						throw redirect(302, headers['location']);
 					} else {
@@ -253,6 +255,86 @@ export const actions = {
 					throw error(500, 'Error logging out');
 				}
 			);
+	},
+	verification: async ({ url, request, cookies }) => {
+		const flowId = url.searchParams.get('flow') ?? undefined;
+		if (typeof flowId !== 'string') {
+			const err = new Error('No flow id');
+			console.log(err);
+			throw error(400, 'No flow id');
+		}
+
+		const values = await request.formData();
+		const authMethod = values.get('auth_method') ?? undefined;
+
+		if (typeof authMethod !== 'string') {
+			const err = new Error('No method attribute in post body');
+			console.log(err);
+			throw error(400, 'No method attribute in post body');
+		}
+
+		let flowBody: UpdateVerificationFlowBody;
+		if (authMethod === 'link') {
+			const email = values.get('email') ?? undefined;
+			const csrf_token = values.get('csrf_token') ?? undefined;
+			if (typeof email === 'string' && typeof csrf_token === 'string') {
+				flowBody = {
+					csrf_token,
+					email,
+					method: authMethod
+				};
+			} else {
+				throw error(400, 'Incorrect form data');
+			}
+		} else {
+			const err = new Error('Verification method not supported');
+			console.log(err);
+			throw error(400, 'Verification method not supported');
+		}
+
+		const cookieHeader = request.headers.get('cookie') ?? undefined;
+		const verificationCookie = GetCookieByPrefix(cookieHeader, {
+			prefix: 'verification_csrf_token',
+			remove: 'verification_'
+		});
+		const sessionCookie = cookies.get('ory_kratos_session');
+		const cookie =
+			typeof verificationCookie === 'string' && typeof sessionCookie === 'string'
+				? verificationCookie + sessionCookie
+				: undefined;
+
+		return await auth
+			.updateVerificationFlow({
+				flow: flowId,
+				updateVerificationFlowBody: flowBody,
+				cookie: cookie
+			})
+			.then(
+				({ data: { ui } }) => {
+					ui.action = modifyAction('?/verification&', ui.action);
+					return {
+						verifyEmailUi: ui
+					};
+				},
+				({ response: { data } }) => {
+					if (isVerificationFlow(data)) {
+						data.ui.action = modifyAction('?/verification&', data.ui.action);
+						return fail(400, { verifyEmailUi: data.ui });
+					} else if (data.use_flow_id) {
+						throw redirect(303, `?/verification&flow=${data.use_flow_id}`);
+					} else if (data.error.id === 'security_csrf_violation') {
+						const err = new Error('Error with updateVerificationFlow');
+						console.log(err);
+						console.log(data);
+						DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'verification_csrf_token' });
+						throw redirect(303, '?/verification');
+					}
+					const err = new Error('Error with updateVerificationFlow');
+					console.log(err);
+					console.log(data);
+					throw error(500, 'Error verifying email');
+				}
+			);
 	}
 } satisfies Actions;
 
@@ -262,4 +344,8 @@ const isLoginFlow = (response: object): response is LoginFlow => {
 
 const isRegistrationFlow = (response: object): response is RegistrationFlow => {
 	return (response as RegistrationFlow).ui !== undefined;
+};
+
+const isVerificationFlow = (response: object): response is VerificationFlow => {
+	return (response as VerificationFlow).ui !== undefined;
 };

@@ -1,3 +1,5 @@
+import type { VerificationFlow } from "@ory/kratos-client";
+
 const allThemes = ['light', 'dark'] as const;
 export type Theme = (typeof allThemes)[number];
 
@@ -13,3 +15,7 @@ export interface User {
 	email: string;
 	verified: boolean;
 }
+
+export const isVerificationFlow = (response: object): response is VerificationFlow => {
+	return (response as VerificationFlow).ui !== undefined;
+};

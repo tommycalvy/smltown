@@ -2,6 +2,8 @@ import type { LayoutServerLoad } from './$types';
 import { auth, modifyAction } from '$lib/server/auth';
 import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
 import { error, redirect } from '@sveltejs/kit';
+import { isVerificationFlow } from '$lib/types';
+import type { UiContainer } from '@ory/kratos-client';
 
 export const load = (async ({ locals, cookies, request, url }) => {
 	console.log('(app)/+layout.server.ts load function ran');
@@ -9,10 +11,75 @@ export const load = (async ({ locals, cookies, request, url }) => {
 	const cookieHeader = request.headers.get('cookie') ?? undefined;
 	const decodedCookies = cookieHeader ? decodeURIComponent(cookieHeader) : undefined;
 
-	
+	const flowId = url.searchParams.get('flow') ?? undefined;
+
 	if (locals.user) {
-		if (locals.user.verified) {
-			return auth.createBrowserLogoutFlow({ cookie: decodedCookies }).then(
+		const verifyEmailMethod = url.searchParams.get('/verification') ?? undefined;
+		
+		if (flowId && typeof verifyEmailMethod === 'string' && request.method === 'GET') {
+			const verificationCookie = GetCookieByPrefix(cookieHeader, {
+				prefix: 'verification_csrf_token',
+				remove: 'verification_'
+			});
+			const sessionCookie = cookies.get('ory_kratos_session');
+			const cookie =
+				typeof verificationCookie === 'string' && typeof sessionCookie === 'string'
+					? verificationCookie + sessionCookie
+					: undefined;
+			const createLogoutFlow = auth.createBrowserLogoutFlow({ cookie: decodedCookies });
+			const getVerificationFlow = auth.getVerificationFlow({ id: flowId, cookie: cookie });
+			return await Promise.allSettled([createLogoutFlow, getVerificationFlow]).then(
+				([createLogoutFlowResult, getVerificationFlowResult]) => {
+					let ui: UiContainer;
+					let logoutToken: string;
+					if (getVerificationFlowResult.status === 'fulfilled') {
+						ui = getVerificationFlowResult.value.data.ui;
+						DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'verification_csrf_token' });
+					} else {
+						const { response: { data } } = getVerificationFlowResult.reason;
+						if (isVerificationFlow(data)) {
+							data.ui.action = modifyAction('?/verification&', data.ui.action);
+							ui = data.ui;
+						} else if (data.use_flow_id) {
+							throw redirect(303, `?/verification&flow=${data.use_flow_id}`);
+						} else if (data.error.id === 'security_csrf_violation') {
+							const err = new Error('Error with getVerificationFlow');
+							console.log(err);
+							console.log(data);
+							DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'verification_csrf_token' });
+							throw redirect(303, '?/verification');
+						}
+						const err = 'Error with createLogoutFlow or getVerificationFlow';
+						console.log(err);
+						console.log(data);
+						throw error(500, 'Internal Error');
+					}
+
+					if (createLogoutFlowResult.status === 'fulfilled') {
+						logoutToken = createLogoutFlowResult.value.data.logout_token;
+					} else {
+						const err = 'Error with createLogoutFlow';
+						console.log(err);
+						console.log(createLogoutFlowResult);
+						throw error(500, 'Internal Error');
+					}
+					return {
+						theme: locals.theme,
+						user: locals.user,
+						loginUi: undefined,
+						signupUi: undefined,
+						openLoginModal: false,
+						openSignupModal: false,
+						logoutToken: logoutToken,
+						verifyEmailUi: ui,
+						openVerifyEmailModal: true
+					};
+				}
+			);
+		}
+
+		if (locals.user.verified || (request.method === 'POST' && typeof verifyEmailMethod === 'string')) {
+			return await auth.createBrowserLogoutFlow({ cookie: decodedCookies }).then(
 				({ data: { logout_token } }) => {
 					return {
 						theme: locals.theme,
@@ -23,7 +90,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openSignupModal: false,
 						logoutToken: logout_token,
 						verifyEmailUi: undefined,
-						openVerifyEmailModal: false,
+						openVerifyEmailModal: false
 					};
 				},
 				({ request: { data } }) => {
@@ -34,18 +101,22 @@ export const load = (async ({ locals, cookies, request, url }) => {
 				}
 			);
 		}
+
 		const createLogoutFlow = auth.createBrowserLogoutFlow({ cookie: decodedCookies });
 		const createVerificationFlow = auth.createBrowserVerificationFlow();
-		const verifyEmailMethod = url.searchParams.get('/verification') ?? undefined;
-		return Promise.all([createLogoutFlow, createVerificationFlow]).then(
+		
+		return await Promise.all([createLogoutFlow, createVerificationFlow]).then(
 			([
 				{
 					data: { logout_token }
 				},
 				{
+					headers,
 					data: { ui }
 				}
 			]) => {
+				SetCookies(headers['set-cookie'], { cookies, prefix: 'verification_' });
+				ui.action = modifyAction('?/verification&', ui.action);
 				if (typeof verifyEmailMethod === 'string') {
 					return {
 						theme: locals.theme,
@@ -56,7 +127,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openSignupModal: false,
 						logoutToken: logout_token,
 						verifyEmailUi: ui,
-						openVerifyEmailModal: true,
+						openVerifyEmailModal: true
 					};
 				}
 				return {
@@ -68,17 +139,20 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					openSignupModal: false,
 					logoutToken: logout_token,
 					verifyEmailUi: ui,
-					openVerifyEmailModal: false,
+					openVerifyEmailModal: false
 				};
-
+			},
+			({ response: { data } }) => {
+				const err = 'Error with createLogoutFlow or createVerificationFLow';
+				console.log(err);
+				console.log(data);
+				throw error(500, 'Internal Error');
 			}
 		);
 	}
 
 	const loginMethod = url.searchParams.get('/login') ?? undefined;
 	const signupMethod = url.searchParams.get('/signup') ?? undefined;
-
-	const flowId = url.searchParams.get('flow') ?? undefined;
 
 	if (request.method === 'POST') {
 		if (typeof loginMethod === 'string') {
@@ -94,7 +168,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openSignupModal: false,
 						logoutToken: undefined,
 						verifyEmailUi: undefined,
-						openVerifyEmailModal: false,
+						openVerifyEmailModal: false
 					};
 				},
 				({ response: { data } }) => {
@@ -118,7 +192,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openSignupModal: true,
 						logoutToken: undefined,
 						verifyEmailUi: undefined,
-						openVerifyEmailModal: false,
+						openVerifyEmailModal: false
 					};
 				},
 				({ response: { data } }) => {
@@ -157,7 +231,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openSignupModal: false,
 						logoutToken: undefined,
 						verifyEmailUi: undefined,
-						openVerifyEmailModal: false,
+						openVerifyEmailModal: false
 					};
 				},
 				({ response: { data, status } }) => {
@@ -200,7 +274,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 						openSignupModal: true,
 						logoutToken: undefined,
 						verifyEmailUi: undefined,
-						openVerifyEmailModal: false,
+						openVerifyEmailModal: false
 					};
 				},
 				({ response: { data, status } }) => {
@@ -240,7 +314,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					openSignupModal: false,
 					logoutToken: undefined,
 					verifyEmailUi: undefined,
-					openVerifyEmailModal: false,
+					openVerifyEmailModal: false
 				};
 			}
 			if (typeof signupMethod === 'string') {
@@ -252,7 +326,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					openSignupModal: true,
 					logoutToken: undefined,
 					verifyEmailUi: undefined,
-					openVerifyEmailModal: false,
+					openVerifyEmailModal: false
 				};
 			}
 			return {
@@ -263,7 +337,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 				openSignupModal: false,
 				logoutToken: undefined,
 				verifyEmailUi: undefined,
-				openVerifyEmailModal: false,
+				openVerifyEmailModal: false
 			};
 		},
 		({ response }) => {

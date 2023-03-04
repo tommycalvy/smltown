@@ -17,7 +17,7 @@
 	export let logoutToken: string | undefined;
 	export let theme: Theme;
 	export let verifyEmailUi: UiContainer | undefined;
-	export let openVerifyEmailModal: false;
+	export let openVerifyEmailModal: boolean = false;
 
 	let isDropdownOpen = false; // default state (dropdown close)
 
@@ -60,7 +60,7 @@
 					Profile
 				</a>
 			</li>
-			{#if verifyEmailUi}
+			{#if verifyEmailUi && !user.verified}
 				<li>
 					<label for="modal-verify-email" class="w-full h-full text-start px-4 py-2 flex justify-between">
 						Verify Email
@@ -119,11 +119,11 @@
 				>
 			</label>
 		</div>
-		<div class="flex justify-center flex-col gap-2 py-4">
-			<h1 class=" text-2xl font-bold">
+		<div class="flex justify-center flex-col items-center gap-2 py-4">
+			<h1 class=" text-2xl font-bold pb-4">
 				Verify your <span class="font-logo text-3xl text-sky-500">SMLTOWN</span> account
 			</h1>
-            <p>
+            <p class="text-center pb-1">
                 Didn't receive your verification email? Please enter the email address associated with your
                 SMLTOWN account, and we'll send you another email containing a verification link.
             </p>
@@ -153,7 +153,7 @@
 										name={attributes.name}
 										required={attributes.required}
 										disabled={attributes.disabled}
-										value={attributes.value}
+										value={attributes.value ? attributes.value : ''}
 										class="input input-bordered w-full mb-2"
 									/>
 								</label>
@@ -168,7 +168,7 @@
 								name="auth_method"
 								value={attributes.value}
 								disabled={attributes.disabled}
-								class="btn btn-block btn-primary mt-6 mb-2">Log In</button
+								class="btn btn-block btn-primary mt-6 mb-2">Send Verification Email</button
 							>
 							{#if messages}
 								<Messages {messages} />

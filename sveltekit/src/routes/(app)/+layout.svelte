@@ -44,13 +44,39 @@
 					{/if}
 				{/if}
 				{#if data.loginUi}
-					<LoginButton ui={data.loginUi} open={data.openLoginModal}/>
+					<LoginButton ui={data.loginUi} open={data.openLoginModal} />
 				{/if}
 				{#if data.signupUi}
-					<SignupButton ui={data.signupUi} open={data.openSignupModal}/>
+					<SignupButton ui={data.signupUi} open={data.openSignupModal} />
 				{/if}
 			{/if}
-			<ProfileButton theme={data.theme} user={data.user} logoutToken={data.logoutToken} verifyEmailUi={data.verifyEmailUi} openVerifyEmailModal={data.openVerifyEmailModal}/>
+			{#if $page.form}
+				{#if $page.form.verifyEmailUi}
+					<ProfileButton
+						theme={data.theme}
+						user={data.user}
+						logoutToken={data.logoutToken}
+						verifyEmailUi={$page.form.verifyEmailUi}
+						openVerifyEmailModal={true}
+					/>
+				{:else}
+					<ProfileButton
+						theme={data.theme}
+						user={data.user}
+						logoutToken={data.logoutToken}
+						verifyEmailUi={data.verifyEmailUi}
+						openVerifyEmailModal={data.openVerifyEmailModal}
+					/>
+				{/if}
+			{:else}
+				<ProfileButton
+					theme={data.theme}
+					user={data.user}
+					logoutToken={data.logoutToken}
+					verifyEmailUi={data.verifyEmailUi}
+					openVerifyEmailModal={data.openVerifyEmailModal}
+				/>
+			{/if}
 		</div>
 	</nav>
 	<div class="flex gap-4">
@@ -63,11 +89,11 @@
 				</ul>
 			</div>
 			<main class="w-full -ml-44">
-				<slot/>
+				<slot />
 			</main>
 		{:else}
 			<main class="w-full">
-				<slot/>
+				<slot />
 			</main>
 		{/if}
 	</div>
