@@ -12,7 +12,7 @@ export const handle = (async ({ event, resolve }) => {
 				username: identity.traits.username,
 				email: identity.traits.email,
 				verified: identity.verifiable_addresses?.[0].verified ?? false,
-				admin: identity.metadata_admin?.admin ?? false,
+				admin: identity.metadata_public?.admin ?? false,
 			};
 		},
 		({ response }) => {

@@ -40,13 +40,7 @@ services:
             - kratos-migrate
         image: oryd/kratos:v0.11.1
         restart: unless-stopped
-        entrypoint: ["/bin/sh","-c"]
-        command: 
-            - |
-              kratos import identities /etc/config/kratos/admin.json
-              kratos serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
-              
-              
+        command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
         volumes:
             -
                 type: bind
@@ -57,6 +51,25 @@ services:
         ports:
             - 4433:4433
             - 4434:4434
+        networks:
+            - ory
+    kratos-import:
+        depends_on:
+            - kratos
+        image: oryd/kratos:v0.11.1
+        restart: "no"
+        entrypoint: ["/bin/sh","-c"]
+        command: 
+            - |
+              sleep 30
+              kratos import identities /etc/config/kratos/admin.json
+        volumes:
+            -
+                type: bind
+                source: ./kratos
+                target: /etc/config/kratos
+        env_file:
+            - ../.env
         networks:
             - ory
 networks:
