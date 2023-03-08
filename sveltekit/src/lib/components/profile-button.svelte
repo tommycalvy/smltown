@@ -55,6 +55,9 @@
 		style:visibility={isDropdownOpen ? 'visible' : 'hidden'}
 	>
 		{#if user}
+			<div class="flex justify-center py-2">
+				<h1 class=" cursor-default">{user.username}</h1>
+			</div>
 			<li>
 				<a href="/profile" class="justify-between">
 					Profile

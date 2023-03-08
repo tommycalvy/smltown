@@ -6,8 +6,6 @@ import { isVerificationFlow } from '$lib/types';
 import type { UiContainer } from '@ory/kratos-client';
 
 export const load = (async ({ locals, cookies, request, url }) => {
-	console.log('(app)/+layout.server.ts load function ran');
-
 	const cookieHeader = request.headers.get('cookie') ?? undefined;
 	const decodedCookies = cookieHeader ? decodeURIComponent(cookieHeader) : undefined;
 

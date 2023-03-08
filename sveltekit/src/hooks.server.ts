@@ -12,6 +12,7 @@ export const handle = (async ({ event, resolve }) => {
 				username: identity.traits.username,
 				email: identity.traits.email,
 				verified: identity.verifiable_addresses?.[0].verified ?? false,
+				admin: identity.metadata_admin?.admin ?? false,
 			};
 		},
 		({ response }) => {
@@ -25,7 +26,6 @@ export const handle = (async ({ event, resolve }) => {
 			}
 		});
 	} else {
-		console.log('User has no cookie and is therefore not authenticated');
 		event.locals.user = undefined;
 	}
 

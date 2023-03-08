@@ -24,7 +24,7 @@ services:
     kratos-migrate:
         depends_on:
             - postgres
-        image: oryd/kratos:v0.10.1
+        image: oryd/kratos:v0.11.1
         restart: on-failure
         command:
             migrate -c /etc/config/kratos/kratos.yml sql -e --yes
@@ -38,9 +38,15 @@ services:
     kratos:
         depends_on:
             - kratos-migrate
-        image: oryd/kratos:v0.10.1
+        image: oryd/kratos:v0.11.1
         restart: unless-stopped
-        command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
+        entrypoint: ["/bin/sh","-c"]
+        command: 
+            - |
+              kratos import identities /etc/config/kratos/admin.json
+              kratos serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
+              
+              
         volumes:
             -
                 type: bind

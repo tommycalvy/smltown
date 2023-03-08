@@ -14,6 +14,7 @@ export interface User {
 	username: string;
 	email: string;
 	verified: boolean;
+	admin: boolean;
 }
 
 export const isVerificationFlow = (response: object): response is VerificationFlow => {
