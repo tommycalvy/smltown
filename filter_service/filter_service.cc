@@ -12,6 +12,13 @@
 #include <grpcpp/security/server_credentials.h>
 #include "protos/filter_service.grpc.pb.h"
 
+#include <aws/core/Aws.h>
+#include <aws/dynamodb/DynamoDBClient.h>
+#include <aws/dynamodb/model/AttributeDefinition.h>
+#include <aws/dynamodb/model/GetItemRequest.h>
+#include <iostream>
+
+
 using namespace improbable::phtree;
 
 using grpc::Server;

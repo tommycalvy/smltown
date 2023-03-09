@@ -1,7 +1,19 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_proto_grpc//cpp:defs.bzl", "cpp_grpc_library")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 
 package(default_visibility = ["//visibility:public"])
+
+cmake(
+    name = "aws-sdk-cpp",
+    cache_entries = {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_ONLY": "dynamodb",
+        "BUILD_SHARED_LIBS": "ON",
+    },
+    install = true,
+    lib_source = "@aws-sdk-cpp//:all_srcs",
+)
 
 cpp_grpc_library(
     name = "filter_service_proto",
@@ -14,6 +26,8 @@ cc_binary(
     linkstatic = True,
     deps = [
         "//filter_service/phtree",
-        ":filter_service_proto"
+        ":filter_service_proto",
+        ":aws-sdk-cpp"
     ],
 )
+
