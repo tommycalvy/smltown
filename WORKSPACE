@@ -36,6 +36,26 @@ load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 grpc_extra_deps()
 
 http_archive(
+    name = "aws-c-common",
+    build_file = "//third_party:aws-c-common.BUILD",
+    sha256 = "5a3d4bf1bdacf13964885d4f40113d379d8eaad5286e81ec5d6c64f9313cf82d",
+    strip_prefix = "aws-c-common-0.8.14",
+    urls = [
+        "https://github.com/awslabs/aws-c-common/archive/refs/tags/v0.8.14.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "aws-c-event-stream",
+    build_file = "//third_party:aws-c-event-stream.BUILD",
+    sha256 = "a1384c1f63c82a0a0bc64c3e1bc2a672c75614940b71418d96de9e057e31aafd",
+    strip_prefix = "aws-c-event-stream-0.2.20",
+    urls = [
+        "https://github.com/awslabs/aws-c-event-stream/archive/refs/tags/v0.2.20.tar.gz",
+    ],
+)
+
+http_archive(
     name = "aws-sdk-cpp",
     build_file = "//third_party:aws-sdk-cpp.BUILD",
     sha256 = "94f46fd71d4ab679628ef7c4cfcdffe0489dd14f3fbbf913f67138f7e88ff530",
