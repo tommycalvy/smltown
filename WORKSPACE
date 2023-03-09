@@ -35,6 +35,33 @@ load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 
 grpc_extra_deps()
 
+
+
+http_archive(
+    name = "aws-c-event-stream",
+    build_file = "//third_party:aws-c-event-stream.BUILD",
+    sha256 = "a1384c1f63c82a0a0bc64c3e1bc2a672c75614940b71418d96de9e057e31aafd",
+    strip_prefix = "aws-c-event-stream-0.2.20",
+    urls = [
+        "https://github.com/awslabs/aws-c-event-stream/archive/refs/tags/v0.2.20.tar.gz",
+    ],
+)
+
+
+
+
+
+
+http_archive(
+    name = "aws-c-cal",
+    build_file = "//third_party:aws-c-cal.BUILD",
+    sha256 = "525a84732cdd549842575502d59e10d2a10b23aa556a2318326e344be76bc6c8",
+    strip_prefix = "aws-c-cal-0.5.21",
+    urls = [
+        "https://github.com/awslabs/aws-c-cal/archive/refs/tags/v0.5.21.tar.gz",
+    ],
+)
+
 http_archive(
     name = "aws-c-common",
     build_file = "//third_party:aws-c-common.BUILD",
@@ -46,12 +73,22 @@ http_archive(
 )
 
 http_archive(
-    name = "aws-c-event-stream",
-    build_file = "//third_party:aws-c-event-stream.BUILD",
-    sha256 = "a1384c1f63c82a0a0bc64c3e1bc2a672c75614940b71418d96de9e057e31aafd",
-    strip_prefix = "aws-c-event-stream-0.2.20",
+    name = "aws-c-io",
+    build_file = "//third_party:aws-c-io.BUILD",
+    sha256 = "7a6a701fd9ae58d1a4d939e9c3cf8f86c5ebbfc05fd08a9891ddaecd55e4a716",
+    strip_prefix = "aws-c-io-0.13.18",
     urls = [
-        "https://github.com/awslabs/aws-c-event-stream/archive/refs/tags/v0.2.20.tar.gz",
+        "https://github.com/awslabs/aws-c-io/archive/refs/tags/v0.13.18.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "aws-crt-cpp",
+    build_file = "//third_party:aws-crt-cpp.BUILD",
+    sha256 = "24a6be93d663d0cd2c5811865d488d30154f2738bea5b7836a5a8c1f01cb8457",
+    strip_prefix = "aws-crt-cpp-0.19.8",
+    urls = [
+        "https://github.com/awslabs/aws-crt-cpp/archive/refs/tags/v0.19.8.tar.gz",
     ],
 )
 

@@ -54,7 +54,9 @@ cc_library(
             "src/aws-cpp-sdk-core/source/platform/linux-shared/*.cpp",      # PLATFORM_LINUX-SHARED_SOURCE
         ]),
     }),
-    hdrs = glob([
+    hdrs = [
+        "src/aws-cpp-sdk-core/include/aws/core/SDKConfig.h",
+    ] + glob([
         "src/aws-cpp-sdk-core/include/aws/core/*.h",                                    # AWS_HEADERS
         "src/aws-cpp-sdk-core/include/aws/core/auth/*.h",                               # AUTH_HEADERS
         "src/aws-cpp-sdk-core/include/aws/core/auth/bearer-token-provider/*.h",         # AUTH_BEARER-TOKEN-PROVIDER_SOURCE_HEADERS
@@ -99,7 +101,7 @@ cc_library(
         "AWS_SDK_VERSION_MINOR=11",
         "AWS_SDK_VERSION_PATCH=33",
         "ENABLE_OPENSSL_ENCRYPTION=1",
-        "ENABLE_CURL_CLIENT=1",
+        # "ENABLE_CURL_CLIENT=1",
         "OPENSSL_IS_BORINGSSL=1",
     ] + select({
         "@bazel_tools//src/conditions:windows": [
@@ -113,19 +115,29 @@ cc_library(
     includes = [
         "src/aws-cpp-sdk-core/include",
     ],
-    linkopts = select({
-        "@bazel_tools//src/conditions:windows": [
-            "-DEFAULTLIB:userenv.lib",
-            "-DEFAULTLIB:version.lib",
-        ],
-        "//conditions:default": [],
-    }),
     deps = [
-        "@aws-c-event-stream",
+        "@aws-crt-cpp",
         "@boringssl//:crypto",
         "@boringssl//:ssl",
-        "@curl",
     ],
+)
+
+cc_library(
+    name="dynamodb",
+    srcs = glob([
+        "generated/src/aws-cpp-sdk-dynamodb/source/*.cpp",
+        "generated/src/aws-cpp-sdk-dynamodb/source/model/*.cpp",
+    ]),
+    hdrs = glob([
+        "generated/src/aws-cpp-sdk-dynamodb/include/aws/dynamodb/*.h",
+        "generated/src/aws-cpp-sdk-dynamodb/include/aws/dynamodb/model/*.h",
+    ]),
+    includes = [
+        "generated/src/aws-cpp-sdk-dynamodb/include",
+    ],
+    deps = [
+        ":core",
+    ]
 )
 
 cc_library(
@@ -184,7 +196,7 @@ cc_library(
 genrule(
     name = "SDKConfig_h",
     outs = [
-        "aws-cpp-sdk-core/include/aws/core/SDKConfig.h",
+        "src/aws-cpp-sdk-core/include/aws/core/SDKConfig.h",
     ],
     cmd = "\n".join([
         "cat <<'EOF' >$@",

@@ -10,28 +10,30 @@ exports_files(["LICENSE"])
 cc_library(
     name = "aws-c-common",
     srcs = glob([
-        "include/aws/common/*.h",
-        "include/aws/common/private/*.h",
         "source/*.c",
-    ]) + select({
-        "@bazel_tools//src/conditions:windows": glob([
-            "source/windows/*.c",
-        ]),
-        "//conditions:default": glob([
-            "source/posix/*.c",
-        ]),
-    }),
+        # "source/arch/arm/asm/*.c",
+        # "source/arch/arm/msvc/*.c",
+        # "source/arch/generic/*.c",
+        # "source/arch/intel/*.c",
+        # "source/arch/intel/asm/*.c",
+        # "source/arch/intel/msvc/*.c",
+        "source/posix/*.c",
+    ]),
     hdrs = [
-        "include/aws/common/config.h",
-    ],
-    defines = [],
+        "include/aws/common/config.h"
+    ] + glob([
+        "include/aws/common/*.h",
+        "include/aws/common/external/*.h",
+        "include/aws/common/private/*.h",
+    ]),
     includes = [
         "include",
     ],
     textual_hdrs = glob([
-        "include/**/*.inl",
+       "include/aws/common/*.inl",
+       "include/aws/common/posix/*.inl",
+       "include/aws/common/private/*.inl",
     ]),
-    deps = [],
 )
 
 genrule(
