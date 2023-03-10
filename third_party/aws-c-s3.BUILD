@@ -1,5 +1,5 @@
 # Description:
-#   AWS C EVENT STREAM
+#   AWS C S3
 
 package(default_visibility = ["//visibility:public"])
 
@@ -8,20 +8,20 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["LICENSE"])
 
 cc_library(
-    name = "aws-c-event-stream",
+    name = "aws-c-s3",
     srcs = glob([
         "source/*.c",
     ]),
     hdrs = glob([
-        "include/aws/event-stream/*.h",
-        "include/aws/event-stream/private/*.h",
+        "include/aws/s3/*.h",
+        "include/aws/s3/private/*.h",
     ]),
     includes = [
         "include",
     ],
     deps = [
-        "@aws-c-common",
         "@aws-checksums",
-        "@aws-c-io",
+        "@aws-c-http",
+        "@aws-c-auth",
     ],
 )

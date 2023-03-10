@@ -12,7 +12,6 @@ cc_library(
     srcs = glob([
         "source/*.c",
         "source/darwin/*.c",
-        "source/unix/*.c",
     ]),
     hdrs = glob([
         "include/aws/cal/*.h",

@@ -11,12 +11,12 @@ cc_library(
     name = "aws-c-io",
     srcs = glob([
         "source/*.c",
+        "source/*.h",
         "source/bsd/*.c",
         "source/darwin/*.c",
-        "source/linux/*.c",
         "source/pkcs11/v2.40/*.h",
         "source/posix/*.c",
-        "source/s2n/*.c",
+        # "source/s2n/*.c",
     ]),
     hdrs = glob([
         "include/aws/io/*.h",

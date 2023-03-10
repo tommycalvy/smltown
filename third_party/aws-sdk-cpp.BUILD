@@ -25,14 +25,12 @@ cc_library(
         "src/aws-cpp-sdk-core/source/http/*.cpp",                           # HTTP_SOURCE
         "src/aws-cpp-sdk-core/source/http/curl/*.cpp",                      # HTTP_CURL_SOURCE
         "src/aws-cpp-sdk-core/source/http/standard/*.cpp",                  # HTTP_STANDARD_SOURCE
-        "src/aws-cpp-sdk-core/source/http/windows/*.cpp",                   # HTTP_WINDOWS_SOURCE
         "src/aws-cpp-sdk-core/source/internal/*.cpp",                       # INTERNAL_SOURCE
         "src/aws-cpp-sdk-core/source/monitoring/*.cpp",                     # MONITORING_SOURCE
         "src/aws-cpp-sdk-core/source/net/*.cpp",                            # NET_SOURCE
         "src/aws-cpp-sdk-core/source/utils/*.cpp",                          # UTILS_SOURCE
         "src/aws-cpp-sdk-core/source/utils/base64/*.cpp",                   # UTILS_BASE64_SOURCE
         "src/aws-cpp-sdk-core/source/utils/crypto/*.cpp",                   # UTILS_CRYPTO_SOURCE
-        "src/aws-cpp-sdk-core/source/utils/crypto/bcrypt/*.cpp",            # UTILS_CRYPTO_BCRYPT_SOURCE
         "src/aws-cpp-sdk-core/source/utils/crypto/commoncrypto/*.cpp",      # UTILS_CRYPTO_COMMONCRYPTO_SOURCE
         "src/aws-cpp-sdk-core/source/utils/crypto/factory/*.cpp",           # UTILS_CRYPTO_FACTORY_SOURCE
         "src/aws-cpp-sdk-core/source/utils/crypto/openssl/*.cpp",           # UTILS_CRYPTO_OPENSSL_SOURCE
@@ -117,6 +115,7 @@ cc_library(
     ],
     deps = [
         "@aws-crt-cpp",
+        "@aws-c-event-stream",
         "@boringssl//:crypto",
         "@boringssl//:ssl",
     ],

@@ -9,14 +9,19 @@ exports_files(["LICENSE"])
 
 cc_library(
     name = "aws-c-common",
-    srcs = glob([
+    srcs = [
+        # "source/arch/intel/cpuid.c",
+        # "source/arch/intel/asm/cpuid.c",
+        # "source/arch/intel/msvc/cpuid.c",
+    ] + glob([
         "source/*.c",
-        # "source/arch/arm/asm/*.c",
-        # "source/arch/arm/msvc/*.c",
+        "source/arch/arm/asm/*.c",
+        "source/arch/arm/msvc/*.c",
         # "source/arch/generic/*.c",
         # "source/arch/intel/*.c",
         # "source/arch/intel/asm/*.c",
         # "source/arch/intel/msvc/*.c",
+        "source/external/*.c",
         "source/posix/*.c",
     ]),
     hdrs = [
@@ -26,6 +31,10 @@ cc_library(
         "include/aws/common/external/*.h",
         "include/aws/common/private/*.h",
     ]),
+    defines = [
+        "AWS_AFFINITY_METHOD=0",
+        # "__GNUC__=1",
+    ],
     includes = [
         "include",
     ],
