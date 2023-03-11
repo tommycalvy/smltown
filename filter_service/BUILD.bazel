@@ -11,7 +11,6 @@ cpp_grpc_library(
 cc_binary(
     name = "filter_service",
     srcs = ["filter_service.cc"],
-    linkstatic = True,
     deps = [
         "//filter_service/phtree",
         ":filter_service_proto",

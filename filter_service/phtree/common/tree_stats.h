@@ -96,11 +96,11 @@ class PhTreeStats {
     size_t size_ = 0;  // calculated size in bytes
     size_t q_total_depth_ = 0;
     std::vector<size_t> q_n_post_fix_n_ =
-        std::vector(MAX_BIT_WIDTH<SCALAR>, (size_t)0);  // filled with  x[current_depth] = nPost;
-    std::vector<size_t> infix_hist_ = std::vector(MAX_BIT_WIDTH<SCALAR>, (size_t)0);  // prefix len
+        std::vector<size_t>(MAX_BIT_WIDTH<SCALAR>, (size_t)0);  // filled with  x[current_depth] = nPost;
+    std::vector<size_t> infix_hist_ = std::vector<size_t>(MAX_BIT_WIDTH<SCALAR>, (size_t)0);  // prefix len
     std::vector<size_t> node_depth_hist_ =
-        std::vector(MAX_BIT_WIDTH<SCALAR>, (size_t)0);                     // prefix len
-    std::vector<size_t> node_size_log_hist_ = std::vector(32, (size_t)0);  // log (num_entries)
+        std::vector<size_t>(MAX_BIT_WIDTH<SCALAR>, (size_t)0);                     // prefix len
+    std::vector<size_t> node_size_log_hist_ = std::vector<size_t>(32, (size_t)0);  // log (num_entries)
 };
 
 }  // namespace improbable::phtree

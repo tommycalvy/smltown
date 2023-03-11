@@ -2,6 +2,21 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
+# Hedron's Compile Commands Extractor for Bazel
+# https://github.com/hedronvision/bazel-compile-commands-extractor
+http_archive(
+    name = "hedron_compile_commands",
+
+    # Replace the commit hash in both places (below) with the latest, rather than using the stale one here.
+    # Even better, set up Renovate and let it do the work for you (see "Suggestion: Updates" in the README).
+    sha256 = "10b5f7a36252ce0dd3396c289ba0138779adb6436c187266f6a93de505f3434f",
+    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/07c307ab34d458cf0a4187a15ce1f6a2b72c408c.tar.gz",
+    strip_prefix = "bazel-compile-commands-extractor-07c307ab34d458cf0a4187a15ce1f6a2b72c408c",
+    # When you first run this tool, it'll recommend a sha256 hash to put here with a message like: "DEBUG: Rule 'hedron_compile_commands' indicated that a canonical reproducible form can be obtained by modifying arguments sha256 = ..."
+)
+load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
+hedron_compile_commands_setup()
+
 # Rules Proto GRPC Boilerplate
 
 http_archive(
@@ -34,6 +49,23 @@ grpc_deps()
 load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 
 grpc_extra_deps()
+
+# PhTree
+
+#git_repository(
+#    name = "phtree",
+#    remote = "https://github.com/tommycalvy/phtree-cpp.git",
+#)
+
+http_archive(
+    name = "phtree",
+    sha256 = "f64baf86cefd385acd234524600e935436ff1595822aedaecaa9a211437e9985",
+    strip_prefix = "phtree-cpp-1.5.0",
+    url = "https://github.com/tzaeschke/phtree-cpp/archive/refs/tags/v1.5.0.tar.gz",
+)
+
+
+# AWS SDK CPP stuff
 
 http_archive(
     name = "boringssl",
@@ -177,3 +209,4 @@ http_archive(
         "https://github.com/aws/aws-sdk-cpp/archive/refs/tags/1.11.33.tar.gz",
     ],
 )
+

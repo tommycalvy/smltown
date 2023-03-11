@@ -8,6 +8,6 @@ cc_binary(
         "//visibility:public",
     ],
     deps = [
-        "//phtree",
+        "//filter_service/phtree",
     ],
 )

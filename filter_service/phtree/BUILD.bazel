@@ -16,6 +16,7 @@ cc_library(
     visibility = [
         "//visibility:public",
     ],
+    include_prefix = "phtree/",
     deps = [
         "//filter_service/phtree/common",
         "//filter_service/phtree/v16",
