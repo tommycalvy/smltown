@@ -1,11 +1,11 @@
-import { Theme, User } from "$lib/types";
+import { Theme, UserSession } from "$lib/types";
 
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
 			theme: Theme,
-			user: User | undefined,
+			userSession: UserSession | undefined,
 		}
 		// interface PageData {}
 		// interface Platform {}

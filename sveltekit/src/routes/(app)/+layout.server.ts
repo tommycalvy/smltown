@@ -11,7 +11,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 
 	const flowId = url.searchParams.get('flow') ?? undefined;
 
-	if (locals.user) {
+	if (locals.userSession) {
 		const verifyEmailMethod = url.searchParams.get('/verification') ?? undefined;
 		
 		if (flowId && typeof verifyEmailMethod === 'string' && request.method === 'GET') {
@@ -63,7 +63,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					}
 					return {
 						theme: locals.theme,
-						user: locals.user,
+						user: locals.userSession,
 						loginUi: undefined,
 						signupUi: undefined,
 						openLoginModal: false,
@@ -76,12 +76,12 @@ export const load = (async ({ locals, cookies, request, url }) => {
 			);
 		}
 
-		if (locals.user.verified || (request.method === 'POST' && typeof verifyEmailMethod === 'string')) {
+		if (locals.userSession.verified || (request.method === 'POST' && typeof verifyEmailMethod === 'string')) {
 			return await auth.createBrowserLogoutFlow({ cookie: decodedCookies }).then(
 				({ data: { logout_token } }) => {
 					return {
 						theme: locals.theme,
-						user: locals.user,
+						user: locals.userSession,
 						loginUi: undefined,
 						signupUi: undefined,
 						openLoginModal: false,
@@ -118,7 +118,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 				if (typeof verifyEmailMethod === 'string') {
 					return {
 						theme: locals.theme,
-						user: locals.user,
+						user: locals.userSession,
 						loginUi: undefined,
 						signupUi: undefined,
 						openLoginModal: false,
@@ -130,7 +130,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 				}
 				return {
 					theme: locals.theme,
-					user: locals.user,
+					user: locals.userSession,
 					loginUi: undefined,
 					signupUi: undefined,
 					openLoginModal: false,

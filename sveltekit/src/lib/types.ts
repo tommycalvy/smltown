@@ -9,11 +9,17 @@ export function isTheme(value: string): value is Theme {
 
 export type WithTarget<Event, Target> = Event & { currentTarget: Target };
 
-export interface User {
+export interface UserSession {
 	id: string;
 	username: string;
 	email: string;
 	verified: boolean;
+	admin: boolean;
+}
+
+export interface User {
+	username: string;
+	email: string;
 	admin: boolean;
 }
 

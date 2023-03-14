@@ -7,9 +7,7 @@ import (
 type User struct {
 	Username 			string 	`json:"Username,omitempty"`
 	Email 				string	`json:"Email,omitempty"`
-	Fullname 			string 	`json:"Fullname,omitempty"`
-	Dateofbirth 		string 	`json:"Dateofbirth,omitempty"`
-	Gender 				string 	`json:"Gender,omitempty"`
+	Admin				bool	`json:"Admin,omitempty"`
 }
 
 type Repository interface {

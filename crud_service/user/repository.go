@@ -24,7 +24,7 @@ type repo struct {
 	TableName 		string
 }
 
-func NewProfileRepo(tableName string) Repository {
+func NewUserRepo(tableName string) Repository {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		// CHANGE THIS TO us-east-1 TO USE AWS proper
 		config.WithRegion("localhost"),
@@ -50,18 +50,14 @@ func NewProfileRepo(tableName string) Repository {
 func (r *repo) CreateUser(ctx context.Context, u User) error {
 	log.Printf("Username: %v", u.Username)
 	log.Printf("Email: %v", u.Email)
-	log.Printf("Fullname: %v", u.Fullname)
-	log.Printf("Dateofbirth: %v", u.Dateofbirth)
-	log.Printf("Gender: %v", u.Gender)
+	log.Printf("Admin: %v", u.Admin)
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String(r.TableName),
 		Item: map[string]types.AttributeValue {
 			"ID": 			&types.AttributeValueMemberS{Value: "user|" + u.Username},
 			"Metadata":		&types.AttributeValueMemberS{Value: "user|" + u.Username},
 			"Email":		&types.AttributeValueMemberS{Value: u.Email},
-			"Fullname": 	&types.AttributeValueMemberS{Value: u.Fullname},
-			"Dateofbirth": 	&types.AttributeValueMemberN{Value: u.Dateofbirth},
-			"Gender": 		&types.AttributeValueMemberN{Value: u.Gender},
+			"Admin": 		&types.AttributeValueMemberBOOL{Value: u.Admin},
 		},
 	}
 	_, err := r.Dynamo.PutItem(ctx, input)

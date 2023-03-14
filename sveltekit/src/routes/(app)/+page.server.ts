@@ -241,7 +241,7 @@ export const actions = {
 				({ headers }) => {
 					cookies.delete('ory_kratos_session');
 					DeleteCookiesByPrefix(cookieHeader, { cookies, prefix: 'csrf_token' });
-					locals.user = undefined;
+					locals.userSession = undefined;
 					if (headers['location']) {
 						throw redirect(302, headers['location']);
 					} else {

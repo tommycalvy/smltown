@@ -3,10 +3,10 @@ import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ locals }) => {
 
-    if (locals.user) {
-        if (locals.user.admin) {
+    if (locals.userSession) {
+        if (locals.userSession.admin) {
             return {
-                adminName: locals.user.username
+                adminName: locals.userSession.username
             };
         }
     }

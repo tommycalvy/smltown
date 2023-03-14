@@ -7,7 +7,7 @@ export const handle = (async ({ event, resolve }) => {
 	if (cookieEncoded) {
 		const cookie = decodeURIComponent(cookieEncoded);
 		await auth.toSession({ cookie }).then(({ data: { identity }}) => {
-			event.locals.user = {
+			event.locals.userSession = {
 				id: identity.id,
 				username: identity.traits.username,
 				email: identity.traits.email,
@@ -16,7 +16,7 @@ export const handle = (async ({ event, resolve }) => {
 			};
 		},
 		({ response }) => {
-			event.locals.user = undefined;
+			event.locals.userSession = undefined;
 			if (response.status === 401) {
 				console.log('User has cookies but is not authenticated');
 			} else {
@@ -26,7 +26,7 @@ export const handle = (async ({ event, resolve }) => {
 			}
 		});
 	} else {
-		event.locals.user = undefined;
+		event.locals.userSession = undefined;
 	}
 
 	const theme = event.cookies.get('theme');

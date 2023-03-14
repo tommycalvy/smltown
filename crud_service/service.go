@@ -25,10 +25,9 @@ type service struct {
 	profiles 			profile.Repository
 }
 
-func NewService(users user.Repository, profiles profile.Repository) Service {
+func NewService(users user.Repository) Service {
 	return &service {
 		users: users,
-		profiles: profiles,
 	}
 }
 func (s *service) CreateUser(ctx context.Context, u user.User) error {
