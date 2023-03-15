@@ -54,7 +54,7 @@
 				{#if $page.form.verifyEmailUi}
 					<ProfileButton
 						theme={data.theme}
-						user={data.user}
+						userSession={data.userSession}
 						logoutToken={data.logoutToken}
 						verifyEmailUi={$page.form.verifyEmailUi}
 						openVerifyEmailModal={true}
@@ -62,7 +62,7 @@
 				{:else}
 					<ProfileButton
 						theme={data.theme}
-						user={data.user}
+						userSession={data.userSession}
 						logoutToken={data.logoutToken}
 						verifyEmailUi={data.verifyEmailUi}
 						openVerifyEmailModal={data.openVerifyEmailModal}
@@ -71,7 +71,7 @@
 			{:else}
 				<ProfileButton
 					theme={data.theme}
-					user={data.user}
+					userSession={data.userSession}
 					logoutToken={data.logoutToken}
 					verifyEmailUi={data.verifyEmailUi}
 					openVerifyEmailModal={data.openVerifyEmailModal}

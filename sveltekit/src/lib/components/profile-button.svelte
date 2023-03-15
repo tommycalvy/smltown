@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { User } from '$lib/types';
+	import type { UserSession } from '$lib/types';
 	import ProfileIcon from '$lib/icons/profile-icon.svelte';
 	import type { Theme, WithTarget } from '$lib/types';
 	import type { UiContainer } from '@ory/kratos-client';
@@ -13,7 +13,7 @@
 		document.cookie = `theme=${theme};max-age=31536000;path="/";samesite=strict;secure`;
 	};
 
-	export let user: User | undefined;
+	export let userSession: UserSession | undefined;
 	export let logoutToken: string | undefined;
 	export let theme: Theme;
 	export let verifyEmailUi: UiContainer | undefined;
@@ -36,9 +36,9 @@
 </script>
 
 <div class="dropdown dropdown-end" on:focusout={handleDropdownFocusLost}>
-	{#if user}
+	{#if userSession}
 		<button tabindex="0" class="btn btn-ghost btn-circle avatar" on:click={handleDropdownClick}>
-			<h1 class=" text-base-content text-[1.75rem]">{user.username.charAt(0).toUpperCase()}</h1>
+			<h1 class=" text-base-content text-[1.75rem]">{userSession.username.charAt(0).toUpperCase()}</h1>
 		</button>
 	{:else}
 		<button
@@ -54,16 +54,16 @@
 		class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52"
 		style:visibility={isDropdownOpen ? 'visible' : 'hidden'}
 	>
-		{#if user}
+		{#if userSession}
 			<div class="flex justify-center py-2">
-				<h1 class=" cursor-default">{user.username}</h1>
+				<h1 class=" cursor-default">{userSession.username}</h1>
 			</div>
 			<li>
 				<a href="/profile" class="justify-between">
 					Profile
 				</a>
 			</li>
-			{#if verifyEmailUi && !user.verified}
+			{#if verifyEmailUi && !userSession.verified}
 				<li>
 					<label for="modal-verify-email" class="w-full h-full text-start px-4 py-2 flex justify-between">
 						Verify Email

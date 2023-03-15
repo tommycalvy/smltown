@@ -63,7 +63,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					}
 					return {
 						theme: locals.theme,
-						user: locals.userSession,
+						userSession: locals.userSession,
 						loginUi: undefined,
 						signupUi: undefined,
 						openLoginModal: false,
@@ -81,7 +81,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 				({ data: { logout_token } }) => {
 					return {
 						theme: locals.theme,
-						user: locals.userSession,
+						userSession: locals.userSession,
 						loginUi: undefined,
 						signupUi: undefined,
 						openLoginModal: false,
@@ -118,7 +118,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 				if (typeof verifyEmailMethod === 'string') {
 					return {
 						theme: locals.theme,
-						user: locals.userSession,
+						userSession: locals.userSession,
 						loginUi: undefined,
 						signupUi: undefined,
 						openLoginModal: false,
@@ -130,7 +130,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 				}
 				return {
 					theme: locals.theme,
-					user: locals.userSession,
+					userSession: locals.userSession,
 					loginUi: undefined,
 					signupUi: undefined,
 					openLoginModal: false,
@@ -160,6 +160,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					ui.action = modifyAction('?/signup&', ui.action);
 					return {
 						theme: locals.theme,
+						userSession: undefined,
 						loginUi: undefined,
 						signupUi: ui,
 						openLoginModal: true,
@@ -184,6 +185,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					ui.action = modifyAction('?/login&', ui.action);
 					return {
 						theme: locals.theme,
+						userSession: undefined,
 						loginUi: ui,
 						signupUi: undefined,
 						openLoginModal: false,
@@ -223,6 +225,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					signupData.ui.action = modifyAction('?/signup&', signupData.ui.action);
 					return {
 						theme: locals.theme,
+						userSession: undefined,
 						loginUi: loginData.ui,
 						signupUi: signupData.ui,
 						openLoginModal: true,
@@ -266,6 +269,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 					signupData.ui.action = modifyAction('?/signup&', signupData.ui.action);
 					return {
 						theme: locals.theme,
+						userSession: undefined,
 						loginUi: loginData.ui,
 						signupUi: signupData.ui,
 						openLoginModal: false,
@@ -306,6 +310,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 			if (typeof loginMethod === 'string') {
 				return {
 					theme: locals.theme,
+					userSession: undefined,
 					loginUi: loginData.ui,
 					signupUi: signupData.ui,
 					openLoginModal: true,
@@ -318,6 +323,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 			if (typeof signupMethod === 'string') {
 				return {
 					theme: locals.theme,
+					userSession: undefined,
 					loginUi: loginData.ui,
 					signupUi: signupData.ui,
 					openLoginModal: false,
@@ -329,6 +335,7 @@ export const load = (async ({ locals, cookies, request, url }) => {
 			}
 			return {
 				theme: locals.theme,
+				userSession: undefined,
 				loginUi: loginData.ui,
 				signupUi: signupData.ui,
 				openLoginModal: false,

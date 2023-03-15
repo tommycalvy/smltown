@@ -1,33 +1,42 @@
 <script lang="ts">
-    import type { PageServerData } from "./$types";
-    export let data: PageServerData;
+	import ProfileIcon from '$lib/icons/profile-icon.svelte';
+	import type { PageServerData } from './$types';
+	import { loginModal } from '$lib/stores/login-modal';
+
+	export let data: PageServerData;
+
+	function openModal() {
+		loginModal.update((open) => !open);
+	}
 </script>
 
-<div class="flex justify-center flex-col items-center pt-10">
-    <div class="flex flex-col justify-center prose items-center">
-        {#if data.user}
-            <h1>Hello {data.user.username}</h1>
-            <p>You are logged in!</p>
-        {:else}
-            <h1>Welcome to SMLTOWN</h1>
-            <p>Please log in or sign up!</p>
-        {/if}
-    </div>
-    <div class="card w=[156] bg-base-100 shadow-xl my-6">
-        <div class="card-body">
-          <h2 class="card-title">Create Post</h2>
+<div class="flex justify-center h-full w-full mt-1">
+	<div class="flex flex-col justify-start items-center w-[40rem]">
+        <div class="card card-compact w-full bg-base-100 ">
+            <div class="card-body">
+                <div class="flex items-center">
+                    {#if data.userSession}
+                        <a href={`/profile/${data.userSession.username}`}>
+                            <button tabindex="0" class="btn btn-ghost btn-circle avatar">
+                                <h1 class=" text-base-content text-[1.75rem]">
+                                    {data.userSession.username.charAt(0).toUpperCase()}
+                                </h1>
+                            </button>
+                        </a>
+                    {:else}
+                        <button tabindex="0" class="btn btn-ghost btn-square btn-sm avatar" on:click={openModal}>
+                            <ProfileIcon class="inline-block w-6 h-6 stroke-current" />
+                        </button>
+                    {/if}
+                    <input
+                        placeholder="What's going on?"
+                        class="input input-bordered w-full "
+                    />
+                </div>
+                <div class="card-actions justify-end">
+                    <button class="btn btn-sm btn-primary">Post</button>
+                </div>
+            </div>
         </div>
-      </div>
-    <div class="card w=[156] bg-base-100 shadow-xl">
-        <div class="card-body">
-          <h2 class="card-title">Did anyone hear a loud explosion?</h2>
-          <p>There is a bunch of police activity around the neighborhood as well.</p>
-          <div class="card-actions justify-end">
-            <button class="btn">Comments</button>
-          </div>
-        </div>
-      </div>
+	</div>
 </div>
-
-
-    

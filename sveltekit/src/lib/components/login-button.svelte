@@ -2,13 +2,17 @@
 	import type { UiContainer } from '@ory/kratos-client';
 	import Messages from '$lib/components/auth/messages.svelte';
 	import { isUiNodeInputAttributes } from '$lib/utils';
+	import { loginModal } from "$lib/stores/login-modal";
 
 	export let ui: UiContainer;
 	export let open: boolean = false;
+
+	loginModal.set(open);
+
 </script>
 
 <label for="modal-login" class="btn btn-sm">Log In</label>
-<input type="checkbox" id="modal-login" class="modal-toggle" checked={open}/>
+<input type="checkbox" id="modal-login" class="modal-toggle" bind:checked={$loginModal}/>
 <label for="modal-login" class="modal duration-0 bg-black bg-opacity-80">
 	<label class="modal-box relative duration-0" for="">
 		<div class=" modal-action absolute top-0 right-0 m-1">

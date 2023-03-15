@@ -12,11 +12,11 @@ import type {
 import { redirect, fail } from '@sveltejs/kit';
 import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
 
-export const load = (async ({ parent }) => {
-	const { user } = await parent();
+export const load = (async ({ locals }) => {
+	
 	return {
-		user: user,
-		title: user + ' - SMLTOWN'
+		userSession: locals.userSession,
+		title: 'SMLTOWN'
 	};
 }) satisfies PageServerLoad;
 
