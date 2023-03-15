@@ -55,9 +55,9 @@ func (r *repo) CreateUser(ctx context.Context, u User) error {
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String(r.TableName),
 		Item: map[string]types.AttributeValue {
-			"ID": 			&types.AttributeValueMemberS{Value: "user|" + u.Username},
-			"Metadata":		&types.AttributeValueMemberS{Value: "user|" + u.Username},
-			"Email":		&types.AttributeValueMemberS{Value: u.Email},
+			"PK": 			&types.AttributeValueMemberS{Value: "user|" + u.Username},
+			"SK":			&types.AttributeValueMemberN{Value: "1"},
+			"Metadata":		&types.AttributeValueMemberS{Value: u.Email},
 			"Admin": 		&types.AttributeValueMemberBOOL{Value: u.Admin},
 			"OryId":		&types.AttributeValueMemberS{Value: u.OryId},
 		},
