@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/go-kit/kit/transport"
@@ -32,10 +33,8 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 	// GET 		/users/v0/username/:username 			get user by username
 	// GET 		/users/v0/email/:email 					get user by email
 
-	// POST 	/profiles/v0/							adds another Profile
-	// GET 		/profiles/v0/:id/:pType 				gets a Profile from id
-	// PUT 		/profiles/v0 							updates a profile 
-	// DELETE 	/profiles/v0/:id/:pType					deletes a profile
+	// POST		/posts/v0/								creates a post
+
 	// GET 		/profiles/v0/distance/:cc/:pc/:miles	finds profiles within a certain mile radius around a lat, lon
 	
 	
@@ -57,31 +56,14 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 		encodeResponse,
 		options...,
 	))
+	r.Methods("POST").Path("/posts/v0/").Handler(httptransport.NewServer(
+		e.CreatePostEndpoint,
+		decodeCreatePostRequest,
+		encodeResponse,
+		options...,
+	))
 
-	r.Methods("POST").Path("/profiles/v0/").Handler(httptransport.NewServer(
-		e.CreateProfileEndpoint,
-		decodeCreateProfileRequest,
-		encodeResponse,
-		options...,
-	))
-	r.Methods("GET").Path("/profiles/v0/{id}/{pType}").Handler(httptransport.NewServer(
-		e.GetProfileEndpoint,
-		decodeGetProfileRequest,
-		encodeResponse,
-		options...,
-	))
-	r.Methods("PUT").Path("/profiles/v0/").Handler(httptransport.NewServer(
-		e.UpdateProfileEndpoint,
-		decodeUpdateProfileRequest,
-		encodeResponse,
-		options...,
-	))
-	r.Methods("DELETE").Path("/profiles/v0/{id}/{pType}").Handler(httptransport.NewServer(
-		e.DeleteProfileEndpoint,
-		decodeDeleteProfileRequest,
-		encodeResponse,
-		options...,
-	))
+	
 	/*
 	r.Methods("GET").Path("/profiles/v0/distance/{cc}/{pc}/{miles}").Handler(httptransport.NewServer(
 		e.SearchProfilesByDistanceEndpoint,
@@ -97,9 +79,13 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 
 func decodeCreateUserRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
 	var req createUserRequest
+	fmt.Println("r.Body")
+	fmt.Println(r.Body)
 	if e := json.NewDecoder(r.Body).Decode(&req); e != nil {
 		return nil, e
 	}
+	fmt.Println("req.User")
+	fmt.Println(req.User)
 	return req, nil
 }
 
@@ -121,47 +107,14 @@ func decodeGetUserByEmailRequest(_ context.Context, r *http.Request) (request in
 	return getUserByEmailRequest{Email: email}, nil
 }
 
-func decodeCreateProfileRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
-	var req createProfileRequest
+func decodeCreatePostRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
+	var req createPostRequest
 	if e := json.NewDecoder(r.Body).Decode(&req); e != nil {
 		return nil, e
 	}
 	return req, nil
 }
 
-func decodeGetProfileRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
-	vars := mux.Vars(r)
-	id, ok := vars["id"]
-	if !ok {
-		return nil, ErrBadRouting
-	}
-	pType, ok := vars["pType"]
-	if !ok {
-		return nil, ErrBadRouting
-	}
-	return getProfileRequest{ID: id, ProfileType: pType}, nil
-}
-
-func decodeUpdateProfileRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
-	var req updateProfileRequest
-	if e := json.NewDecoder(r.Body).Decode(&req); e != nil {
-		return nil, e
-	}
-	return req, nil
-}
-
-func decodeDeleteProfileRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
-	vars := mux.Vars(r)
-	id, ok := vars["id"]
-	if !ok {
-		return nil, ErrBadRouting
-	}
-	pType, ok := vars["pType"]
-	if !ok {
-		return nil, ErrBadRouting
-	}
-	return deleteProfileRequest{ID: id, ProfileType: pType}, nil
-}
 
 /*
 func decodeSearchProfilesByDistanceRequest(_ context.Context, r *http.Request) (request interface{}, err error) {

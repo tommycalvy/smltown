@@ -13,7 +13,7 @@ export const load = (async () => {
 }) satisfies PageServerLoad;
 
 export const actions = {
-	createUser: async ({ locals, request }) => {
+	createUser: async ({ locals, request, fetch }) => {
 		if (!locals.userSession) {
 			throw error(400, 'Unauthorized');
 		}
@@ -27,7 +27,7 @@ export const actions = {
 		const admin = values.get('admin') === 'true' ? true : false;
 
 		if (typeof username !== 'string' || typeof password !== 'string' || typeof email !== 'string') {
-			return fail(400, { error: 'Error: username, password, or email missing'});
+			return fail(400, { createUser: 'Error: username, password, or email missing'});
 		}
 
 		return await identity.createIdentity({
@@ -39,19 +39,43 @@ export const actions = {
 							password: password
 						}
 					},
-
 				},
 				traits: {
 					username: username,
 					email: email,
+				},
+				metadata_public: {
+					admin: admin
 				}
 			}
-		}).then(() => {
-			const user: User = { username, email, admin }
-			return fetch(`${CRUD_SERVICE_URL}/users/v0`, {
+		}).then(({ data: { id } }) => {
+			const user: User = {
+				"Username": username, 
+				"Email": email, 
+				"Admin": admin, 
+				"OryId": id, 
+			}
+			console.log(user);
+			return fetch(`${CRUD_SERVICE_URL}/users/v0/`, {
 				method: 'POST',
-				body: JSON.stringify(user)
-			});
+				headers: {
+					'Content-Type': 'application/json; charset=utf-8'
+				},
+				body: JSON.stringify({"User": user})
+			}).then((response) => {
+				console.log('success?');
+				console.log(response);
+				return {
+					createUser: "Success! User Created."
+				}
+			}, ({ request }) => {
+				console.log(request);
+				return fail(400, { createUser: 'Error: Crud_Service Error'});
+			})
+		}, ({ request }) => {
+			console.log('Kratos create identity error');
+			console.log(request);
+			return fail(400, { createUser: 'Error: username, password, or email missing'});
 		})
 		
 	},

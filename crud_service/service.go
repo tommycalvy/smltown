@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
+	"time"
 
-	"github.com/tommycalvy/forefinder/crud-service/profile"
+	"github.com/tommycalvy/forefinder/crud-service/post"
 	"github.com/tommycalvy/forefinder/crud-service/user"
 )
 
@@ -11,10 +12,7 @@ type Service interface {
 	CreateUser(ctx context.Context, u user.User) error
 	GetUserByUsername(ctx context.Context, username string) (user.User, error)
 	GetUserByEmail(ctx context.Context, email string) (user.User, error)
-	CreateProfile(ctx context.Context, p profile.Profile) (profile.Profile, error)
-	GetProfile(ctx context.Context, id string, profileType string) (profile.Profile, error)
-	UpdateProfile(ctx context.Context, p profile.Profile) (profile.Profile, error)
-	DeleteProfile(ctx context.Context, id string, profileType string) error
+	CreatePost(ctx context.Context, p post.Post) error
 	//SearchProfilesByDistance(ctx context.Context, lat float64, lon float64, miles int) ([]profile.Profile, error)
 
 	//CreatePost(ctx context.Context, p profile.Profile)
@@ -22,15 +20,17 @@ type Service interface {
 
 type service struct {
 	users 				user.Repository
-	profiles 			profile.Repository
+	posts 				post.Repository
 }
 
-func NewService(users user.Repository) Service {
+func NewService(users user.Repository, posts post.Repository) Service {
 	return &service {
 		users: users,
+		posts: posts,
 	}
 }
 func (s *service) CreateUser(ctx context.Context, u user.User) error {
+	
 	if err := s.users.CreateUser(ctx, u); err != nil {
 		return err
 	}
@@ -53,33 +53,15 @@ func (s *service) GetUserByEmail(ctx context.Context, email string) (user.User, 
 	return u, nil
 }
 
-func (s *service) CreateProfile(ctx context.Context, p profile.Profile) (profile.Profile, error) {
-	if err := s.profiles.CreateProfile(ctx, p); err != nil {
-		return profile.Profile{}, err
-	}
-	return p, nil
-}
-func (s *service) GetProfile(ctx context.Context, id string, profileType string) (profile.Profile, error) {
-	p, err := s.profiles.GetProfile(ctx, id, profileType)
-	
-	if err != nil {
-		return profile.Profile{}, err
-	}
-	return p, nil
-}
-func (s *service) UpdateProfile(ctx context.Context, newP profile.Profile) (profile.Profile, error) {
-	p, err := s.profiles.UpdateProfile(ctx, newP)
-	if err != nil {
-		return profile.Profile{}, err
-	}
-	return p, nil
-}
-func (s *service) DeleteProfile(ctx context.Context, id string, profileType string) error {
-	if err := s.profiles.DeleteProfile(ctx, id, profileType); err != nil {
+func (s *service) CreatePost(ctx context.Context, p post.Post) error {
+	p.Timestamp = time.Now().UnixNano()
+	if err := s.posts.CreatePost(ctx, p); err != nil {
 		return err
 	}
 	return nil
 }
+
+
 /*
 func (s *service) SearchProfilesByDistance(ctx context.Context, lat float64, lon float64, miles int) ([]profile.Profile, error) {
 

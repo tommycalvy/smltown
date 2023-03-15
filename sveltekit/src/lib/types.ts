@@ -18,9 +18,20 @@ export interface UserSession {
 }
 
 export interface User {
+	Username: string;
+	Email: string;
+	Admin: boolean;
+	OryId: string;
+}
+
+export interface Post {
 	username: string;
-	email: string;
-	admin: boolean;
+	title: string;
+	body: string;
+	category1: string;
+	category2: string;
+	latitude: number;
+	longitude: number;
 }
 
 export const isVerificationFlow = (response: object): response is VerificationFlow => {

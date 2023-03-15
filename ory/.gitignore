@@ -1,3 +1,4 @@
 kratos.yml
 postgres-data
 admin.json
+.env

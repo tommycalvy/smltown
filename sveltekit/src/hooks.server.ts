@@ -1,4 +1,4 @@
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { isTheme } from '$lib/types';
 import { auth } from '$lib/server/auth';
 
@@ -6,25 +6,27 @@ export const handle = (async ({ event, resolve }) => {
 	const cookieEncoded = event.request.headers.get('cookie') ?? undefined;
 	if (cookieEncoded) {
 		const cookie = decodeURIComponent(cookieEncoded);
-		await auth.toSession({ cookie }).then(({ data: { identity }}) => {
-			event.locals.userSession = {
-				id: identity.id,
-				username: identity.traits.username,
-				email: identity.traits.email,
-				verified: identity.verifiable_addresses?.[0].verified ?? false,
-				admin: identity.metadata_public?.admin ?? false,
-			};
-		},
-		({ response }) => {
-			event.locals.userSession = undefined;
-			if (response.status === 401) {
-				console.log('User has cookies but is not authenticated');
-			} else {
-				const err = new Error('Error with ory toSession call');
-				console.log(err);
-				console.log(response);
+		await auth.toSession({ cookie }).then(
+			({ data: { identity } }) => {
+				event.locals.userSession = {
+					id: identity.id,
+					username: identity.traits.username,
+					email: identity.traits.email,
+					verified: identity.verifiable_addresses?.[0].verified ?? false,
+					admin: identity.metadata_public?.admin ?? false
+				};
+			},
+			({ response }) => {
+				event.locals.userSession = undefined;
+				if (response.status === 401) {
+					console.log('User has cookies but is not authenticated');
+				} else {
+					const err = new Error('Error with ory toSession call');
+					console.log(err);
+					console.log(response);
+				}
 			}
-		});
+		);
 	} else {
 		event.locals.userSession = undefined;
 	}
@@ -43,3 +45,9 @@ export const handle = (async ({ event, resolve }) => {
 	});
 	return response;
 }) satisfies Handle;
+
+export const handleFetch = (({ request, fetch }) => {
+	console.log('request');
+	console.log(request);
+	return fetch(request);
+}) satisfies HandleFetch;

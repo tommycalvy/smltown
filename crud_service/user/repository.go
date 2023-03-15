@@ -51,6 +51,7 @@ func (r *repo) CreateUser(ctx context.Context, u User) error {
 	log.Printf("Username: %v", u.Username)
 	log.Printf("Email: %v", u.Email)
 	log.Printf("Admin: %v", u.Admin)
+	log.Printf("OryId: %v", u.OryId)
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String(r.TableName),
 		Item: map[string]types.AttributeValue {
@@ -58,6 +59,7 @@ func (r *repo) CreateUser(ctx context.Context, u User) error {
 			"Metadata":		&types.AttributeValueMemberS{Value: "user|" + u.Username},
 			"Email":		&types.AttributeValueMemberS{Value: u.Email},
 			"Admin": 		&types.AttributeValueMemberBOOL{Value: u.Admin},
+			"OryId":		&types.AttributeValueMemberS{Value: u.OryId},
 		},
 	}
 	_, err := r.Dynamo.PutItem(ctx, input)

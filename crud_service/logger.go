@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"github.com/tommycalvy/forefinder/crud-service/profile"
+	"github.com/tommycalvy/forefinder/crud-service/post"
 	"github.com/tommycalvy/forefinder/crud-service/user"
 )
 
@@ -40,33 +40,14 @@ func (s *loggingService) GetUserByEmail(ctx context.Context, email string) (u us
 	return s.Service.GetUserByEmail(ctx, email)
 }
 
-func (s *loggingService) CreateProfile(ctx context.Context, newP profile.Profile) (p profile.Profile, err error) {
+func (s *loggingService) CreatePost(ctx context.Context, p post.Post) (err error) {
 	defer func(begin time.Time) {
-		s.logger.Log("method", "CreateProfile", "id", p.ID, "took", time.Since(begin), "err", err)
+		s.logger.Log("method", "CreatePost", "username", p.Username, "took", time.Since(begin), "err", err)
 	}(time.Now())
-	return s.Service.CreateProfile(ctx, newP)
+	return s.Service.CreatePost(ctx, p)
 }
 
-func (s *loggingService) GetProfile(ctx context.Context, id string, profileType string) (p profile.Profile, err error) {
-	defer func(begin time.Time) {
-		s.logger.Log("method", "GetProfile", "id", p.ID, "took", time.Since(begin), "err", err)
-	}(time.Now())
-	return s.Service.GetProfile(ctx, id, profileType)
-}
 
-func (s *loggingService) UpdateProfile(ctx context.Context, newP profile.Profile) (p profile.Profile, err error) {
-	defer func(begin time.Time) {
-		s.logger.Log("method", "UpdateProfile", "id", p.ID, "took", time.Since(begin), "err", err)
-	}(time.Now())
-	return s.Service.UpdateProfile(ctx, newP)
-}
-
-func (s *loggingService) DeleteProfile(ctx context.Context, id string, profileType string) (err error) {
-	defer func(begin time.Time) {
-		s.logger.Log("method", "DeleteProfile", "id", id, "took", time.Since(begin), "err", err)
-	}(time.Now())
-	return s.Service.DeleteProfile(ctx, id, profileType)
-}
 
 /*
 func (s *loggingService) SearchProfilesByDistance(ctx context.Context, countryCode string, postalCode string, miles int) (p []profile.Profile, err error) {
