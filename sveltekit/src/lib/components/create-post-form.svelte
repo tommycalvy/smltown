@@ -3,30 +3,65 @@
 	import { loginModal } from '$lib/stores/login-modal';
 	import type { UserSession, WithTarget } from '$lib/types';
 	import Geolocation from 'svelte-geolocation';
-    import { onMount } from 'svelte';
 
 	export let userSession: UserSession | undefined;
 
 	let coords: [number, number] = [-1, -1];
 
+	let postForm: 'flex' | 'hidden' = 'hidden';
+
+	let placeholderText = 'Create Post';
+
+    let postFormHasFocus: boolean = false;
+    let postFormInput: number = 0;
+
 	function openModal() {
 		loginModal.update((open) => !open);
 	}
 
-	let postForm: 'flex' | 'hidden' = 'hidden';
-
-	let placeholderText = 'Create Post';
-	function onInputFocus() {
+	function onInputFocus(event: WithTarget<FocusEvent, HTMLInputElement>) {  
 		placeholderText = 'Title';
-        console.log(coords);
-	}
-	function onInputBlur() {
-		placeholderText = 'Create Post';
+        postForm = 'flex';
+        if (event.currentTarget.value === '') {
+            postFormInput++;
+        }
+        console.log(postFormInput);
 	}
 
-	function setPostForm() {
-		postForm = 'flex';
+    function onTextAreaFocus(event: WithTarget<FocusEvent, HTMLTextAreaElement>) {
+		placeholderText = 'Title';
+        postForm = 'flex';
+        if (event.currentTarget.value === '') {
+            postFormInput++;
+        }
+        console.log(postFormInput);
 	}
+
+	function onInputBlur(event: WithTarget<FocusEvent, HTMLInputElement>) {
+        
+        if (event.currentTarget.value === '') {
+            postFormInput--;
+        }
+
+		if (postFormInput === 0) {
+            postForm = 'hidden';
+            placeholderText = 'Create Post';
+        }
+        console.log(postFormInput);
+	}
+
+    function onTextAreaBlur(event: WithTarget<FocusEvent, HTMLTextAreaElement>) {
+        
+        if (event.currentTarget.value === '') {
+            postFormInput--;
+        }
+
+		if (postFormInput === 0) {
+            postForm = 'hidden'
+            placeholderText = 'Create Post';
+        }
+        console.log(postFormInput);
+    }
 
 	let channels1 = ['General', 'News', 'Events'];
 	let channels2 = ['General', 'News', 'Events'];
@@ -42,8 +77,8 @@
 	}
 </script>
 
-{#if postForm==='flex'}
-    <Geolocation getPosition bind:coords />
+{#if postForm === 'flex'}
+	<Geolocation getPosition bind:coords />
 {/if}
 
 <form
@@ -52,16 +87,8 @@
 	enctype="application/x-www-form-urlencoded"
 	class="flex gap-3 w-full bg-base-100 group rounded-md p-4"
 >
-    <input 
-        type="hidden"
-        name="latitude"
-        bind:value={coords[1]}
-    />
-    <input 
-        type="hidden"
-        name="longitude"
-        bind:value={coords[0]}
-    />
+	<input type="hidden" name="latitude" bind:value={coords[1]} />
+	<input type="hidden" name="longitude" bind:value={coords[0]} />
 	<div class="w-10">
 		{#if userSession}
 			<a href={`/profile/${userSession.username}`}>
@@ -88,14 +115,15 @@
 			on:blur={onInputBlur}
 		/>
 		<div
-			class={`${postForm} group-focus-within:flex flex-col gap-3 peer-valid:flex w-full focus:flex`}
+			class={`${postForm} group-focus-within:flex flex-col gap-3 peer-valid:flex w-full`}
 		>
 			<textarea
 				name="body"
 				placeholder="Text"
 				class="textarea textarea-bordered textarea-lg w-full px-4 py-1"
 				required
-				on:change={setPostForm}
+                on:focus={onTextAreaFocus}
+                on:blur={onTextAreaBlur}
 			/>
 			<div class="flex items-center justify-between">
 				<div class="dropdown dropdown-bottom">
@@ -106,7 +134,8 @@
 						class="input input-bordered"
 						required
 						bind:value={channel1value}
-						on:change={setPostForm}
+                        on:focus={onInputFocus}
+                        on:blur={onInputBlur}
 					/>
 					<ul
 						class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-full"
@@ -133,7 +162,8 @@
 						class="input input-bordered"
 						required
 						bind:value={channel2value}
-						on:change={setPostForm}
+                        on:focus={onInputFocus}
+                        on:blur={onInputBlur}
 					/>
 					<ul
 						class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-full"
