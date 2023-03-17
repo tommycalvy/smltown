@@ -13,6 +13,11 @@
     @apply w-10;
 }
 
+.btn-circle:where(.btn-sm) {
+    @apply h-10;
+    @apply w-10;
+}
+
 .btn-ghost {
     @apply active:bg-opacity-30;
 }
@@ -23,6 +28,13 @@
     @apply hover:border-primary;
     @apply focus:outline-none;
     @apply h-10;
+}
+
+.textarea {
+    @apply outline-none;
+    @apply focus:border-primary;
+    @apply hover:border-primary;
+    @apply focus:outline-none;
 }
 
 .menu {

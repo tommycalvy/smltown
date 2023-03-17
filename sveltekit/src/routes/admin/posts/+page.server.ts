@@ -41,8 +41,8 @@ export const actions = {
 			username: locals.userSession.username,
 			title: title,
 			body: body,
-			category1: category1,
-			category2: category2,
+			channel1: category1,
+			channel2: category2,
 			latitude: latitude,
 			longitude: longitude,
 		};

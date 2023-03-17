@@ -37,7 +37,7 @@
 
 <div class="dropdown dropdown-end" on:focusout={handleDropdownFocusLost}>
 	{#if userSession}
-		<button tabindex="0" class="btn btn-ghost btn-circle avatar" on:click={handleDropdownClick}>
+		<button tabindex="0" class="btn btn-ghost btn-circle btn-sm avatar" on:click={handleDropdownClick}>
 			<h1 class=" text-base-content text-[1.75rem]">{userSession.username.charAt(0).toUpperCase()}</h1>
 		</button>
 	{:else}

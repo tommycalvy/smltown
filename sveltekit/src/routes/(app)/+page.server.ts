@@ -11,9 +11,10 @@ import type {
 } from '@ory/kratos-client';
 import { redirect, fail } from '@sveltejs/kit';
 import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
+import type { Post } from '$lib/types';
+import { CRUD_SERVICE_URL } from '$env/static/private';
 
 export const load = (async ({ locals }) => {
-	
 	return {
 		userSession: locals.userSession,
 		title: 'SMLTOWN'
@@ -335,6 +336,66 @@ export const actions = {
 					throw error(500, 'Error verifying email');
 				}
 			);
+	},
+	createPost: async ({ locals, request }) => {
+		if (!locals.userSession) {
+			throw error(400, 'Unauthorized');
+		}
+		if (!locals.userSession.admin) {
+			throw error(400, 'Unauthroized');
+		}
+		const values = await request.formData();
+		const title = values.get('title') ?? undefined;
+		const body = values.get('body') ?? undefined;
+		const channel1 = values.get('channel1') ?? undefined;
+		const channel2 = values.get('channel2') ?? undefined;
+		const latitude = values.get('latitude')
+			? Math.floor((Number(values.get('latitude')) + 180) * 10000)
+			: undefined;
+		const longitude = values.get('longitude')
+			? Math.floor((Number(values.get('longitude')) + 180) * 10000)
+			: undefined;
+
+		if (
+			typeof title !== 'string' ||
+			typeof body !== 'string' ||
+			typeof channel1 !== 'string' ||
+			typeof channel2 !== 'string' ||
+			typeof latitude === 'undefined' ||
+			typeof longitude === 'undefined'
+		) {
+			return fail(400, { createPost: 'Error: title, body, categories, or coordinates missing' });
+		}
+
+		const post: Post = {
+			username: locals.userSession.username,
+			title: title,
+			body: body,
+			channel1: channel1,
+			channel2: channel2,
+			latitude: latitude,
+			longitude: longitude
+		};
+		console.log(post);
+		return fetch(`${CRUD_SERVICE_URL}/posts/v0/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8'
+			},
+			body: JSON.stringify({ Post: post })
+		}).then(
+			(response) => {
+				console.log('success?');
+				console.log(response);
+				return {
+					createPost: 'Success! Post Created.'
+				};
+			},
+			({ request }) => {
+				console.log(request);
+				return fail(400, { createPost: 'Error: Crud_Service Error' });
+			}
+		);
 	}
 } satisfies Actions;
 

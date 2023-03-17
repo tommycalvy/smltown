@@ -28,8 +28,8 @@ export interface Post {
 	username: string;
 	title: string;
 	body: string;
-	category1: string;
-	category2: string;
+	channel1: string;
+	channel2: string;
 	latitude: number;
 	longitude: number;
 }
