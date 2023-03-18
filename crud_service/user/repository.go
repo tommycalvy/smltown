@@ -77,7 +77,7 @@ func (r *repo) GetUserByUsername(ctx context.Context, username string) (User, er
 			TableName: aws.String(r.TableName),
 			Key: map[string]types.AttributeValue {
 				"ID": 			&types.AttributeValueMemberS{Value: "user|" + username},
-				"Metadata":		&types.AttributeValueMemberS{Value: "user|" + username},
+				"Metadata":		&types.AttributeValueMemberN{Value: "1"},
 			},
 		})
 		if err != nil {
