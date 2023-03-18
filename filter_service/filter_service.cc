@@ -14,8 +14,7 @@
 
 #include <aws/core/Aws.h>
 #include <aws/dynamodb/DynamoDBClient.h>
-#include <aws/dynamodb/model/AttributeDefinition.h>
-#include <aws/dynamodb/model/GetItemRequest.h>
+#include <aws/dynamodb/model/ScanRequest.h>
 #include <iostream>
 
 
@@ -46,6 +45,53 @@ void print_map(std::unordered_map<K, V> const &m)
         std::cout << "{" << pair.first << ": " << pair.second << "}\n";
     }
 }
+
+void get_all_posts() {
+
+    Aws::Client::ClientConfiguration clientConfig;
+    clientConfig.proxyHost = "localhost";
+    clientConfig.proxyPort = 8000;
+    clientConfig.proxyScheme = Aws::Http::Scheme::HTTP;
+    Aws::DynamoDB::DynamoDBClient dynamoClient(clientConfig);
+    Aws::Map<Aws::String, Aws::DynamoDB::Model::AttributeValue> exclusiveStartKey;
+    do {
+        Aws::DynamoDB::Model::ScanRequest scanRequest;
+        scanRequest.SetTableName("SMLTOWN");
+        scanRequest.SetFilterExpression("begins_with(PK, post)");
+
+        if (!exclusiveStartKey.empty()) {
+            scanRequest.SetExclusiveStartKey(exclusiveStartKey);
+        }
+
+        const Aws::DynamoDB::Model::ScanOutcome &result = dynamoClient.Scan(
+                scanRequest);
+        if (result.IsSuccess()) {
+            const Aws::Vector<Aws::Map<Aws::String, Aws::DynamoDB::Model::AttributeValue>> &items = result.GetResult().GetItems();
+            if (!items.empty()) {
+                for (size_t i = 0; i < items.size(); ++i) {
+                    //std::cout << items[i] << std::endl;
+                }
+            } else {
+                std::cout << "\nNo posts in SMLTWON database" << std::endl;
+            }
+
+            exclusiveStartKey = result.GetResult().GetLastEvaluatedKey();
+            if (!exclusiveStartKey.empty()) {
+                std::cout << "Not all posts were retrieved. Scanning for more."
+                            << std::endl;
+            }
+            else {
+                std::cout << "All posts were retrieved with this scan."
+                            << std::endl;
+            }
+        }
+        else {
+            std::cerr << "Failed to Scan posts: "
+                        << result.GetError().GetMessage() << std::endl;
+        }
+    } while (!exclusiveStartKey.empty());
+}
+    
 
 int add_post(PostMap& pMap, PhTreeMM& phTree, PostEntry *post, PhPoint<6>& point) {
     std::cout << "Post ID: " << post->id << std::endl;

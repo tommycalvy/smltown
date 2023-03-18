@@ -47,27 +47,27 @@ func NewPostRepo(tableName string) Repository {
 	}
 }
 
-func (r *repo) CreatePost(ctx context.Context, u Post) error {
-	log.Printf("Username=%v", u.Username)
-	log.Printf("Timestamp=%v", u.Timestamp)
-	log.Printf("Title=%v", u.Title)
-	log.Printf("Body=%v", u.Body)
-	log.Printf("Category1=%v", u.Category1)
-	log.Printf("Category2=%v", u.Category2)
-	log.Printf("Latitude=%v", u.Latitude)
-	log.Printf("Longitude=%v", u.Longitude)
+func (r *repo) CreatePost(ctx context.Context, p Post) error {
+	log.Printf("Username=%v", p.Username)
+	log.Printf("Timestamp=%v", p.Timestamp)
+	log.Printf("Title=%v", p.Title)
+	log.Printf("Body=%v", p.Body)
+	log.Printf("Channel1=%v", p.Channel1)
+	log.Printf("Channel2=%v", p.Channel2)
+	log.Printf("Latitude=%v", p.Latitude)
+	log.Printf("Longitude=%v", p.Longitude)
 	
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String(r.TableName),
 		Item: map[string]types.AttributeValue {
-			"PK": 			&types.AttributeValueMemberS{Value: "post|" + u.Username},
-			"SK":			&types.AttributeValueMemberN{Value: strconv.FormatInt(u.Timestamp, 10)},
-			"Metadata":		&types.AttributeValueMemberS{Value: u.Title},
-			"Body": 		&types.AttributeValueMemberS{Value: u.Body},
-			"Category1":	&types.AttributeValueMemberS{Value: u.Category1},
-			"Category2":	&types.AttributeValueMemberS{Value: u.Category1},
-			"Latitude":		&types.AttributeValueMemberN{Value: strconv.FormatInt(u.Latitude, 10)},
-			"Longitude":	&types.AttributeValueMemberN{Value: strconv.FormatInt(u.Longitude, 10)},
+			"PK": 			&types.AttributeValueMemberS{Value: "post|" + p.Username},
+			"SK":			&types.AttributeValueMemberN{Value: strconv.FormatInt(p.Timestamp, 10)},
+			"Metadata":		&types.AttributeValueMemberS{Value: p.Title},
+			"Body": 		&types.AttributeValueMemberS{Value: p.Body},
+			"Channel1":		&types.AttributeValueMemberS{Value: p.Channel1},
+			"Channel2":		&types.AttributeValueMemberS{Value: p.Channel2},
+			"Latitude":		&types.AttributeValueMemberN{Value: strconv.FormatInt(p.Latitude, 10)},
+			"Longitude":	&types.AttributeValueMemberN{Value: strconv.FormatInt(p.Longitude, 10)},
 		},
 	}
 	_, err := r.Dynamo.PutItem(ctx, input)
