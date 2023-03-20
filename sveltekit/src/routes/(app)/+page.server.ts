@@ -374,7 +374,8 @@ export const actions = {
 			channel1: channel1,
 			channel2: channel2,
 			latitude: latitude,
-			longitude: longitude
+			longitude: longitude,
+			votes: 0,
 		};
 		console.log(post);
 		return fetch(`${CRUD_SERVICE_URL}/posts/v0/`, {

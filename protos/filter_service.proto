@@ -13,41 +13,42 @@ service FilterService {
 
     rpc DeletePost(PostID) returns (Post) {}
 
-    rpc UpVotePost(PostID) returns (UpVotes) {}
+    rpc UpVotePost(PostID) returns (Votes) {}
 
-    rpc DownVotePost(PostID) returns (UpVotes) {}
+    rpc DownVotePost(PostID) returns (Votes) {}
 
     rpc GetHotPostsNearMe(Filters) returns (PostIDs) {}
 }
 
 message Filters {
-    int32       time = 2;
-    int32       latitude = 3;
-    int32       longitude = 4;
+    int64       timestamp = 2;
+    int64       latitude = 3;
+    int64       longitude = 4;
     string      channel1 = 5;
     string      channel2 = 6;
     int32       range = 7;
 }
 
 message PostID {
-    string id = 1;
+    string      username = 1;
+    int64       timestamp = 2;
 }
 
 message PostIDs {
-    repeated string id = 1;
+    repeated PostID id = 1;
 }
 
 message Post {
-    string      id = 1;
-    int32       time = 2;
-    int32       latitude = 3;
-    int32       longitude = 4;
+    string      username = 1;
+    int64       timestamp = 2;
+    int64       latitude = 3;
+    int64       longitude = 4;
     string      channel1 = 5;
     string      channel2 = 6;
-    int32       upVotes = 7;
+    int64       votes = 7;
 }
 
-message UpVotes {
-    int32       upVotes = 1;
+message Votes {
+    int64       votes = 1;
 }
 

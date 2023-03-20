@@ -56,11 +56,12 @@ func (r *repo) CreatePost(ctx context.Context, p Post) error {
 	log.Printf("Channel2=%v", p.Channel2)
 	log.Printf("Latitude=%v", p.Latitude)
 	log.Printf("Longitude=%v", p.Longitude)
+	log.Printf("Votes=%v", p.Votes)
 	
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String(r.TableName),
 		Item: map[string]types.AttributeValue {
-			"PK": 			&types.AttributeValueMemberS{Value: "post|" + p.Username},
+			"PK": 			&types.AttributeValueMemberS{Value: "p|" + p.Username},
 			"SK":			&types.AttributeValueMemberN{Value: strconv.FormatInt(p.Timestamp, 10)},
 			"Metadata":		&types.AttributeValueMemberS{Value: p.Title},
 			"Body": 		&types.AttributeValueMemberS{Value: p.Body},
@@ -68,6 +69,7 @@ func (r *repo) CreatePost(ctx context.Context, p Post) error {
 			"Channel2":		&types.AttributeValueMemberS{Value: p.Channel2},
 			"Latitude":		&types.AttributeValueMemberN{Value: strconv.FormatInt(p.Latitude, 10)},
 			"Longitude":	&types.AttributeValueMemberN{Value: strconv.FormatInt(p.Longitude, 10)},
+			"Votes":		&types.AttributeValueMemberN{Value: strconv.FormatInt(p.Votes, 10)},
 		},
 	}
 	_, err := r.Dynamo.PutItem(ctx, input)

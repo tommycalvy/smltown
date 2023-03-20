@@ -45,6 +45,7 @@ export const actions = {
 			channel2: category2,
 			latitude: latitude,
 			longitude: longitude,
+			votes: 0,
 		};
 		console.log(post);
 		return fetch(`${CRUD_SERVICE_URL}/posts/v0/`, {

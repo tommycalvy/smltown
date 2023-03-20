@@ -11,6 +11,7 @@ type Post struct {
 	Channel2		string	`json:"Channel2,omitempty"`
 	Latitude 		int64	`json:"Latitude,omitempty"`
 	Longitude		int64	`json:"Longitude,omitempty"`
+	Votes			int64	`json:"Votes,omitempty"`
 }
 
 type Repository interface {

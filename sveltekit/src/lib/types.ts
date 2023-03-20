@@ -32,6 +32,7 @@ export interface Post {
 	channel2: string;
 	latitude: number;
 	longitude: number;
+	votes: number;
 }
 
 export const isVerificationFlow = (response: object): response is VerificationFlow => {
