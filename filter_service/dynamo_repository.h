@@ -1,3 +1,6 @@
+#ifndef DYNAMO_REPOSITORY_H
+#define DYNAMO_REPOSITORY_H
+
 #include <aws/core/Aws.h>
 #include <aws/dynamodb/DynamoDBClient.h>
 #include <aws/dynamodb/model/ScanRequest.h>
@@ -24,17 +27,17 @@ class ScopedDynamoTable {
 	    Aws::String _keyName;
 	    Aws::UniquePtr<Aws::DynamoDB::DynamoDBClient> dynamoClient;
         Aws::Client::ClientConfiguration clientConfig;
-        PhTreePostsDB& _phTree;
+        PhTreePostsDB& _postdb;
 
     public:
-        ScopedDynamoTable(const char* name, PhTreePostsDB& phTree): _name(name), _phTree(phTree)  {
+        ScopedDynamoTable(const char* name, PhTreePostsDB& postdb): _name(name), _postdb(postdb)  {
             clientConfig.proxyHost = "localhost";
             clientConfig.proxyPort = 8000;
             clientConfig.proxyScheme = Aws::Http::Scheme::HTTP;
             dynamoClient = Aws::MakeUnique<Aws::DynamoDB::DynamoDBClient>("Dynamo Alloc", clientConfig);
         }
 
-        void get_all_posts() {
+        void get_all_posts_from_dynamo() {
             Aws::Map<Aws::String, Aws::DynamoDB::Model::AttributeValue> exclusiveStartKey;
             do {
                 Aws::DynamoDB::Model::ScanRequest scanRequest;
@@ -58,7 +61,7 @@ class ScopedDynamoTable {
                             std::string chan1 = std::string(items[0].find("Channel1")->second.GetS());
                             std::string chan2 = std::string(items[0].find("Channel1")->second.GetS());
                             int64_t votes = std::stoll(items[0].find("Votes")->second.GetN().c_str(), &sz, 10);
-                            _phTree.add_post(username, timestamp, lat, lon, chan1, chan2, votes);
+                            _postdb.add_post(username, timestamp, lat, lon, chan1, chan2, votes);
                         }
                     } else {
                         std::cout << "\nNo posts in SMLTWON database" << std::endl;
@@ -80,3 +83,5 @@ class ScopedDynamoTable {
         }
 
 };
+
+#endif   // DYNAMO_REPOSITORY_H

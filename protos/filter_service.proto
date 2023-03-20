@@ -5,13 +5,13 @@ package filterservice;
 
 service FilterService {
 
-    rpc CreatePost(Post) returns (Post) {}
+    rpc AddPost(Post) returns (Response) {}
 
     rpc ReadPost(PostID) returns (Post) {}
 
     rpc UpdatePost(Post) returns (Post) {}
 
-    rpc DeletePost(PostID) returns (Post) {}
+    rpc RemovePost(PostID) returns (Post) {}
 
     rpc UpVotePost(PostID) returns (Votes) {}
 
@@ -50,5 +50,9 @@ message Post {
 
 message Votes {
     int64       votes = 1;
+}
+
+message Response {
+    bool        success = 1;
 }
 

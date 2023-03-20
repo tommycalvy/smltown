@@ -10,7 +10,12 @@ cpp_grpc_library(
 
 cc_binary(
     name = "filter_service",
-    srcs = ["filter_service.cc"],
+    srcs = [
+        "phtree_posts.h",
+        "dynamo_repository.h",
+        "grpc_server.h",
+        "filter_service.cc",
+    ],
     deps = [
         "//filter_service/phtree",
         ":filter_service_proto",
