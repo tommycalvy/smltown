@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
@@ -24,7 +25,7 @@ type repo struct {
 	TableName 		string
 }
 
-func NewPostRepo(tableName string) Repository {
+func NewPostRepo(tableName string) DynamoRepository {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		// CHANGE THIS TO us-east-1 TO USE AWS proper
 		config.WithRegion("localhost"),
@@ -79,4 +80,39 @@ func (r *repo) CreatePost(ctx context.Context, p Post) error {
 	}
 
 	return nil
+}
+
+func (r *repo) GetPostsFromIDs(ctx context.Context, postIDs []PostID) ([]Post, error) {
+	keyval := make([]map[string]types.AttributeValue, len(postIDs))
+	for i, postid := range postIDs {
+		keyval[i] = map[string]types.AttributeValue {
+			"p|" + postid.Username: &types.AttributeValueMemberN{Value: strconv.FormatInt(postid.Timestamp, 10)},
+		}
+	}
+	input := &dynamodb.BatchGetItemInput{
+		RequestItems: map[string]types.KeysAndAttributes{
+            r.TableName: {
+                Keys: keyval,
+            },
+        },
+	}
+	out, err := r.Dynamo.BatchGetItem(ctx, input)
+	if err != nil {
+		log.Printf("Got error calling BatchGetItem: %s", err)
+		return nil, ErrRepo
+	}
+
+	posts := make([]Post, len(out.Responses[r.TableName]))
+
+	if len(out.Responses[r.TableName]) == 0 {
+		return nil, ErrNotFound
+	}
+	for i, post := range out.Responses[r.TableName] {
+		err := attributevalue.UnmarshalMap(post, posts[i])
+		if err != nil {
+			log.Printf("Failed to unmarshal Record, %v", err)
+			return nil, ErrRepo
+		}
+	}
+	return posts, nil
 }

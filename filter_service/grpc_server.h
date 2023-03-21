@@ -12,8 +12,6 @@
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
-using grpc::ServerReader;
-using grpc::ServerWriter;
 using grpc::Status;
 using filterservice::FilterService;
 
@@ -56,6 +54,21 @@ class FilterServiceImpl final : public FilterService::Service {
             
             std::cout << "Post Added!" << std::endl;
             res->set_success(true);
+            return Status::OK;
+        }
+
+        Status GetPost(ServerContext* context, const filterservice::PostID* postid, filterservice::Post* gpost) override {
+            PhTreePostsDB::PhPost p = _postdb.get_post(postid->username(), postid->timestamp());
+            if (p.username == "") {
+                return Status(grpc::StatusCode::INTERNAL, "Failed to get post!");
+            }
+            gpost->set_username(p.username);
+            gpost->set_timestamp(p.timestamp);
+            gpost->set_latitude(p.latitude);
+            gpost->set_longitude(p.longitude);
+            gpost->set_channel1(p.channel1);
+            gpost->set_channel2(p.channel2);
+            gpost->set_votes(p.votes);
             return Status::OK;
         }
 

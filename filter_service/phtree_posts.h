@@ -23,6 +23,8 @@ class PhTreePostsDB {
     struct PostEntry {
         std::string                                                     id;
         v16::Entry<6, b_plus_tree_hash_set<PostEntry*>, scalar_64_t>*   entry;
+        std::string     channel1;
+        std::string     channel2;
     };
 
     struct PostID {
@@ -42,13 +44,23 @@ class PhTreePostsDB {
         phTree = PhTreeMM();
     }
 
+    struct PhPost {
+        std::string     username;
+        int64_t         timestamp;
+        int64_t         latitude;
+        int64_t         longitude;
+        std::string     channel1;
+        std::string     channel2;
+        int64_t         votes;
+    };
+
 
     int add_post(std::string username, int64_t time, int64_t lat, int64_t lon, std::string chan1, std::string chan2, int64_t votes) {
         std::string id = username + std::to_string(time);
         std::hash<std::string> str_hash;
         int64_t chan1hash = str_hash(chan1);
         int64_t chan2hash = str_hash(chan2);
-        PostEntry *post = new PostEntry({id, NULL});
+        PostEntry *post = new PostEntry({id, NULL, chan1, chan2});
         PhPoint<6> p({time, lat, lon, chan1hash, chan2hash, votes});
         std::cout << "Post ID: " << post->id << std::endl;
         std::cout << "Post mem: " << post << std::endl;
@@ -97,6 +109,29 @@ class PhTreePostsDB {
         std::cout << "Votes:           " << key[5] << std::endl;
         return 0;
     }
+
+    PhPost get_post(std::string username, int64_t time) {
+        std::string id = username + std::to_string(time);
+        PostMap::const_iterator got = pMap.find(id);
+        if (got == pMap.end()) {
+            std::cout << id << " not found" << std::endl;
+            return PhPost{};
+        }
+        auto key = got->second->entry->GetKey();
+        auto iter = phTree.find(key);
+        if (iter == phTree.end()) {
+            std::cout << "Couldn't find value from key: " << key << " from postid: " << got->first << std::endl;
+            return PhPost{};
+        }
+        PostEntry *post = iter.operator*();
+        if (post->id != got->first) {
+            std::cout << post->id << " != " << got->first << " Post Ids Not Equal!" << std::endl;
+            return PhPost{};
+        }
+        return PhPost{username, key[0], key[1], key[2], post->channel1, post->channel2, key[5]};
+    }
+
+    
 
     //TODO: Create unordered map of hash to channel name
 

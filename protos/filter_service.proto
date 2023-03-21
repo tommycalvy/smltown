@@ -7,7 +7,7 @@ service FilterService {
 
     rpc AddPost(Post) returns (Response) {}
 
-    rpc ReadPost(PostID) returns (Post) {}
+    rpc GetPost(PostID) returns (Post) {}
 
     rpc UpdatePost(Post) returns (Post) {}
 
@@ -26,7 +26,7 @@ message Filters {
     int64       longitude = 4;
     string      channel1 = 5;
     string      channel2 = 6;
-    int32       range = 7;
+    int64       range = 7;
 }
 
 message PostID {

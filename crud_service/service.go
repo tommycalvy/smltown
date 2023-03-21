@@ -13,20 +13,23 @@ type Service interface {
 	GetUserByUsername(ctx context.Context, username string) (user.User, error)
 	GetUserByEmail(ctx context.Context, email string) (user.User, error)
 	CreatePost(ctx context.Context, p post.Post) error
+	GetHotPostsNearMe(ctx context.Context, f post.Filter) ([]post.Post, error)
 	//SearchProfilesByDistance(ctx context.Context, lat float64, lon float64, miles int) ([]profile.Profile, error)
 
 	//CreatePost(ctx context.Context, p profile.Profile)
 }
 
 type service struct {
-	users 				user.Repository
-	posts 				post.Repository
+	users 					user.Repository
+	dynamoPosts 			post.DynamoRepository
+	filterServicePosts		post.FilterServiceRepository
 }
 
-func NewService(users user.Repository, posts post.Repository) Service {
+func NewService(users user.Repository, dynamoPosts post.DynamoRepository, filterServicePosts post.FilterServiceRepository) Service {
 	return &service {
 		users: users,
-		posts: posts,
+		dynamoPosts: dynamoPosts,
+		filterServicePosts: filterServicePosts,
 	}
 }
 func (s *service) CreateUser(ctx context.Context, u user.User) error {
@@ -55,10 +58,22 @@ func (s *service) GetUserByEmail(ctx context.Context, email string) (user.User, 
 
 func (s *service) CreatePost(ctx context.Context, p post.Post) error {
 	p.Timestamp = time.Now().UnixNano()
-	if err := s.posts.CreatePost(ctx, p); err != nil {
+	if err := s.dynamoPosts.CreatePost(ctx, p); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *service) GetHotPostsNearMe(ctx context.Context, f post.Filter) ([]post.Post, error) {
+	postIDs, err := s.filterServicePosts.GetHotPostsNearMe(ctx, f)
+	if err != nil {
+		return nil, err
+	}
+	posts, err := s.dynamoPosts.GetPostsFromIDs(ctx, postIDs)
+	if err != nil {
+		return nil, err
+	}
+	return posts, nil
 }
 
 
