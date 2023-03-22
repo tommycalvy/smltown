@@ -1,36 +1,74 @@
 package post
 
 import (
-	"errors"
+	"context"
 	"flag"
 	"log"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	pb "github.com/tommycalvy/smltown/crud_service/protos"
+
 	"google.golang.org/grpc"
 )
 
 
 var (
 	serverAddr         = flag.String("addr", "localhost:50051", "The server address in the format of host:port")
-	ErrInvalidArgument 	= errors.New("invalid argument")
-	ErrNotFound        	= errors.New("not found")
-	ErrRepo 			= errors.New("unable to handle repo request")
 )
 
 
-type repo struct {
-	client 			*dynamodb.Client
+type filterRepo struct {
+	client 			pb.FilterServiceClient
 }
 
-func NewFilterServiceRepo() {
-	conn, err := grpc.Dial(*serverAddr, opts...)
+func NewFilterServiceRepo() FilterServiceRepository {
+	conn, err := grpc.Dial(*serverAddr)
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}
 	defer conn.Close()
-	client := pb.NewRouteGuideClient(conn)
+	client := pb.NewFilterServiceClient(conn)
 
-	return &repo{
-		
+	return &filterRepo{
+		client: client,
 	}
+}
+
+func (r *filterRepo) AddPost(ctx context.Context, p Post) error {
+	post := pb.Post {
+		Username: p.Username,
+		Timestamp: p.Timestamp,
+		Latitude: p.Latitude,
+		Longitude: p.Longitude,
+		Channel1: p.Channel1,
+		Channel2: p.Channel2,
+		Votes: p.Votes,
+	}
+	_, err := r.client.AddPost(ctx, &post)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *filterRepo) GetHotPostsNearMe(ctx context.Context, f Filter) ([]PostID, error) {
+	filters := pb.Filters {
+		Timestamp: f.Timestamp,
+		Latitude: f.Latitude,
+		Longitude: f.Longitude,
+		Channel1: f.Channel1,
+		Channel2: f.Channel2,
+		Range: f.Georange,
+	}
+	pbPostIDs, err := r.client.GetHotPostsNearMe(ctx, &filters)
+	if err != nil {
+		return nil, err
+	}
+	postIDs := make([]PostID, len(pbPostIDs.Id))
+	for i, postID := range pbPostIDs.Id {
+		postIDs[i] = PostID {
+			Username: postID.Username,
+			Timestamp: postID.Timestamp,
+		}
+	}
+	return postIDs, nil
 }

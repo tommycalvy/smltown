@@ -2,7 +2,7 @@ package post
 
 import (
 	"context"
-	"errors"
+
 	"log"
 	"strconv"
 
@@ -13,19 +13,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-var (
-	ErrInvalidArgument 	= errors.New("invalid argument")
-	ErrNotFound        	= errors.New("not found")
-	ErrRepo 			= errors.New("unable to handle repo request")
-)
 
-
-type repo struct {
+type dynamoRepo struct {
 	Dynamo 			*dynamodb.Client
 	TableName 		string
 }
 
-func NewPostRepo(tableName string) DynamoRepository {
+func NewDynamoPostRepo(tableName string) DynamoRepository {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		// CHANGE THIS TO us-east-1 TO USE AWS proper
 		config.WithRegion("localhost"),
@@ -42,13 +36,13 @@ func NewPostRepo(tableName string) DynamoRepository {
     // Using the Config value, create the DynamoDB client
     dynamo := dynamodb.NewFromConfig(cfg)
 
-	return &repo{
+	return &dynamoRepo{
 		Dynamo:		dynamo,
 		TableName:  tableName,
 	}
 }
 
-func (r *repo) CreatePost(ctx context.Context, p Post) error {
+func (r *dynamoRepo) CreatePost(ctx context.Context, p Post) error {
 	log.Printf("Username=%v", p.Username)
 	log.Printf("Timestamp=%v", p.Timestamp)
 	log.Printf("Title=%v", p.Title)
@@ -82,7 +76,7 @@ func (r *repo) CreatePost(ctx context.Context, p Post) error {
 	return nil
 }
 
-func (r *repo) GetPostsFromIDs(ctx context.Context, postIDs []PostID) ([]Post, error) {
+func (r *dynamoRepo) GetPostsFromIDs(ctx context.Context, postIDs []PostID) ([]Post, error) {
 	keyval := make([]map[string]types.AttributeValue, len(postIDs))
 	for i, postid := range postIDs {
 		keyval[i] = map[string]types.AttributeValue {

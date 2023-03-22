@@ -10,29 +10,38 @@ export function isTheme(value: string): value is Theme {
 export type WithTarget<Event, Target> = Event & { currentTarget: Target };
 
 export interface UserSession {
-	id: string;
-	username: string;
-	email: string;
-	verified: boolean;
-	admin: boolean;
+	id: 		string;
+	username: 	string;
+	email: 		string;
+	verified: 	boolean;
+	admin: 		boolean;
 }
 
 export interface User {
-	Username: string;
-	Email: string;
-	Admin: boolean;
-	OryId: string;
+	Username: 	string;
+	Email: 		string;
+	Admin: 		boolean;
+	OryId: 		string;
 }
 
 export interface Post {
-	username: string;
-	title: string;
-	body: string;
-	channel1: string;
-	channel2: string;
-	latitude: number;
-	longitude: number;
-	votes: number;
+	username: 	string;
+	title: 		string;
+	body: 		string;
+	channel1: 	string;
+	channel2: 	string;
+	latitude: 	number;
+	longitude: 	number;
+	votes: 		number;
+}
+
+export interface Filter {
+	timestamp: 	number;  
+    latitude:	number; 
+	longitude:	number;	
+	channel1:	string;
+	channel2:	string;	
+	georange:	number;	
 }
 
 export const isVerificationFlow = (response: object): response is VerificationFlow => {

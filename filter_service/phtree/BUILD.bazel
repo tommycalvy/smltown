@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -12,11 +13,11 @@ cc_library(
         "phtree.h",
         "phtree_multimap.h",
     ],
+    include_prefix = "phtree/",
     linkstatic = True,
     visibility = [
         "//visibility:public",
     ],
-    include_prefix = "phtree/",
     deps = [
         "//filter_service/phtree/common",
         "//filter_service/phtree/v16",

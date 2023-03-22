@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"github.com/tommycalvy/forefinder/crud-service/post"
-	"github.com/tommycalvy/forefinder/crud-service/user"
+	"github.com/tommycalvy/smltown/crud_service/post"
+	"github.com/tommycalvy/smltown/crud_service/user"
 )
 
 type loggingService struct {

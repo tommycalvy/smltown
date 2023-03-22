@@ -1,4 +1,3 @@
-
 cc_binary(
     name = "phtree_test",
     srcs = ["phtree_test.cc"],

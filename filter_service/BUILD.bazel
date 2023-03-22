@@ -11,16 +11,15 @@ cpp_grpc_library(
 cc_binary(
     name = "filter_service",
     srcs = [
-        "phtree_posts.h",
         "dynamo_repository.h",
-        "grpc_server.h",
         "filter_service.cc",
+        "grpc_server.h",
+        "phtree_posts.h",
     ],
     deps = [
-        "//filter_service/phtree",
         ":filter_service_proto",
+        "//filter_service/phtree",
         "@aws-sdk-cpp//:core",
         "@aws-sdk-cpp//:dynamodb",
     ],
 )
-

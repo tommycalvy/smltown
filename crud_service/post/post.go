@@ -1,6 +1,9 @@
 package post
 
-import "context"
+import (
+	"context"
+	"errors"
+)
 
 type Post struct {
 	Username 		string	`json:"Username,omitempty"`
@@ -37,3 +40,9 @@ type FilterServiceRepository interface {
 	AddPost(ctx context.Context, p Post) error
 	GetHotPostsNearMe(ctx context.Context, f Filter) ([]PostID, error)
 }
+
+var (
+	ErrInvalidArgument 	= errors.New("invalid argument")
+	ErrNotFound        	= errors.New("not found")
+	ErrRepo 			= errors.New("unable to handle repo request")
+)

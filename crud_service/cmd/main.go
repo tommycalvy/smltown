@@ -9,18 +9,12 @@ import (
 	"syscall"
 
 	"github.com/go-kit/log"
-	service "github.com/tommycalvy/forefinder/crud-service"
-	"github.com/tommycalvy/forefinder/crud-service/post"
-	"github.com/tommycalvy/forefinder/crud-service/user"
-
-	"github.com/joho/godotenv"
+	service "github.com/tommycalvy/smltown/crud_service"
+	"github.com/tommycalvy/smltown/crud_service/post"
+	"github.com/tommycalvy/smltown/crud_service/user"
 )
 
 func main() {
-	err := godotenv.Load()
-  	if err != nil {
-    	fmt.Println("Error loading .env file")
-  	}
 
 	var (
 		httpAddr = flag.String("http.addr", ":5656", "HTTP listen address")
@@ -39,9 +33,11 @@ func main() {
 		tableName := os.Getenv("AWS_TABLE_NAME")
 		fmt.Println("Table Name: ", tableName)
 		userRepo := user.NewUserRepo(tableName)
-		postRepo := post.NewPostRepo(tableName)
+		dynamoPostRepo := post.NewDynamoPostRepo(tableName)
+		filterServiceRepo := post.NewFilterServiceRepo()
 
-		s = service.NewService(userRepo, postRepo)
+
+		s = service.NewService(userRepo, dynamoPostRepo, filterServiceRepo)
 		s = service.NewLoggingService(log.With(logger, "component", "profile"), s)
 	}
 	

@@ -1,4 +1,4 @@
-module github.com/tommycalvy/forefinder/crud-service
+module github.com/tommycalvy/smltown/crud_service
 
 go 1.18
 
@@ -8,7 +8,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.17.8
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.17.1
 	github.com/go-kit/log v0.2.0
-	github.com/joho/godotenv v1.4.0
 )
 
 require (

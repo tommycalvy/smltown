@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/tommycalvy/forefinder/crud-service/post"
-	"github.com/tommycalvy/forefinder/crud-service/user"
+	"github.com/tommycalvy/smltown/crud_service/post"
+	"github.com/tommycalvy/smltown/crud_service/user"
 )
 
 type Service interface {
@@ -14,9 +14,6 @@ type Service interface {
 	GetUserByEmail(ctx context.Context, email string) (user.User, error)
 	CreatePost(ctx context.Context, p post.Post) error
 	GetHotPostsNearMe(ctx context.Context, f post.Filter) ([]post.Post, error)
-	//SearchProfilesByDistance(ctx context.Context, lat float64, lon float64, miles int) ([]profile.Profile, error)
-
-	//CreatePost(ctx context.Context, p profile.Profile)
 }
 
 type service struct {
@@ -75,18 +72,3 @@ func (s *service) GetHotPostsNearMe(ctx context.Context, f post.Filter) ([]post.
 	}
 	return posts, nil
 }
-
-
-/*
-func (s *service) SearchProfilesByDistance(ctx context.Context, lat float64, lon float64, miles int) ([]profile.Profile, error) {
-
-	milesToMeters := 1609.344
-	meters := float64(miles) * milesToMeters
-
-	profiles, err := s.profiles.SearchProfilesByDistance(ctx, lat, lon, int(meters))
-	if err != nil {
-		return profiles, err
-	}
-	return profiles, nil
-}
-*/

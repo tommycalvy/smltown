@@ -4,17 +4,16 @@ import (
 	"context"
 
 	"github.com/go-kit/kit/endpoint"
-	"github.com/tommycalvy/forefinder/crud-service/post"
-	"github.com/tommycalvy/forefinder/crud-service/user"
+	"github.com/tommycalvy/smltown/crud_service/post"
+	"github.com/tommycalvy/smltown/crud_service/user"
 )
 
 type Endpoints struct {
 	CreateUserEndpoint 					endpoint.Endpoint
 	GetUserByUsernameEndpoint 			endpoint.Endpoint
 	GetUserByEmailEndpoint 				endpoint.Endpoint
-	CreatePostEndpoint 					endpoint.Endpoint 
-	
-	//SearchProfilesByDistanceEndpoint 	endpoint.Endpoint
+	CreatePostEndpoint 					endpoint.Endpoint
+	GetHotPostsNearMeEndpoint			endpoint.Endpoint
 }
 
 func MakeEndpoints(s Service) Endpoints {
@@ -23,7 +22,7 @@ func MakeEndpoints(s Service) Endpoints {
 		GetUserByUsernameEndpoint: 			MakeGetUserByUsernameEndpoint(s),
 		GetUserByEmailEndpoint:		 		MakeGetUserByEmailEndpoint(s),			
 		CreatePostEndpoint:					MakeCreatePostEndpoint(s),
-		//SearchProfilesByDistanceEndpoint: 	MakeSearchProfilesByDistanceEndpoint(s),
+		GetHotPostsNearMeEndpoint: 			MakeGetHotPostsNearMeEndpoint(s),	
 	}
 }
 
@@ -59,16 +58,14 @@ func MakeCreatePostEndpoint(s Service) endpoint.Endpoint {
 	}
 }
 
-
-/*
-func MakeSearchProfilesByDistanceEndpoint(s Service) endpoint.Endpoint {
+func MakeGetHotPostsNearMeEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		req := request.(searchProfilesByDistanceRequest)
-		profiles, e := s.SearchProfilesByDistance(ctx, req.CountryCode, req.PostalCode, req.Miles)
-		return searchProfilesByDistanceResponse{Profiles: profiles, Err: e}, nil
+		req := request.(getHotPostsNearMeRequest)
+		posts, e := s.GetHotPostsNearMe(ctx, req.Filter)
+		return getHotPostsNearMeResponse{Posts: posts, Err: e}, nil
 	}
 }
-*/
+
 
 type (
 	createUserRequest struct {
@@ -93,16 +90,12 @@ type (
 	createPostResponse struct {
 		Err 				error					`json:"error,omitempty"`
 	}
-
-	/*
-	searchProfilesByDistanceRequest struct {
-		CountryCode 		string
-		PostalCode 			string
-		Miles 				int
+	getHotPostsNearMeRequest struct {
+		Filter 				post.Filter
 	}
-	searchProfilesByDistanceResponse struct {
-		Profiles 			[]profile.Profile 		`json:"profiles,omitempty"`
+	getHotPostsNearMeResponse struct {
+		Posts 				[]post.Post				`json:"posts,omitempty"`
 		Err 				error					`json:"error,omitempty"`
 	}
-	*/
+
 )

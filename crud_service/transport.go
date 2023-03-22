@@ -12,7 +12,7 @@ import (
 	"github.com/go-kit/log"
 	"github.com/gorilla/mux"
 
-	"github.com/tommycalvy/forefinder/crud-service/profile"
+	"github.com/tommycalvy/smltown/crud_service/profile"
 )
 
 var (
@@ -62,19 +62,14 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 		encodeResponse,
 		options...,
 	))
-
-	
-	/*
-	r.Methods("GET").Path("/profiles/v0/distance/{cc}/{pc}/{miles}").Handler(httptransport.NewServer(
-		e.SearchProfilesByDistanceEndpoint,
-		decodeSearchProfilesByDistanceRequest,
+	r.Methods("POST").Path("/posts/v0/gethotpostsnearme").Handler(httptransport.NewServer(
+		e.GetHotPostsNearMeEndpoint,
+		decodeGetHotPostsNearMeRequest,
 		encodeResponse,
 		options...,
 	))
-	*/
-
+	
 	return r 
-
 }
 
 func decodeCreateUserRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
@@ -115,31 +110,13 @@ func decodeCreatePostRequest(_ context.Context, r *http.Request) (request interf
 	return req, nil
 }
 
-
-/*
-func decodeSearchProfilesByDistanceRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
-	vars := mux.Vars(r)
-	cc, ok := vars["cc"]
-	if !ok {
-		return nil, ErrBadRouting
+func decodeGetHotPostsNearMeRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
+	var req getHotPostsNearMeRequest
+	if e := json.NewDecoder(r.Body).Decode(&req); e != nil {
+		return nil, e
 	}
-
-	pc, ok := vars["pc"]
-	if !ok {
-		return nil, ErrBadRouting
-	}
-
-	milesString, ok := vars["miles"]
-	if !ok {
-		return nil, ErrBadRouting
-	}
-	miles, err := strconv.Atoi(milesString)
-	if err != nil {
-		return nil, err
-	}
-	return searchProfilesByDistanceRequest{CountryCode: cc, PostalCode: pc, Miles: miles}, nil
+	return req, nil
 }
-*/
 
 // errorer is implemented by all concrete response types that may contain
 // errors. It allows us to change the HTTP response code without needing to

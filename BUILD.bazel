@@ -6,13 +6,29 @@ refresh_compile_commands(
     # Specify the targets of interest.
     # For example, specify a dict of targets and any flags required to build.
     targets = {
-      "//...": "",
-      "@phtree//:phtree": "-O3 -mavx -mbmi2",
-      "//filter_service:filter_service": "-O3 -mavx -mbmi2",
+        "//...": "",
+        "@phtree//:phtree": "-O3 -mavx -mbmi2",
+        "//filter_service:filter_service": "-O3 -mavx -mbmi2",
     },
     # No need to add flags already in .bazelrc. They're automatically picked up.
     # If you don't need flags, a list of targets is also okay, as is a single target string.
     # Wildcard patterns, like //... for everything, *are* allowed here, just like a build.
-      # As are additional targets (+) and subtractions (-), like in bazel query https://docs.bazel.build/versions/main/query.html#expressions
+    # As are additional targets (+) and subtractions (-), like in bazel query https://docs.bazel.build/versions/main/query.html#expressions
     # And if you're working on a header-only library, specify a test or binary target that compiles it.
+)
+
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix github.com/tommycalvy/smltown
+gazelle(name = "gazelle")
+
+gazelle(
+    name = "gazelle-update-repos",
+    args = [
+        "-from_file=crud_service/go.mod",
+        "-to_macro=deps.bzl%go_dependencies",
+        "-prune",
+        "-build_file_proto_mode=disable_global",
+    ],
+    command = "update-repos",
 )

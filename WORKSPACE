@@ -1,20 +1,27 @@
+# Please Run:
+# bazel run //:gazelle
+# bazel run :refresh_compile_commands
+
 # Bazel bootstrapping
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
+# bazel run :refresh_compile_commands
 http_archive(
     name = "hedron_compile_commands",
 
     # Replace the commit hash in both places (below) with the latest, rather than using the stale one here.
     # Even better, set up Renovate and let it do the work for you (see "Suggestion: Updates" in the README).
     sha256 = "10b5f7a36252ce0dd3396c289ba0138779adb6436c187266f6a93de505f3434f",
-    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/07c307ab34d458cf0a4187a15ce1f6a2b72c408c.tar.gz",
     strip_prefix = "bazel-compile-commands-extractor-07c307ab34d458cf0a4187a15ce1f6a2b72c408c",
+    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/07c307ab34d458cf0a4187a15ce1f6a2b72c408c.tar.gz",
     # When you first run this tool, it'll recommend a sha256 hash to put here with a message like: "DEBUG: Rule 'hedron_compile_commands' indicated that a canonical reproducible form can be obtained by modifying arguments sha256 = ..."
 )
+
 load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
+
 hedron_compile_commands_setup()
 
 # Rules Proto GRPC Boilerplate
@@ -71,6 +78,7 @@ load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 grpc_extra_deps()
 
 # Golang GRPC Rules
+# bazel run //:gazelle
 
 load("@rules_proto_grpc//:repositories.bzl", "bazel_gazelle", "io_bazel_rules_go")  # buildifier: disable=same-origin-load
 
@@ -86,13 +94,49 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 
 go_rules_dependencies()
 
-go_register_toolchains(
-    version = "1.17.1",
-)
+go_register_toolchains()
 
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
+load("//:deps.bzl", "go_dependencies")
+
+# gazelle:repository_macro deps.bzl%go_dependencies
+go_dependencies()
 
 gazelle_dependencies()
+
+# Golang Repositories
+
+go_repository(
+    name = "com_github_go_kit_kit",
+    build_file_proto_mode = "disable_global",
+    importpath = "github.com/go-kit/kit",  # Import path used in the .go files
+    sum = "h1:e4o3o3IsBfAKQh5Qbbiqyfu97Ku7jrO/JbohvztANh4=",
+    version = "v0.12.0",
+)
+
+go_repository(
+    name = "com_github_go_kit_log",
+    build_file_proto_mode = "disable_global",
+    importpath = "github.com/go-kit/log",  # Import path used in the .go files
+    sum = "h1:7i2K3eKTos3Vc0enKCfnVcgHh2olr/MyfboYq7cAcFw=",
+    version = "v0.2.0",
+)
+
+go_repository(
+    name = "com_github_aws_aws_sdk_go_v2_feature_dynamodb_attributevalue",
+    build_file_proto_mode = "disable_global",
+    importpath = "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue",
+    sum = "h1:bKbdstt7+PzIRSIXZ11Yo8Qh8t0AHn6jEYUfsbVcLjE=",
+    version = "v1.10.0",
+)
+
+go_repository(
+    name = "com_github_gorilla_mux",
+    build_file_proto_mode = "disable_global",
+    importpath = "github.com/gorilla/mux",
+    sum = "h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=",
+    version = "v1.8.0",
+)
 
 # PhTree
 
@@ -107,7 +151,6 @@ http_archive(
     strip_prefix = "phtree-cpp-1.5.0",
     url = "https://github.com/tzaeschke/phtree-cpp/archive/refs/tags/v1.5.0.tar.gz",
 )
-
 
 # AWS SDK CPP stuff
 
@@ -253,4 +296,3 @@ http_archive(
         "https://github.com/aws/aws-sdk-cpp/archive/refs/tags/1.11.33.tar.gz",
     ],
 )
-

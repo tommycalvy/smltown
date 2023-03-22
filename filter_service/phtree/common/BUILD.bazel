@@ -15,7 +15,7 @@ cc_library(
         "flat_sparse_map.h",
         "tree_stats.h",
     ],
-    include_prefix="common/",
+    include_prefix = "common/",
     visibility = [
         "//visibility:public",
     ],

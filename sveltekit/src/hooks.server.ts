@@ -1,4 +1,4 @@
-import type { Handle, HandleFetch } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit';
 import { isTheme } from '$lib/types';
 import { auth } from '$lib/server/auth';
 
@@ -45,9 +45,3 @@ export const handle = (async ({ event, resolve }) => {
 	});
 	return response;
 }) satisfies Handle;
-
-export const handleFetch = (({ request, fetch }) => {
-	console.log('request');
-	console.log(request);
-	return fetch(request);
-}) satisfies HandleFetch;

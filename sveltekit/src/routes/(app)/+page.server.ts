@@ -14,11 +14,30 @@ import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils
 import type { Post } from '$lib/types';
 import { CRUD_SERVICE_URL } from '$env/static/private';
 
-export const load = (async ({ locals }) => {
-	return {
-		userSession: locals.userSession,
-		title: 'SMLTOWN'
-	};
+export const load = (async ({ locals, getClientAddress }) => {
+
+	let ip = getClientAddress();
+	if (ip === '127.0.0.1') ip = '';
+	return await fetch(`http://ip-api.com/json/${ip}?fields=lat,lon`).then(
+		(response) => {
+			return response.json();
+		},
+		(err) => {
+			console.log('Error getting clients ip address');
+			console.log(err);
+			return {
+				userSession: locals.userSession,
+				title: 'SMLTOWN'
+			};
+		}
+	).then((response) => {
+		console.log(response);
+		// TODO fetch('gethotpostsnearme')
+		return {
+			userSession: locals.userSession,
+			title: 'SMLTOWN'
+		};
+	});
 }) satisfies PageServerLoad;
 
 export const actions = {
