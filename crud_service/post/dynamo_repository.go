@@ -76,6 +76,20 @@ func (r *dynamoRepo) CreatePost(ctx context.Context, p Post) error {
 	return nil
 }
 
+func (r *dynamoRepo) DeletePost(ctx context.Context, id PostID) error {
+	input := &dynamodb.DeleteItemInput{
+		TableName: aws.String(r.TableName),
+		Key: map[string]types.AttributeValue {
+			"p|" + id.Username  : &types.AttributeValueMemberN{Value: strconv.FormatInt(id.Timestamp, 10)},
+		},
+	}
+	_, err := r.Dynamo.DeleteItem(ctx, input)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *dynamoRepo) GetPostsFromIDs(ctx context.Context, postIDs []PostID) ([]Post, error) {
 	keyval := make([]map[string]types.AttributeValue, len(postIDs))
 	for i, postid := range postIDs {

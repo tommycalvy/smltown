@@ -8,6 +8,7 @@ import (
 	pb "github.com/tommycalvy/smltown/crud_service/protos"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 
@@ -18,19 +19,23 @@ var (
 
 type filterRepo struct {
 	client 			pb.FilterServiceClient
+	Conn 			*grpc.ClientConn
 }
 
 func NewFilterServiceRepo() FilterServiceRepository {
-	conn, err := grpc.Dial(*serverAddr)
+	conn, err := grpc.Dial(*serverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}
-	defer conn.Close()
 	client := pb.NewFilterServiceClient(conn)
-
 	return &filterRepo{
 		client: client,
+		Conn: conn,
 	}
+}
+
+func (r *filterRepo) CloseConn() {
+	r.Conn.Close()
 }
 
 func (r *filterRepo) AddPost(ctx context.Context, p Post) error {

@@ -11,33 +11,52 @@ import type {
 } from '@ory/kratos-client';
 import { redirect, fail } from '@sveltejs/kit';
 import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
-import type { Post } from '$lib/types';
+import type { Filter, Post } from '$lib/types';
 import { CRUD_SERVICE_URL } from '$env/static/private';
 
 export const load = (async ({ locals, getClientAddress }) => {
-
-	let ip = getClientAddress();
-	if (ip === '127.0.0.1') ip = '';
-	return await fetch(`http://ip-api.com/json/${ip}?fields=lat,lon`).then(
-		(response) => {
-			return response.json();
-		},
-		(err) => {
-			console.log('Error getting clients ip address');
-			console.log(err);
-			return {
-				userSession: locals.userSession,
-				title: 'SMLTOWN'
-			};
-		}
-	).then((response) => {
-		console.log(response);
-		// TODO fetch('gethotpostsnearme')
+	try {
+		let ip = getClientAddress();
+		if (ip === '127.0.0.1') ip = '';
+		const ipresponse = await fetch(`http://ip-api.com/json/${ip}?fields=lat,lon`);
+		const coords: { lat: number; lon: number} = await ipresponse.json();
+		const lat = Math.floor((Number(coords.lat) + 180) * 10000);
+		const lon = Math.floor((Number(coords.lon) + 180) * 10000);
+		const filter: Filter = {
+			timestamp: 0,
+			latitude: lat,
+			longitude: lon,
+			channel1: 'General',
+			channel2: '',
+			georange: 2000
+		};
+		const hotresponse = await fetch(`${CRUD_SERVICE_URL}/posts/v0/gethotpostsnearme`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8'
+			},
+			body: JSON.stringify({ Filter: filter })
+		});
+		console.log('hotresponse');
+		console.log(hotresponse);
+		const posts = await hotresponse.json();
+		console.log('posts');
+		console.log(posts);
 		return {
 			userSession: locals.userSession,
-			title: 'SMLTOWN'
+			title: 'SMLTOWN',
+			posts: undefined,
+		}
+	} catch (error) {
+		console.log('Error with getting ipaddress or hotpostsnearme');
+		console.log(error);
+		return {
+			userSession: locals.userSession,
+			title: 'SMLTOWN',
+			posts: undefined,
 		};
-	});
+	}
+	
 }) satisfies PageServerLoad;
 
 export const actions = {
@@ -394,7 +413,7 @@ export const actions = {
 			channel2: channel2,
 			latitude: latitude,
 			longitude: longitude,
-			votes: 0,
+			votes: 0
 		};
 		console.log(post);
 		return fetch(`${CRUD_SERVICE_URL}/posts/v0/`, {

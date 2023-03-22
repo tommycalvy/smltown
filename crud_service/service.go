@@ -58,10 +58,19 @@ func (s *service) CreatePost(ctx context.Context, p post.Post) error {
 	if err := s.dynamoPosts.CreatePost(ctx, p); err != nil {
 		return err
 	}
+	if err := s.filterServicePosts.AddPost(ctx, p); err != nil {
+		id := post.PostID{ Username: p.Username, Timestamp: p.Timestamp }
+		s.dynamoPosts.DeletePost(ctx, id)
+		return err
+	}
+
 	return nil
 }
 
 func (s *service) GetHotPostsNearMe(ctx context.Context, f post.Filter) ([]post.Post, error) {
+	if f.Timestamp == 0 {
+		f.Timestamp = time.Now().UnixNano()
+	}
 	postIDs, err := s.filterServicePosts.GetHotPostsNearMe(ctx, f)
 	if err != nil {
 		return nil, err

@@ -33,12 +33,14 @@ type PostID struct {
 
 type DynamoRepository interface {
 	CreatePost(ctx context.Context, p Post) error
+	DeletePost(ctx context.Context, id PostID) error
 	GetPostsFromIDs(ctx context.Context, postIDs []PostID) ([]Post, error)
 }
 
 type FilterServiceRepository interface {
 	AddPost(ctx context.Context, p Post) error
 	GetHotPostsNearMe(ctx context.Context, f Filter) ([]PostID, error)
+	CloseConn()
 }
 
 var (

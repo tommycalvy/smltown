@@ -35,6 +35,7 @@ func main() {
 		userRepo := user.NewUserRepo(tableName)
 		dynamoPostRepo := post.NewDynamoPostRepo(tableName)
 		filterServiceRepo := post.NewFilterServiceRepo()
+		defer filterServiceRepo.CloseConn()
 
 
 		s = service.NewService(userRepo, dynamoPostRepo, filterServiceRepo)

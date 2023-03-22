@@ -47,13 +47,16 @@ func (s *loggingService) CreatePost(ctx context.Context, p post.Post) (err error
 	return s.Service.CreatePost(ctx, p)
 }
 
-
-
-/*
-func (s *loggingService) SearchProfilesByDistance(ctx context.Context, countryCode string, postalCode string, miles int) (p []profile.Profile, err error) {
+func (s *loggingService) GetHotPostsNearMe(ctx context.Context, f post.Filter) (p []post.Post, err error) {
 	defer func(begin time.Time) {
-		s.logger.Log("method", "SearchProfilesByDistance", "countryCode", countryCode, "postalCode", postalCode, "miles", miles, "took", time.Since(begin), "err", err)
+		s.logger.Log(
+			"method", 
+			"GetHotPostsNearMe", 
+			"Latitude", f.Latitude, 
+			"Longitude", f.Longitude, 
+			"took", time.Since(begin), 
+			"err", err,
+		)
 	}(time.Now())
-	return s.Service.SearchProfilesByDistance(ctx, countryCode, postalCode, miles)
+	return s.Service.GetHotPostsNearMe(ctx, f)
 }
-*/

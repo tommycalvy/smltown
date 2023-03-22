@@ -53,6 +53,7 @@ class FilterServiceImpl final : public FilterService::Service {
             }
             
             std::cout << "Post Added!" << std::endl;
+            _postdb.print_post(username, time);
             res->set_success(true);
             return Status::OK;
         }

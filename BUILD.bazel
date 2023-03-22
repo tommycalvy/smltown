@@ -20,6 +20,8 @@ refresh_compile_commands(
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
 # gazelle:prefix github.com/tommycalvy/smltown
+# gazelle:exclude crud_service/protos
+# gazelle:exclude external
 gazelle(name = "gazelle")
 
 gazelle(
