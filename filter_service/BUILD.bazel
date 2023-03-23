@@ -18,7 +18,7 @@ cc_binary(
     ],
     deps = [
         ":filter_service_proto",
-        "//filter_service/phtree",
+        "@phtree",
         "@aws-sdk-cpp//:core",
         "@aws-sdk-cpp//:dynamodb",
     ],

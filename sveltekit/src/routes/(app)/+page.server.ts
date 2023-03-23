@@ -13,15 +13,16 @@ import { redirect, fail } from '@sveltejs/kit';
 import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
 import type { Filter, Post } from '$lib/types';
 import { CRUD_SERVICE_URL } from '$env/static/private';
+import { z } from 'zod';
 
 export const load = (async ({ locals, getClientAddress }) => {
 	try {
 		let ip = getClientAddress();
 		if (ip === '127.0.0.1') ip = '';
 		const ipresponse = await fetch(`http://ip-api.com/json/${ip}?fields=lat,lon`);
-		const coords: { lat: number; lon: number} = await ipresponse.json();
-		const lat = Math.floor((Number(coords.lat) + 180) * 10000);
-		const lon = Math.floor((Number(coords.lon) + 180) * 10000);
+		const coords: { lat: number; lon: number } = await ipresponse.json();
+		const lat = Number(coords.lat).toFixed(3);
+		const lon = Number(coords.lon).toFixed(3);
 		const filter: Filter = {
 			timestamp: 0,
 			latitude: lat,
@@ -45,18 +46,17 @@ export const load = (async ({ locals, getClientAddress }) => {
 		return {
 			userSession: locals.userSession,
 			title: 'SMLTOWN',
-			posts: undefined,
-		}
+			posts: undefined
+		};
 	} catch (error) {
 		console.log('Error with getting ipaddress or hotpostsnearme');
 		console.log(error);
 		return {
 			userSession: locals.userSession,
 			title: 'SMLTOWN',
-			posts: undefined,
+			posts: undefined
 		};
 	}
-	
 }) satisfies PageServerLoad;
 
 export const actions = {
@@ -382,16 +382,17 @@ export const actions = {
 		if (!locals.userSession.admin) {
 			throw error(400, 'Unauthroized');
 		}
+		/*
 		const values = await request.formData();
 		const title = values.get('title') ?? undefined;
 		const body = values.get('body') ?? undefined;
 		const channel1 = values.get('channel1') ?? undefined;
 		const channel2 = values.get('channel2') ?? undefined;
 		const latitude = values.get('latitude')
-			? Math.floor((Number(values.get('latitude')) + 180) * 10000)
+			? Number(values.get('latitude')).toFixed(3)
 			: undefined;
 		const longitude = values.get('longitude')
-			? Math.floor((Number(values.get('longitude')) + 180) * 10000)
+			? Number(values.get('longitude')).toFixed(3)
 			: undefined;
 
 		if (
@@ -404,17 +405,38 @@ export const actions = {
 		) {
 			return fail(400, { createPost: 'Error: title, body, categories, or coordinates missing' });
 		}
+		*/
+		const formData = Object.fromEntries(await request.formData());
+		const postSchema = z.object({
+			title: z.string().trim().min(1).max(300),
+			body: z.string().max(40000),
+			channel1: z.string().min(1).max(30),
+			channel2: z.string().min(1).max(30),
+			latitude: z.number().min(-90).max(90),
+			longitude: z.number().min(-180).max(180)
+		});
+		const postData = postSchema.safeParse(formData);
+		if (!postData.success) {
+			const errors = postData.error.errors.map((error) => {
+				return {
+					field: error.path[0],
+					message: error.message
+				};
+			});
+			return fail(400, { errors });
+		}
 
 		const post: Post = {
 			username: locals.userSession.username,
-			title: title,
-			body: body,
-			channel1: channel1,
+			title: postData.data.title,
+			body: postData.data.body,
+			channel1: postData.data.channel1,
 			channel2: channel2,
 			latitude: latitude,
 			longitude: longitude,
 			votes: 0
 		};
+
 		console.log(post);
 		return fetch(`${CRUD_SERVICE_URL}/posts/v0/`, {
 			method: 'POST',

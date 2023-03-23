@@ -37,8 +37,8 @@ export interface Post {
 
 export interface Filter {
 	timestamp: 	number;  
-    latitude:	number; 
-	longitude:	number;	
+    latitude:	string; 
+	longitude:	string;	
 	channel1:	string;
 	channel2:	string;	
 	georange:	number;	

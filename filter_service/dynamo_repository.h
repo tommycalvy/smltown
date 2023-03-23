@@ -12,9 +12,7 @@
 struct ScopedAwsSDK {
 
 	ScopedAwsSDK() {
-		Aws::SDKOptions sdk_options;
-		sdk_options.loggingOptions.logLevel = Aws::Utils::Logging::LogLevel::Info;
-		Aws::InitAPI(sdk_options);
+		Aws::InitAPI(opts);
 	}
 
 	~ScopedAwsSDK() {
@@ -29,24 +27,16 @@ class ScopedDynamoTable {
     private:
 	    Aws::String _name;
 	    Aws::String _keyName;
-        Aws::Client::ClientConfiguration clientConfig;
         PhTreePostsDB& _postdb;
+        Aws::Client::ClientConfiguration clientConfig;
         Aws::DynamoDB::DynamoDBClient dynamoClient;
-        Aws::String AWS_ACCESS_KEY_ID     = "XXXXXXXXXXXXXXXXXXXX";
-        Aws::String AWS_SECRET_ACCESS_KEY = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-        Aws::Auth::AWSCredentials credentials;
 
     public:
         ScopedDynamoTable(const char* name, PhTreePostsDB& postdb): _name(name), _postdb(postdb) {
-            credentials = Aws::Auth::AWSCredentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY);
-            clientConfig.endpointOverride = Aws::String("http://localhost:8000");
-            clientConfig.region = Aws::Region::US_EAST_1;
-            //clientConfig.requestTimeoutMs = 1000;
-            //clientConfig.proxyHost = "localhost";
-            //clientConfig.proxyPort = 8000;
-            //clientConfig.proxyScheme = Aws::Http::Scheme::HTTP;
+            
+            clientConfig.endpointOverride = "localhost:8000";
             clientConfig.scheme = Aws::Http::Scheme::HTTP;
-            Aws::DynamoDB::DynamoDBClient dynamoClient = Aws::DynamoDB::DynamoDBClient(credentials, clientConfig);
+            Aws::DynamoDB::DynamoDBClient dynamoClient = Aws::DynamoDB::DynamoDBClient(clientConfig);
         }
 
         void get_all_posts_from_dynamo() {

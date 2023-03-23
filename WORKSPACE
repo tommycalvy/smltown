@@ -147,9 +147,12 @@ go_repository(
 
 http_archive(
     name = "phtree",
-    sha256 = "f64baf86cefd385acd234524600e935436ff1595822aedaecaa9a211437e9985",
-    strip_prefix = "phtree-cpp-1.5.0",
-    url = "https://github.com/tzaeschke/phtree-cpp/archive/refs/tags/v1.5.0.tar.gz",
+    patch_cmds = [
+        """sed -i.bak 's/std::uint64_t/size_t/g' include/phtree/common/b_plus_tree_map.h""",
+    ],
+    sha256 = "c2dcc5aa9f99a69172dc3ab0eb5e82a42f95e9bf713d06a6f10a8a740fe0ffa1",
+    strip_prefix = "phtree-cpp-1.6.0",
+    url = "https://github.com/tzaeschke/phtree-cpp/archive/refs/tags/v1.6.0.tar.gz",
 )
 
 # AWS SDK CPP stuff
