@@ -2,7 +2,6 @@
 #define PHTREE_POSTS_H
 
 #include "phtree/phtree.h"
-#include "phtree/phtree_multimap.h"
 #include <unordered_map>
 #include <iostream>
 #include <functional>
@@ -35,6 +34,17 @@ class PhTreePostsDB {
         std::string     channel1;
         std::string     channel2;
         int64_t         votes;
+    };
+
+    struct Filter {
+        std::string     username;
+        int64_t         timestamp; 
+        std::string     latitude; 
+        std::string     longitude; 
+        std::string     channel1; 
+        std::string     channel2; 
+        int64_t         range;
+        int64_t         minResults;
     };
 
     PhPoint<7> post_to_key(Post p) {
@@ -114,48 +124,57 @@ class PhTreePostsDB {
         return 0;
     }
 
-    PhPost get_post(std::string username, int64_t time) {
-        std::string id = username + std::to_string(time);
-        PostMap::const_iterator got = pMap.find(id);
-        if (got == pMap.end()) {
-            std::cout << id << " not found" << std::endl;
-            return PhPost{};
+    int count(Post p) {
+        PhPoint<7> key = post_to_key(p);  
+
+        auto iter = phtree.find(key);
+        if (iter == phtree.end()) {
+            std::cout << "Couldn't find value from key: " << key << std::endl;
+            return 0;
         }
-        auto key = got->second->entry->GetKey();
-        auto iter = phTree.find(key);
-        if (iter == phTree.end()) {
-            std::cout << "Couldn't find value from key: " << key << " from postid: " << got->first << std::endl;
-            return PhPost{};
-        }
-        PostEntry *post = iter.operator*();
-        if (post->id != got->first) {
-            std::cout << post->id << " != " << got->first << " Post Ids Not Equal!" << std::endl;
-            return PhPost{};
-        }
-        return PhPost{username, key[0], key[1], key[2], post->channel1, post->channel2, key[5]};
+        return 1;
     }
 
-    //TODO: Create unordered map of hash to channel name
+    
 
-    std::vector<PostID> get_hot_posts(int64_t timestamp, int64_t lat, int64_t lon, std::string chan1, std::string chan2, int64_t range) {
-        for (auto it : phTree.begin_knn_query(5, {1, 1, 1}, DistanceEuclidean<3>())); it != phTree.end(); ++it) {
-
-        }
+    std::vector<PostID> get_hot_posts(Filter f) {
+        std::vector<PostID> postids;
+        for (auto it = phtree.begin_knn_query(f.minResults, {0, f.timestamp, 0, 0, 0, 0, 0}, DistanceHot()); it != phtree.end(); ++it) {
+            PostID postid = { *it.second(), it.first().at(1)};
+            postids.push_back(postid);
+        } 
+        return postids;
     }
+
+    // Only calculates distance for timestamp and votes
+    struct DistanceHot {
+        double operator()(const PhPoint<7>& v1, const PhPoint<7>& v2) const noexcept {
+
+            PhPoint<2> v1hot({ v1[1], v1[6]});
+            PhPoint<2> v2hot({v2[1], v2[6]});
+
+            double sum2 = 0;
+            for (dimension_t i = 0; i < 2; ++i) {
+                assert(
+                    (v1hot[i] >= 0) != (v2hot[i] >= 0) ||
+                    double(v1hot[i]) - double(v2hot[i]) <
+                        double(std::numeric_limits<decltype(v1hot[i] - v2hot[i])>::max()));
+                double d2 = double(v1hot[i] - v2hot[i]);
+                sum2 += d2 * d2;
+            }
+            return sqrt(sum2);
+        };
+    };
 
     template <dimension_t DIM, typename T>
     struct FilterByValueId {
-        [[nodiscard]] constexpr bool IsEntryValid(const PhPoint<DIM>& key, const T& value) const {
+        [[nodiscard]] constexpr bool IsWithinGeoRange(const PhPoint<DIM>& key, const T& value) const {
             // Arbitrary example: Only allow values with even values of id_
             return value.id_ % 2 == 0;
         }
-        [[nodiscard]] constexpr bool IsNodeValid(const PhPoint<DIM>& prefix, int bits_to_ignore) const {
-            // Allow all nodes
-            return true;
-        }
     };
 
-    int64_t distance(int64_t lat1, int64_t lon1, int64_t lat2, int64_t lon2) {
+    int64_t geo_distance(int64_t lat1, int64_t lon1, int64_t lat2, int64_t lon2) {
         const double p = 0.017453292519943295;    // Math.PI / 180
         double a = 0.5 - cos((lat2 - lat1) * p)/2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p))/2;
 

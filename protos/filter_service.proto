@@ -7,7 +7,7 @@ service FilterService {
 
     rpc AddPost(Post) returns (Response) {}
 
-    rpc GetPost(PostID) returns (Post) {}
+    rpc Count(Post) returns (Response) {}
 
     rpc UpdatePost(Post) returns (Post) {}
 
