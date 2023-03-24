@@ -68,8 +68,8 @@ func (r *filterRepo) GetHotPostsNearMe(ctx context.Context, f Filter) ([]PostID,
 	if err != nil {
 		return nil, err
 	}
-	postIDs := make([]PostID, len(pbPostIDs.Id))
-	for i, postID := range pbPostIDs.Id {
+	postIDs := make([]PostID, len(pbPostIDs.Postid))
+	for i, postID := range pbPostIDs.Postid {
 		postIDs[i] = PostID {
 			Username: postID.Username,
 			Timestamp: postID.Timestamp,

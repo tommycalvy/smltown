@@ -30,16 +30,14 @@ class PhTreePostsDB {
     struct Post {
         std::string     username;
         int64_t         timestamp;
-        int64_t         latitude;
-        int64_t         longitude;
+        std::string     latitude;
+        std::string     longitude;
         std::string     channel1;
         std::string     channel2;
         int64_t         votes;
     };
 
-
-    int add_post(Post p) {
-
+    PhPoint<7> post_to_key(Post p) {
         int64_t usernameCode;
         if (usernameToCodeMap.count(p.username)) {
             usernameCode = usernameToCodeMap.at(p.username);
@@ -63,60 +61,56 @@ class PhTreePostsDB {
             channel2Code = channelToCodeMap.size() + 1;
             channelToCodeMap[p.channel2] = channel2Code;
         }
-        
+
+        int64_t latitude = int64_t((std::stod(p.latitude) + 90) * 1000);
+        int64_t longitude = int64_t((std::stod(p.longitude) + 180) * 1000);
+
+        // Change votes so that 0 is a lot and a lot is 0
+        // floor(100,000/x)
+        int64_t votes = int64_t(floor(100000 / double(p.votes)));
+
         PhPoint<7> key({
-            usernameCode, 
-            p.latitude, 
-            p.longitude, 
+            usernameCode,
+            latitude, 
+            longitude, 
             channel1Code, 
             channel2Code, 
-            p.votes
+            votes,
         });
-        
 
-        auto pair1 = pMap.emplace(post->id, post);
-        print_map(pMap);
-        if (!pair1.second) {
-            std::cout << "Couldn't Insert into unordered map named pMap" << std::endl;
-            delete post;
-            return -1;
-        }
-        auto pair2 = phTree.emplace_e(p, post);
-        if (!pair2.second) {
+        return key;
+    }
+
+    int add_post(Post p) {
+
+        PhPoint<7> key = post_to_key(p);        
+
+        std::string* value = new std::string(p.username);
+
+        auto pair = phtree.emplace(key, value);
+        if (!pair.second) {
             std::cout << "Couldn't insert into PhTree named phTree" << std::endl;
-            pMap.erase(post->id);
-            delete post;
             return -1;
         }
-        post->entry = pair2.first;
         return 0;
     }
 
-    int print_post(std::string username, int64_t time) {
-        std::string id = username + std::to_string(time);
-        PostMap::const_iterator got = pMap.find(id);
-        if (got == pMap.end()) {
-            std::cout << id << " not found" << std::endl;
+    int print_post(Post p) {
+        
+        PhPoint<7> key = post_to_key(p);  
+
+        auto iter = phtree.find(key);
+        if (iter == phtree.end()) {
+            std::cout << "Couldn't find value from key: " << key << std::endl;
             return -1;
         }
-        auto key = got->second->entry->GetKey();
-        auto iter = phTree.find(key);
-        if (iter == phTree.end()) {
-            std::cout << "Couldn't find value from key: " << key << " from postid: " << got->first << std::endl;
-            return -1;
-        }
-        PostEntry *post = iter.operator*();
-        if (post->id != got->first) {
-            std::cout << post->id << " != " << got->first << " Post Ids Not Equal!" << std::endl;
-            return -1;
-        }
-        std::cout << "PostID:          " << post->id << std::endl;
-        std::cout << "Timestamp:       " << key[0] << std::endl;
-        std::cout << "Latitude:        " << key[1] << std::endl;
-        std::cout << "Longitude:       " << key[2] << std::endl;
-        std::cout << "Channel1Hash:    " << key[3] << std::endl;
-        std::cout << "Channel2Hash:    " << key[4] << std::endl;
-        std::cout << "Votes:           " << key[5] << std::endl;
+        std::cout << "UsernameCode:    " << key[0] << std::endl;
+        std::cout << "Timestamp:       " << key[1] << std::endl;
+        std::cout << "LatitudeMult:    " << key[2] << std::endl;
+        std::cout << "LongitudeMult:   " << key[3] << std::endl;
+        std::cout << "Channel1Code:    " << key[4] << std::endl;
+        std::cout << "Channel2Code:    " << key[5] << std::endl;
+        std::cout << "VotesInverted:   " << key[6] << std::endl;
         return 0;
     }
 

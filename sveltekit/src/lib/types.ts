@@ -30,8 +30,8 @@ export interface Post {
 	body: 		string;
 	channel1: 	string;
 	channel2: 	string;
-	latitude: 	number;
-	longitude: 	number;
+	latitude: 	string;
+	longitude: 	string;
 	votes: 		number;
 }
 

@@ -379,9 +379,6 @@ export const actions = {
 		if (!locals.userSession) {
 			throw error(400, 'Unauthorized');
 		}
-		if (!locals.userSession.admin) {
-			throw error(400, 'Unauthroized');
-		}
 		/*
 		const values = await request.formData();
 		const title = values.get('title') ?? undefined;
@@ -412,8 +409,8 @@ export const actions = {
 			body: z.string().max(40000),
 			channel1: z.string().min(1).max(30),
 			channel2: z.string().min(1).max(30),
-			latitude: z.number().min(-90).max(90),
-			longitude: z.number().min(-180).max(180)
+			latitude: z.preprocess((lat) => Number(lat), z.number().min(-90).max(90).transform((lat) => lat.toFixed(3))),
+			longitude: z.preprocess((lon) => Number(lon), z.number().min(-180).max(180).transform((lat) => lat.toFixed(3))),
 		});
 		const postData = postSchema.safeParse(formData);
 		if (!postData.success) {
@@ -431,9 +428,9 @@ export const actions = {
 			title: postData.data.title,
 			body: postData.data.body,
 			channel1: postData.data.channel1,
-			channel2: channel2,
-			latitude: latitude,
-			longitude: longitude,
+			channel2: postData.data.channel2,
+			latitude: postData.data.latitude,
+			longitude: postData.data.longitude,
 			votes: 0
 		};
 

@@ -22,8 +22,8 @@ service FilterService {
 
 message Filters {
     int64       timestamp = 2;
-    int64       latitude = 3;
-    int64       longitude = 4;
+    string      latitude = 3;
+    string      longitude = 4;
     string      channel1 = 5;
     string      channel2 = 6;
     int64       range = 7;
@@ -35,14 +35,14 @@ message PostID {
 }
 
 message PostIDs {
-    repeated PostID id = 1;
+    repeated PostID postid = 1;
 }
 
 message Post {
     string      username = 1;
     int64       timestamp = 2;
-    int64       latitude = 3;
-    int64       longitude = 4;
+    string      latitude = 3;
+    string      longitude = 4;
     string      channel1 = 5;
     string      channel2 = 6;
     int64       votes = 7;

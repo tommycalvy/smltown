@@ -62,8 +62,8 @@ func (r *dynamoRepo) CreatePost(ctx context.Context, p Post) error {
 			"Body": 		&types.AttributeValueMemberS{Value: p.Body},
 			"Channel1":		&types.AttributeValueMemberS{Value: p.Channel1},
 			"Channel2":		&types.AttributeValueMemberS{Value: p.Channel2},
-			"Latitude":		&types.AttributeValueMemberN{Value: strconv.FormatInt(p.Latitude, 10)},
-			"Longitude":	&types.AttributeValueMemberN{Value: strconv.FormatInt(p.Longitude, 10)},
+			"Latitude":		&types.AttributeValueMemberN{Value: p.Latitude},
+			"Longitude":	&types.AttributeValueMemberN{Value: p.Longitude},
 			"Votes":		&types.AttributeValueMemberN{Value: strconv.FormatInt(p.Votes, 10)},
 		},
 	}

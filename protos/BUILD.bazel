@@ -1,6 +1,7 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_proto_grpc//cpp:defs.bzl", "cpp_grpc_library")
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 proto_library(
     name = "filter_service_proto",
@@ -8,17 +9,22 @@ proto_library(
     visibility = ["//visibility:public"],
 )
 
+cpp_grpc_library(
+    name = "cpp_protos",
+    protos = [":filter_service_proto"],
+)
+
 go_proto_library(
-    name = "filterservice_go_proto",
+    name = "filter_service_go_proto",
     compilers = ["@io_bazel_rules_go//proto:go_grpc"],
-    importpath = "github.com/tommycalvy/smltown/protos",
+    importpath = "github.com/tommycalvy/smltown/crud_service/protos",
     proto = ":filter_service_proto",
     visibility = ["//visibility:public"],
 )
 
 go_library(
-    name = "protos",
-    embed = [":filterservice_go_proto"],
-    importpath = "github.com/tommycalvy/smltown/protos",
+    name = "go_protos",
+    embed = [":filter_service_go_proto"],
+    importpath = "github.com/tommycalvy/smltown/crud_service/protos",
     visibility = ["//visibility:public"],
 )

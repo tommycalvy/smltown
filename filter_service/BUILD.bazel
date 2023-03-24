@@ -1,12 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
-load("@rules_proto_grpc//cpp:defs.bzl", "cpp_grpc_library")
 
 package(default_visibility = ["//visibility:public"])
-
-cpp_grpc_library(
-    name = "filter_service_proto",
-    protos = ["//protos:filter_service_proto"],
-)
 
 cc_binary(
     name = "filter_service",
@@ -17,7 +11,7 @@ cc_binary(
         "phtree_posts.h",
     ],
     deps = [
-        ":filter_service_proto",
+        "//protos:cpp_protos",
         "@phtree",
         "@aws-sdk-cpp//:core",
         "@aws-sdk-cpp//:dynamodb",

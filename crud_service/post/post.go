@@ -6,29 +6,29 @@ import (
 )
 
 type Post struct {
-	Username 		string	`json:"Username,omitempty"`
-	Timestamp		int64	`json:"Timestamp,omitempty"`
-	Title			string	`json:"Title,omitempty"`
-	Body			string	`json:"Body,omitempty"`
-	Channel1		string	`json:"Channel1,omitempty"`
-	Channel2		string	`json:"Channel2,omitempty"`
-	Latitude 		int64	`json:"Latitude,omitempty"`
-	Longitude		int64	`json:"Longitude,omitempty"`
-	Votes			int64	`json:"Votes,omitempty"`
+	Username 		string	`json:"username,omitempty"`
+	Timestamp		int64	`json:"timestamp,omitempty"`
+	Title			string	`json:"title,omitempty"`
+	Body			string	`json:"body,omitempty"`
+	Channel1		string	`json:"channel1,omitempty"`
+	Channel2		string	`json:"channel2,omitempty"`
+	Latitude 		string	`json:"latitude,omitempty"`
+	Longitude		string	`json:"longitude,omitempty"`
+	Votes			int64	`json:"votes,omitempty"`
 }
 
 type Filter struct {
-	Timestamp		int64   `json:"Timestamp,omitempty"`    
-    Latitude		int64   `json:"Latitude,omitempty"`    
-    Longitude		int64	`json:"Longitude,omitempty"`
-    Channel1		string	`json:"Channel1,omitempty"`
-    Channel2		string	`json:"Channel2,omitempty"`
-    Georange		int64	`json:"Georange,omitempty"`
+	Timestamp		int64   `json:"timestamp,omitempty"`    
+    Latitude		string   `json:"latitude,omitempty"`    
+    Longitude		string	`json:"longitude,omitempty"`
+    Channel1		string	`json:"channel1,omitempty"`
+    Channel2		string	`json:"channel2,omitempty"`
+    Georange		int64	`json:"georange,omitempty"`
 }
 
 type PostID struct {
-	Username		string	`json:"Username,omitempty"`
-	Timestamp		int64	`json:"Timestamp,omitempty"`
+	Username		string	`json:"username,omitempty"`
+	Timestamp		int64	`json:"timestamp,omitempty"`
 }
 
 type DynamoRepository interface {
