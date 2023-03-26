@@ -9,6 +9,68 @@
 
 using namespace improbable::phtree;
 
+template <typename ScalarInternal>
+class FilterGeoRange {
+
+    private:
+        double lat_center_;
+        double lon_center_;
+        double radius_;
+
+    public:
+        FilterGeoRange(const double lat_center, const double lon_center, const double radius)
+        : lat_center_{lat_center}
+        , lon_center_{lon_center}
+        , radius_{radius}{};
+
+        template <typename T>
+        [[nodiscard]] bool IsEntryValid(const PhPoint<7>& key, const T&) const {
+            double lat_post = (double(key[2]) / 1000) - 90;
+            double lon_post = (double(key[3]) / 1000) - 180;
+            return geo_distance(lat_center_, lon_center_, lat_post, lon_post) <= radius_;
+        }
+
+        /*
+        * Calculate whether AABB encompassing all possible points in the node intersects with the
+        * sphere.
+        */
+        [[nodiscard]] bool IsNodeValid(const PhPoint<7>& prefix, std::uint32_t bits_to_ignore) const {
+            // we always want to traverse the root node (bits_to_ignore == 64)
+
+            if (bits_to_ignore >= (detail::MAX_BIT_WIDTH<ScalarInternal> - 1)) {
+                return true;
+            }
+
+            ScalarInternal node_min_bits = detail::MAX_MASK<ScalarInternal> << bits_to_ignore;
+            ScalarInternal node_max_bits = ~node_min_bits;
+
+            
+            // calculate lower and upper bound for dimension for given node
+            ScalarInternal lat_post_lo = (double(prefix[2] & node_min_bits) / 1000) - 90;
+            ScalarInternal lat_post_hi = (double(prefix[2] | node_max_bits) / 1000) - 90;
+
+            // choose value closest to center for dimension
+            double lat_post = std::clamp(lat_post, lat_post_lo, lat_post_hi);
+
+            // calculate lower and upper bound for dimension for given node
+            ScalarInternal lon_post_lo = (double(prefix[2] & node_min_bits) / 1000) - 180;
+            ScalarInternal lon_post_hi = (double(prefix[2] | node_max_bits) / 1000) - 180;
+
+            // choose value closest to center for dimension
+            double lon_post = std::clamp(lat_post, lat_post_lo, lat_post_hi);
+            
+
+            return geo_distance(lat_center_, lon_center_, lat_post, lon_post) <= radius_;
+        }
+
+        double geo_distance(double lat1, double lon1, double lat2, double lon2) const {
+            const double p = 0.017453292519943295;    // Math.PI / 180
+            double a = 0.5 - cos((lat2 - lat1) * p)/2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p))/2;
+
+            return 12742 * asin(sqrt(a)); // 2 * R; R = 6371 km
+        }
+};
+
 class PhTreePostsDB {
   private:
     std::unordered_map<std::string, int64_t> channelToCodeMap;
@@ -135,11 +197,11 @@ class PhTreePostsDB {
         return 1;
     }
 
-    
-
     std::vector<PostID> get_hot_posts(Filter f) {
         std::vector<PostID> postids;
-        for (auto it = phtree.begin_knn_query(f.minResults, {0, f.timestamp, 0, 0, 0, 0, 0}, DistanceHot()); it != phtree.end(); ++it) {
+        double lat = std::stod(f.latitude);
+        double lon = std::stod(f.longitude);
+        for (auto it = phtree.begin_knn_query(f.minResults, {0, f.timestamp, 0, 0, 0, 0, 0}, DistanceHot(), FilterGeoRange<scalar_64_t>(lat, lon, double(f.range))); it != phtree.end(); ++it) {
             PostID postid = { *it.second(), it.first().at(1)};
             postids.push_back(postid);
         } 
@@ -166,21 +228,10 @@ class PhTreePostsDB {
         };
     };
 
-    template <dimension_t DIM, typename T>
-    struct FilterByValueId {
-        [[nodiscard]] constexpr bool IsWithinGeoRange(const PhPoint<DIM>& key, const T& value) const {
-            // Arbitrary example: Only allow values with even values of id_
-            return value.id_ % 2 == 0;
-        }
-    };
-
-    int64_t geo_distance(int64_t lat1, int64_t lon1, int64_t lat2, int64_t lon2) {
-        const double p = 0.017453292519943295;    // Math.PI / 180
-        double a = 0.5 - cos((lat2 - lat1) * p)/2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p))/2;
-
-        return 12742 * asin(sqrt(a)); // 2 * R; R = 6371 km
-    }
+    
     
 };
+
+
 
 #endif  // PHTREE_POSTS_H

@@ -61,14 +61,16 @@ class ScopedDynamoTable {
                         std::cout << "More posts found!" << std::endl;
                         for (size_t i = 0; i < items.size(); ++i) {
                             Aws::String::size_type sz = 0;
-                            std::string username = std::string(items[0].find("PK")->second.GetS().substr(2));
-                            int64_t timestamp = std::stoll(items[0].find("SK")->second.GetN().c_str(), &sz, 10);
-                            int64_t lat = std::stoll(items[0].find("Latitude")->second.GetN().c_str(), &sz, 10);
-                            int64_t lon = std::stoll(items[0].find("Longitude")->second.GetN().c_str(), &sz, 10);
-                            std::string chan1 = std::string(items[0].find("Channel1")->second.GetS());
-                            std::string chan2 = std::string(items[0].find("Channel1")->second.GetS());
-                            int64_t votes = std::stoll(items[0].find("Votes")->second.GetN().c_str(), &sz, 10);
-                            _postdb.add_post(username, timestamp, lat, lon, chan1, chan2, votes);
+                            PhTreePostsDB::Post p = {
+                                .username = std::string(items[0].find("PK")->second.GetS().substr(2)),
+                                .timestamp = std::stoll(items[0].find("SK")->second.GetN().c_str(), &sz, 10),
+                                .latitude = std::string(items[0].find("Latitude")->second.GetS()),
+                                .longitude = std::string(items[0].find("Longitude")->second.GetS()),
+                                .channel1 = std::string(items[0].find("Channel1")->second.GetS()),
+                                .channel2 = std::string(items[0].find("Channel1")->second.GetS()),
+                                .votes = std::stoll(items[0].find("Votes")->second.GetN().c_str(), &sz, 10),
+                            };
+                            _postdb.add_post(p);
                         }
                     } else {
                         std::cout << "\nNo posts in SMLTWON database" << std::endl;

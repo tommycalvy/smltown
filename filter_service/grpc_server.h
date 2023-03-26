@@ -38,14 +38,17 @@ class FilterServiceImpl final : public FilterService::Service {
 
         Status AddPost(ServerContext* context, const filterservice::Post* nPost, filterservice::Response* res) override {
             
-            std::string username = nPost->username();
-            int64_t time = nPost->timestamp();
-            int64_t lat = nPost->latitude();
-            int64_t lon = nPost->longitude();
-            std::string chan1 = nPost->channel1();
-            std::string chan2 = nPost->channel2();
-            int64_t votes = nPost->votes();
-            int success = _postdb.add_post(username, time, lat, lon, chan1, chan2, votes);
+            PhTreePostsDB::Post p = {
+                .username = nPost->username(),
+                .timestamp = nPost->timestamp(),
+                .latitude = nPost->latitude(),
+                .longitude = nPost->longitude(),
+                .channel1 = nPost->channel1(),
+                .channel2 = nPost->channel2(),
+                .votes = nPost->votes(),
+            };
+
+            int success = _postdb.add_post(p);
             if (success < 0) {
                 std::cout << "Error adding post!" << std::endl;
                 res->set_success(false);
@@ -53,23 +56,24 @@ class FilterServiceImpl final : public FilterService::Service {
             }
             
             std::cout << "Post Added!" << std::endl;
-            _postdb.print_post(username, time);
+            //_postdb.print_post(p);
             res->set_success(true);
             return Status::OK;
         }
 
-        Status GetPost(ServerContext* context, const filterservice::PostID* postid, filterservice::Post* gpost) override {
-            PhTreePostsDB::PhPost p = _postdb.get_post(postid->username(), postid->timestamp());
-            if (p.username == "") {
-                return Status(grpc::StatusCode::INTERNAL, "Failed to get post!");
-            }
-            gpost->set_username(p.username);
-            gpost->set_timestamp(p.timestamp);
-            gpost->set_latitude(p.latitude);
-            gpost->set_longitude(p.longitude);
-            gpost->set_channel1(p.channel1);
-            gpost->set_channel2(p.channel2);
-            gpost->set_votes(p.votes);
+        Status Count(ServerContext* context, const filterservice::Post* post, filterservice::Response* res) override {
+
+            PhTreePostsDB::Post p = {
+                .username = post->username(),
+                .timestamp = post->timestamp(),
+                .latitude = post->latitude(),
+                .longitude = post->longitude(),
+                .channel1 = post->channel1(),
+                .channel2 = post->channel2(),
+                .votes = post->votes(),
+            };
+            int success = _postdb.count(p)
+            //res->
             return Status::OK;
         }
 
