@@ -26,20 +26,22 @@ struct ScopedAwsSDK {
 class ScopedDynamoTable {
     private:
 	    Aws::String _name;
-	    Aws::String _keyName;
         PhTreePostsDB& _postdb;
         Aws::Client::ClientConfiguration clientConfig;
-        Aws::DynamoDB::DynamoDBClient dynamoClient;
 
     public:
-        ScopedDynamoTable(const char* name, PhTreePostsDB& postdb): _name(name), _postdb(postdb) {
-            
+        ScopedDynamoTable(const char* name, PhTreePostsDB& postdb) : 
+        _name(name), 
+        _postdb(postdb)
+        {
+            // Set up DynamoDB client by setting the endpoint to point to a local instance of DynamoDB
+            clientConfig.region = "us-east-1";
             clientConfig.endpointOverride = "localhost:8000";
             clientConfig.scheme = Aws::Http::Scheme::HTTP;
-            Aws::DynamoDB::DynamoDBClient dynamoClient = Aws::DynamoDB::DynamoDBClient(clientConfig);
         }
 
         void get_all_posts_from_dynamo() {
+            Aws::DynamoDB::DynamoDBClient dynamoClient(clientConfig);
             std::cout << "Getting all posts from dynamo table: " << _name << std::endl;
             Aws::Map<Aws::String, Aws::DynamoDB::Model::AttributeValue> exclusiveStartKey;
             do {

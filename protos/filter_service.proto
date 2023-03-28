@@ -17,10 +17,10 @@ service FilterService {
 
     rpc DownVotePost(PostID) returns (Votes) {}
 
-    rpc GetHotPostsNearMe(Filters) returns (PostIDs) {}
+    rpc GetHotPostsNearMe(Filter) returns (PostIDs) {}
 }
 
-message Filters {
+message Filter {
     int64       timestamp = 2;
     string      latitude = 3;
     string      longitude = 4;

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <functional>
 #include <math.h>
+#include <algorithm>
 
 using namespace improbable::phtree;
 
@@ -46,28 +47,30 @@ class FilterGeoRange {
 
             
             // calculate lower and upper bound for dimension for given node
-            ScalarInternal lat_post_lo = (double(prefix[2] & node_min_bits) / 1000) - 90;
-            ScalarInternal lat_post_hi = (double(prefix[2] | node_max_bits) / 1000) - 90;
+            double lat_post_lo = (double(prefix[2] & node_min_bits) / 1000) - 90;
+            double lat_post_hi = (double(prefix[2] | node_max_bits) / 1000) - 90;
 
             // choose value closest to center for dimension
-            double lat_post = std::clamp(lat_post, lat_post_lo, lat_post_hi);
+            double lat_post = std::clamp(lat_center_, lat_post_lo, lat_post_hi);
 
             // calculate lower and upper bound for dimension for given node
-            ScalarInternal lon_post_lo = (double(prefix[2] & node_min_bits) / 1000) - 180;
-            ScalarInternal lon_post_hi = (double(prefix[2] | node_max_bits) / 1000) - 180;
+            double lon_post_lo = (double(prefix[3] & node_min_bits) / 1000) - 180;
+            double lon_post_hi = (double(prefix[3] | node_max_bits) / 1000) - 180;
 
             // choose value closest to center for dimension
-            double lon_post = std::clamp(lat_post, lat_post_lo, lat_post_hi);
+            double lon_post = std::clamp(lon_center_, lon_post_lo, lon_post_hi);
             
 
             return geo_distance(lat_center_, lon_center_, lat_post, lon_post) <= radius_;
         }
 
+        // Write the distance between two points on the surface of the earth in miles
         double geo_distance(double lat1, double lon1, double lat2, double lon2) const {
             const double p = 0.017453292519943295;    // Math.PI / 180
-            double a = 0.5 - cos((lat2 - lat1) * p)/2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p))/2;
-
-            return 12742 * asin(sqrt(a)); // 2 * R; R = 6371 km
+            const double a = 0.5 - cos((lat2 - lat1) * p)/2 + 
+                    cos(lat1 * p) * cos(lat2 * p) * 
+                    (1 - cos((lon2 - lon1) * p))/2;
+            return 7917.6 * asin(sqrt(a)); // 2 * R; R = 3,958.8 mi
         }
 };
 

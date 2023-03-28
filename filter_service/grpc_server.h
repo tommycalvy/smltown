@@ -63,44 +63,36 @@ class FilterServiceImpl final : public FilterService::Service {
 
         // Create a function that overrides the 
         // GetHotPostsNearMe function in the FilterService class
-        Status GetHotPostsNearMe(ServerContext* context, const filterservice::Filters *filters, filterservice::Response *res) override {
+        Status GetHotPostsNearMe(ServerContext* context, const filterservice::Filter* f, filterservice::PostIDs* postIDs) override {
             // Get the filters from the request
-            std::string username = filters->username();
-            double latitude = filters->latitude();
-            double longitude = filters->longitude();
-            double radius = filters->radius();
-            int channel1 = filters->channel1();
-            int channel2 = filters->channel2();
-            int votes = filters->votes();
-            int limit = filters->limit();
+
+            PhTreePostsDB::Filter phF = {
+                .timestamp = f->timestamp(),
+                .latitude = f->latitude(),
+                .longitude = f->longitude(),
+                .channel1 = f->channel1(),
+                .channel2 = f->channel2(),
+                .range = f->range(),
+            };
 
             // Create a vector of posts
             std::vector<PhTreePostsDB::Post> posts;
 
             // Call the get_hot_posts_near_me function
-            int success = _postdb.get_hot_posts_near_me(username, latitude, longitude, radius, channel1, channel2, votes, limit, posts);
+            std::vector postIDVec = _postdb.get_hot_posts(phF);
 
             // Check if the function was successful
-            if (success < 0) {
-                std::cout << "Error getting hot posts near me!" << std::endl;
-                res->set_success(false);
-                return Status(grpc::StatusCode::INTERNAL, "Error getting hot posts near me!");
+            if (postIDVec.size() == 0) {
+                std::cout << "No posts returned" << std::endl;
+                return Status(grpc::StatusCode::INTERNAL, "No posts returned");
             }
 
-            // Add the posts to the response
-            for (auto post : posts) {
-                filterservice::Post* nPost = res->add_posts();
-                nPost->set_username(post.username);
-                nPost->set_timestamp(post.timestamp);
-                nPost->set_latitude(post.latitude);
-                nPost->set_longitude(post.longitude);
-                nPost->set_channel1(post.channel1);
-                nPost->set_channel2(post.channel2);
-                nPost->set_votes(post.votes);
+            // Convert the postIDVec vector that contains postids to a PostIDs object
+            for (PhTreePostsDB::PostID phPostID: postIDVec) {
+                filterservice::PostID* postid = postIDs->add_postid(); 
+                postid->set_username(phPostID.username);
+                postid->set_timestamp(phPostID.timestamp);
             }
-
-            // Set the success flag to true
-            res->set_success(true);
 
             // Return the status
             return Status::OK;
@@ -118,8 +110,8 @@ class FilterServiceImpl final : public FilterService::Service {
                 .channel2 = post->channel2(),
                 .votes = post->votes(),
             };
-            int success = _postdb.count(p)
-            //res->
+            int success = _postdb.count(p);
+            res->set_success(success);
             return Status::OK;
         }
 
