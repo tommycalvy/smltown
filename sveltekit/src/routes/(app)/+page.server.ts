@@ -29,7 +29,8 @@ export const load = (async ({ locals, getClientAddress }) => {
 			longitude: lon,
 			channel1: 'General',
 			channel2: '',
-			georange: 2000
+			georange: 2000,
+			minresults: 10,
 		};
 		const hotresponse = await fetch(`${CRUD_SERVICE_URL}/posts/v0/gethotpostsnearme`, {
 			method: 'POST',

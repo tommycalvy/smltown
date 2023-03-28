@@ -24,6 +24,7 @@ type Filter struct {
     Channel1		string	`json:"channel1,omitempty"`
     Channel2		string	`json:"channel2,omitempty"`
     Georange		int64	`json:"georange,omitempty"`
+	Minresults 		int64	`json:"minresults,omitempty"`
 }
 
 type PostID struct {

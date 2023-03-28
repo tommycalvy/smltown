@@ -1,6 +1,6 @@
 # Please Run:
 # bazel run //:gazelle
-# bazel run :refresh_compile_commands
+# bazel run @hedron_compile_commands//:refresh_all
 
 # Bazel bootstrapping
 
@@ -8,7 +8,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file"
 
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
-# bazel run :refresh_compile_commands
+# bazel run @hedron_compile_commands//:refresh_all
 http_archive(
     name = "hedron_compile_commands",
 

@@ -56,7 +56,7 @@ class FilterServiceImpl final : public FilterService::Service {
             }
             
             std::cout << "Post Added!" << std::endl;
-            //_postdb.print_post(p);
+            _postdb.print_post(p);
             res->set_success(true);
             return Status::OK;
         }
@@ -73,6 +73,7 @@ class FilterServiceImpl final : public FilterService::Service {
                 .channel1 = f->channel1(),
                 .channel2 = f->channel2(),
                 .range = f->range(),
+                .minresults = f->minresults(),
             };
 
             // Create a vector of posts

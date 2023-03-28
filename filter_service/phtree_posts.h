@@ -109,7 +109,7 @@ class PhTreePostsDB {
         std::string     channel1; 
         std::string     channel2; 
         int64_t         range;
-        int64_t         minResults;
+        int64_t         minresults;
     };
 
     PhPoint<7> post_to_key(Post p) {
@@ -146,6 +146,7 @@ class PhTreePostsDB {
 
         PhPoint<7> key({
             usernameCode,
+            p.timestamp,
             latitude, 
             longitude, 
             channel1Code, 
@@ -204,7 +205,7 @@ class PhTreePostsDB {
         std::vector<PostID> postids;
         double lat = std::stod(f.latitude);
         double lon = std::stod(f.longitude);
-        for (auto it = phtree.begin_knn_query(f.minResults, {0, f.timestamp, 0, 0, 0, 0, 0}, DistanceHot(), FilterGeoRange<scalar_64_t>(lat, lon, double(f.range))); it != phtree.end(); ++it) {
+        for (auto it = phtree.begin_knn_query(f.minresults, {0, f.timestamp, 0, 0, 0, 0, 0}, DistanceHot(), FilterGeoRange<scalar_64_t>(lat, lon, double(f.range))); it != phtree.end(); ++it) {
             PostID postid = { *it.second(), it.first().at(1)};
             postids.push_back(postid);
         } 

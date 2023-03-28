@@ -56,13 +56,14 @@ func (r *filterRepo) AddPost(ctx context.Context, p Post) error {
 }
 
 func (r *filterRepo) GetHotPostsNearMe(ctx context.Context, f Filter) ([]PostID, error) {
-	filters := pb.Filters {
+	filters := pb.Filter {
 		Timestamp: f.Timestamp,
 		Latitude: f.Latitude,
 		Longitude: f.Longitude,
 		Channel1: f.Channel1,
 		Channel2: f.Channel2,
 		Range: f.Georange,
+		Minresults: f.Minresults,
 	}
 	pbPostIDs, err := r.client.GetHotPostsNearMe(ctx, &filters)
 	if err != nil {

@@ -27,6 +27,7 @@ message Filter {
     string      channel1 = 5;
     string      channel2 = 6;
     int64       range = 7;
+    int64       minresults = 8;
 }
 
 message PostID {

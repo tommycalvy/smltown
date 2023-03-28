@@ -11,12 +11,13 @@
 int main() {
     std::cout << "Running Filter Service" << std::endl;
     PhTreePostsDB postdb = PhTreePostsDB();
-    
+    /*
     ScopedAwsSDK sdkScoped;
 	{
 		ScopedDynamoTable table("SMLTOWN", postdb);
 		table.get_all_posts_from_dynamo();
 	}
+    */
     
     //postdb.print_post();
     //postdb.print_post();

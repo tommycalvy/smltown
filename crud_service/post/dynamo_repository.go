@@ -80,7 +80,8 @@ func (r *dynamoRepo) DeletePost(ctx context.Context, id PostID) error {
 	input := &dynamodb.DeleteItemInput{
 		TableName: aws.String(r.TableName),
 		Key: map[string]types.AttributeValue {
-			"p|" + id.Username  : &types.AttributeValueMemberN{Value: strconv.FormatInt(id.Timestamp, 10)},
+			"PK": &types.AttributeValueMemberS{Value: "p|" + id.Username},
+			"SK": &types.AttributeValueMemberN{Value: strconv.FormatInt(id.Timestamp, 10)},
 		},
 	}
 	_, err := r.Dynamo.DeleteItem(ctx, input)
@@ -91,16 +92,17 @@ func (r *dynamoRepo) DeletePost(ctx context.Context, id PostID) error {
 }
 
 func (r *dynamoRepo) GetPostsFromIDs(ctx context.Context, postIDs []PostID) ([]Post, error) {
-	keyval := make([]map[string]types.AttributeValue, len(postIDs))
-	for i, postid := range postIDs {
-		keyval[i] = map[string]types.AttributeValue {
-			"p|" + postid.Username: &types.AttributeValueMemberN{Value: strconv.FormatInt(postid.Timestamp, 10)},
+	keys := make([]map[string]types.AttributeValue, len(postIDs))
+	for i, id := range postIDs {
+		keys[i] = map[string]types.AttributeValue {
+			"PK": &types.AttributeValueMemberS{Value: "p|" + id.Username},
+			"SK": &types.AttributeValueMemberN{Value: strconv.FormatInt(id.Timestamp, 10)},
 		}
 	}
 	input := &dynamodb.BatchGetItemInput{
 		RequestItems: map[string]types.KeysAndAttributes{
             r.TableName: {
-                Keys: keyval,
+                Keys: keys,
             },
         },
 	}
@@ -116,7 +118,7 @@ func (r *dynamoRepo) GetPostsFromIDs(ctx context.Context, postIDs []PostID) ([]P
 		return nil, ErrNotFound
 	}
 	for i, post := range out.Responses[r.TableName] {
-		err := attributevalue.UnmarshalMap(post, posts[i])
+		err := attributevalue.UnmarshalMap(post, &posts[i])
 		if err != nil {
 			log.Printf("Failed to unmarshal Record, %v", err)
 			return nil, ErrRepo

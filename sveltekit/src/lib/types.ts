@@ -42,6 +42,7 @@ export interface Filter {
 	channel1:	string;
 	channel2:	string;	
 	georange:	number;	
+	minresults:	number;
 }
 
 export const isVerificationFlow = (response: object): response is VerificationFlow => {
