@@ -8,7 +8,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
@@ -118,10 +117,24 @@ func (r *dynamoRepo) GetPostsFromIDs(ctx context.Context, postIDs []PostID) ([]P
 		return nil, ErrNotFound
 	}
 	for i, post := range out.Responses[r.TableName] {
-		err := attributevalue.UnmarshalMap(post, &posts[i])
+		timestamp, err := strconv.ParseInt(post["SK"].(*types.AttributeValueMemberN).Value, 10, 64)
 		if err != nil {
 			log.Printf("Failed to unmarshal Record, %v", err)
 			return nil, ErrRepo
+		}
+		votes, err := strconv.ParseInt(post["Votes"].(*types.AttributeValueMemberN).Value, 10, 64)
+		if err != nil {
+			log.Printf("Failed to unmarshal Record, %v", err)
+			return nil, ErrRepo
+		}
+		posts[i] = Post {
+			Username: 	post["PK"].(*types.AttributeValueMemberS).Value[2:],
+			Timestamp: 	timestamp,
+			Title: 		post["Metadata"].(*types.AttributeValueMemberS).Value,
+			Body: 		post["Body"].(*types.AttributeValueMemberS).Value,
+			Channel1: 	post["Channel1"].(*types.AttributeValueMemberS).Value,
+			Channel2: 	post["Channel2"].(*types.AttributeValueMemberS).Value,
+			Votes: 		votes,
 		}
 	}
 	return posts, nil

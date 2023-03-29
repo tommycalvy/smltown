@@ -6,15 +6,15 @@ import (
 )
 
 type Post struct {
-	Username 		string	`json:"username,omitempty"`
-	Timestamp		int64	`json:"timestamp,omitempty"`
-	Title			string	`json:"title,omitempty"`
-	Body			string	`json:"body,omitempty"`
-	Channel1		string	`json:"channel1,omitempty"`
-	Channel2		string	`json:"channel2,omitempty"`
+	Username 		string	`json:"username"`
+	Timestamp		int64	`json:"timestamp"`
+	Title			string	`json:"title"`
+	Body			string	`json:"body"`
+	Channel1		string	`json:"channel1"`
+	Channel2		string	`json:"channel2"`
 	Latitude 		string	`json:"latitude,omitempty"`
 	Longitude		string	`json:"longitude,omitempty"`
-	Votes			int64	`json:"votes,omitempty"`
+	Votes			int64	`json:"votes"`
 }
 
 type Filter struct {

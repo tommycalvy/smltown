@@ -39,15 +39,13 @@ export const load = (async ({ locals, getClientAddress }) => {
 			},
 			body: JSON.stringify({ Filter: filter })
 		});
-		console.log('hotresponse');
-		console.log(hotresponse);
-		const posts = await hotresponse.json();
+		const { posts } : { posts: Post[] } = await hotresponse.json();
 		console.log('posts');
 		console.log(posts);
 		return {
 			userSession: locals.userSession,
 			title: 'SMLTOWN',
-			posts: undefined
+			posts: posts,
 		};
 	} catch (error) {
 		console.log('Error with getting ipaddress or hotpostsnearme');
@@ -55,7 +53,7 @@ export const load = (async ({ locals, getClientAddress }) => {
 		return {
 			userSession: locals.userSession,
 			title: 'SMLTOWN',
-			posts: undefined
+			posts: undefined,
 		};
 	}
 }) satisfies PageServerLoad;
@@ -380,30 +378,6 @@ export const actions = {
 		if (!locals.userSession) {
 			throw error(400, 'Unauthorized');
 		}
-		/*
-		const values = await request.formData();
-		const title = values.get('title') ?? undefined;
-		const body = values.get('body') ?? undefined;
-		const channel1 = values.get('channel1') ?? undefined;
-		const channel2 = values.get('channel2') ?? undefined;
-		const latitude = values.get('latitude')
-			? Number(values.get('latitude')).toFixed(3)
-			: undefined;
-		const longitude = values.get('longitude')
-			? Number(values.get('longitude')).toFixed(3)
-			: undefined;
-
-		if (
-			typeof title !== 'string' ||
-			typeof body !== 'string' ||
-			typeof channel1 !== 'string' ||
-			typeof channel2 !== 'string' ||
-			typeof latitude === 'undefined' ||
-			typeof longitude === 'undefined'
-		) {
-			return fail(400, { createPost: 'Error: title, body, categories, or coordinates missing' });
-		}
-		*/
 		const formData = Object.fromEntries(await request.formData());
 		const postSchema = z.object({
 			title: z.string().trim().min(1).max(300),
@@ -426,6 +400,7 @@ export const actions = {
 
 		const post: Post = {
 			username: locals.userSession.username,
+			timestamp: 0,
 			title: postData.data.title,
 			body: postData.data.body,
 			channel1: postData.data.channel1,

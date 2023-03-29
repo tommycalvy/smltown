@@ -26,12 +26,13 @@ export interface User {
 
 export interface Post {
 	username: 	string;
+	timestamp: 	number;
 	title: 		string;
 	body: 		string;
 	channel1: 	string;
 	channel2: 	string;
-	latitude: 	string;
-	longitude: 	string;
+	latitude?: 	string;
+	longitude?: string;
 	votes: 		number;
 }
 

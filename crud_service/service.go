@@ -54,7 +54,9 @@ func (s *service) GetUserByEmail(ctx context.Context, email string) (user.User, 
 }
 
 func (s *service) CreatePost(ctx context.Context, p post.Post) error {
-	p.Timestamp = time.Now().Unix()
+	if p.Timestamp == 0 {
+		p.Timestamp = time.Now().Unix()
+	}
 	if err := s.dynamoPosts.CreatePost(ctx, p); err != nil {
 		return err
 	}
