@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@io_bazel_rules_docker//cc:image.bzl", "cc_image")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -12,8 +13,19 @@ cc_binary(
     ],
     deps = [
         "//protos:cpp_protos",
-        "@phtree",
         "@aws-sdk-cpp//:core",
         "@aws-sdk-cpp//:dynamodb",
+        "@phtree",
     ],
 )
+
+cc_image(
+    name = "image",
+    binary = ":filter_service",
+    platforms = {
+        "//conditions:default": "linux/amd64",
+        "//conditions:linux_arm64": "linux/arm64",
+    },
+)
+
+

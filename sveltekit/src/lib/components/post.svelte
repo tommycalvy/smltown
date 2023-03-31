@@ -8,30 +8,40 @@
 
     // Function to convert timestamp to how many hours or days or weeks or months or years ago
     function timestampToAgo(timestamp: number) : string {
-        let seconds = Math.floor((new Date().getTime() - timestamp) / 1000);
+        let seconds = Math.floor(Date.now() / 1000) - timestamp;
         let interval = seconds / 31536000;
-        if (interval > 1) {
+        if (interval > 2) {
             return Math.floor(interval) + " years";
+        } else if (interval > 1) {
+            return Math.floor(interval) + " year";
         }
         interval = seconds / 2592000;
-        if (interval > 1) {
+        if (interval > 2) {
             return Math.floor(interval) + " months";
+        } else if (interval > 1) {
+            return Math.floor(interval) + " month";
         }
         interval = seconds / 86400;
-        if (interval > 1) {
+        if (interval > 2) {
             return Math.floor(interval) + " days";
+        } else if (interval > 1) {
+            return Math.floor(interval) + " day";
         }
         interval = seconds / 3600;
-        if (interval > 1) {
+        if (interval > 2) {
             return Math.floor(interval) + " hours";
+        } else if (interval > 1) {
+            return Math.floor(interval) + " hour";
         }
         interval = seconds / 60;
-        if (interval > 1) {
+        if (interval > 2) {
             return Math.floor(interval) + " minutes";
+        } else if (interval > 1) {
+            return Math.floor(interval) + " minute";
         }
         return Math.floor(seconds) + " seconds";
     }
-    let date = timestampToAgo(post.timestamp) + " ago";
+    let ago = timestampToAgo(post.timestamp) + " ago";
 </script>
 
 <div class="flex gap-3 w-full bg-base-100 group rounded-md px-4 py-2">
@@ -54,7 +64,7 @@
 	</div>
 	<div class="flex flex-col gap-3 w-full">
         <div class="flex justify-between">
-            <h6 class=" text-xs">Posted by {post.username} on {date}</h6>
+            <h6 class=" text-xs">Posted by {post.username} {ago}</h6>
             <span class="badge badge-primary">{post.channel2}</span>
         </div>
 		<h1 class=" text-xl">{post.title}</h1>

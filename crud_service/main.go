@@ -9,8 +9,8 @@ import (
 	"syscall"
 
 	"github.com/go-kit/log"
-	service "github.com/tommycalvy/smltown/crud_service"
 	"github.com/tommycalvy/smltown/crud_service/post"
+	service "github.com/tommycalvy/smltown/crud_service/service"
 	"github.com/tommycalvy/smltown/crud_service/user"
 )
 
