@@ -171,6 +171,16 @@ http_archive(
 )
 
 http_archive(
+    name = "curl",
+    build_file = "//third_party:curl.BUILD",
+    sha256 = "d9aefeb87998472cd79418edd4fb4dc68c1859afdbcbc2e02400b220adc64ec1",
+    strip_prefix = "curl-curl-8_0_1",
+    urls = [
+        "https://github.com/curl/curl/archive/refs/tags/curl-8_0_1.tar.gz",
+    ],
+)
+
+http_archive(
     name = "aws-c-s3",
     build_file = "//third_party:aws-c-s3.BUILD",
     sha256 = "20f639c662e4c7906ef3ebdcbe6340be240eb2808a956bcfa8b0c732dae6bc90",

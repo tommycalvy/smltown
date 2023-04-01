@@ -12,8 +12,8 @@ cc_library(
     srcs = glob([
         "source/*.c",
         "source/*.h",
-        "source/bsd/*.c",
-        "source/darwin/*.c",
+        # "source/bsd/*.c",
+        # "source/darwin/*.c",
         "source/pkcs11/v2.40/*.h",
         "source/posix/*.c",
         # "source/s2n/*.c",

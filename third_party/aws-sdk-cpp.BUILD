@@ -31,7 +31,7 @@ cc_library(
         "src/aws-cpp-sdk-core/source/utils/*.cpp",                          # UTILS_SOURCE
         "src/aws-cpp-sdk-core/source/utils/base64/*.cpp",                   # UTILS_BASE64_SOURCE
         "src/aws-cpp-sdk-core/source/utils/crypto/*.cpp",                   # UTILS_CRYPTO_SOURCE
-        "src/aws-cpp-sdk-core/source/utils/crypto/commoncrypto/*.cpp",      # UTILS_CRYPTO_COMMONCRYPTO_SOURCE
+        # "src/aws-cpp-sdk-core/source/utils/crypto/commoncrypto/*.cpp",      # UTILS_CRYPTO_COMMONCRYPTO_SOURCE
         "src/aws-cpp-sdk-core/source/utils/crypto/factory/*.cpp",           # UTILS_CRYPTO_FACTORY_SOURCE
         "src/aws-cpp-sdk-core/source/utils/crypto/openssl/*.cpp",           # UTILS_CRYPTO_OPENSSL_SOURCE
         "src/aws-cpp-sdk-core/source/utils/event/*.cpp",                    # UTILS_EVENT_SOURCE
@@ -81,7 +81,7 @@ cc_library(
         "src/aws-cpp-sdk-core/include/aws/core/utils/base64/*.h",                       # UTILS_BASE64_HEADERS
         "src/aws-cpp-sdk-core/include/aws/core/utils/crypto/*.h",                       # UTILS_CRYPTO_HEADERS
         "src/aws-cpp-sdk-core/include/aws/core/utils/crypto/bcrypt/*.h",                # UTILS_CRYPTO_BCRYPT_HEADERS
-        "src/aws-cpp-sdk-core/include/aws/core/utils/crypto/commoncrypto/*.h",          # UTILS_CRYPTO_COMMONCRYPTO_HEADERS
+        # "src/aws-cpp-sdk-core/include/aws/core/utils/crypto/commoncrypto/*.h",          # UTILS_CRYPTO_COMMONCRYPTO_HEADERS
         "src/aws-cpp-sdk-core/include/aws/core/utils/crypto/openssl/*.h",               # UTILS_CRYPTO_OPENSSL_HEADERS
         "src/aws-cpp-sdk-core/include/aws/core/utils/event/*.h",                        # UTILS_EVENT_HEADERS
         "src/aws-cpp-sdk-core/include/aws/core/utils/json/*.h",                         # UTILS_JSON_HEADERS
@@ -99,7 +99,7 @@ cc_library(
         "AWS_SDK_VERSION_MINOR=11",
         "AWS_SDK_VERSION_PATCH=33",
         "ENABLE_OPENSSL_ENCRYPTION=1",
-        # "ENABLE_CURL_CLIENT=1",
+        "ENABLE_CURL_CLIENT=1",
         "OPENSSL_IS_BORINGSSL=1",
     ] + select({
         "@bazel_tools//src/conditions:windows": [
@@ -118,6 +118,7 @@ cc_library(
         "@aws-c-event-stream",
         "@boringssl//:crypto",
         "@boringssl//:ssl",
+        "@curl",
     ],
 )
 
