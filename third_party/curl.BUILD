@@ -1,16 +1,20 @@
+# Description:
+#   Curl
+
+package(default_visibility = ["//visibility:public"])
+
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
 cc_library(
-    name = "aws-c-cal",
+    name = "curl",
     srcs = glob([
         "source/*.c",
-        # "source/darwin/*.c",
+        "source/*.h",
     ]),
     hdrs = glob([
-        "include/aws/cal/*.h",
-        "include/aws/cal/private/*.h",
+        "include/curl/*.h",
     ]),
     defines = [
         "BYO_CRYPTO=1",
@@ -19,7 +23,6 @@ cc_library(
         "include",
     ],
     deps = [
-        "@aws-c-common",
         "@boringssl//:crypto",
     ],
 )
