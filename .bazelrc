@@ -1,2 +1,9 @@
 build --cxxopt="-std=c++17"
-build --incompatible_enable_cc_toolchain_resolution
+
+build:linux_amd64 --incompatible_enable_cc_toolchain_resolution
+build:linux_amd64 --platforms @zig_sdk//platform:linux_amd64
+build:linux_amd64 --extra_toolchains @zig_sdk//toolchain:linux_amd64_gnu.2.19
+
+build:linux_arm64 --incompatible_enable_cc_toolchain_resolution
+build:linux_arm64 --platforms @zig_sdk//platform:linux_arm64
+build:linux_arm64 --extra_toolchains @zig_sdk//toolchain:linux_arm64_gnu.2.34

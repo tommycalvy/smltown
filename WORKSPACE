@@ -90,7 +90,27 @@ load("@rules_proto_grpc//go:repositories.bzl", rules_proto_grpc_go_repos = "go_r
 
 rules_proto_grpc_go_repos()
 
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@io_bazel_rules_go//go:deps.bzl", "go_download_sdk", "go_register_toolchains", "go_rules_dependencies")
+
+go_download_sdk(
+    name = "go_sdk",
+    goos = "linux",
+    goarch = "arm64",
+    version = "1.20.3",
+    sdks = {
+        # NOTE: In most cases the whole sdks attribute is not needed.
+        # There are 2 "common" reasons you might want it:
+        #
+        # 1. You need to use an modified GO SDK, or an unsupported version
+        #    (for example, a beta or release candidate)
+        #
+        # 2. You want to avoid the dependency on the index file for the
+        #    SHA-256 checksums. In this case, You can get the expected
+        #    filenames and checksums from https://go.dev/dl/
+        "linux_arm64": ("go1.20.3.linux-arm64.tar.gz", "86b0ed0f2b2df50fa8036eea875d1cf2d76cefdacf247c44639a1464b7e36b95"),
+        "darwin_arm64": ("go1.20.3.darwin-arm64.tar.gz", "eb186529f13f901e7a2c4438a05c2cd90d74706aaa0a888469b2a4a617b6ee54"),
+    },
+)
 
 go_rules_dependencies()
 
@@ -137,13 +157,6 @@ go_repository(
     sum = "h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=",
     version = "v1.8.0",
 )
-
-# PhTree
-
-#git_repository(
-#    name = "phtree",
-#    remote = "https://github.com/tommycalvy/phtree-cpp.git",
-#)
 
 http_archive(
     name = "phtree",
@@ -334,6 +347,18 @@ load(
 )
 
 _cc_image_repos()
+
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+
+container_pull(
+    name = "amazonlinux",
+    architecture = "arm64",
+    os = "linux",
+    registry = "index.docker.io",
+    repository = "library/amazonlinux",
+    # tag = "2023.0.20230322.0",
+    digest = "sha256:11ed3e57e4bf082e5438b7a443401b7621abca75b05245c1e5b04a55c7d2eb9d",
+)
 
 # Bazel Zig CC
 

@@ -4,12 +4,14 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns";
 import * as rds from "aws-cdk-lib/aws-rds";
-import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as dynamo from "aws-cdk-lib/aws-dynamodb";
 import * as route53 from "aws-cdk-lib/aws-route53";
 import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import * as targets from "aws-cdk-lib/aws-route53-targets/lib";
+import { CdkResourceInitializer } from "./resource-initializer";
 
-export class AwscdkStack extends cdk.Stack {
+export class SmltownStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
@@ -24,13 +26,13 @@ export class AwscdkStack extends cdk.Stack {
         });
 
         // Create a DynamoDB table
-        const dynamoTable = new dynamodb.Table(this, "DynamoTable", {
-            partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
-            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+        const dynamoTable = new dynamo.Table(this, "DynamoTable", {
+            partitionKey: { name: "id", type: dynamo.AttributeType.STRING },
+            billingMode: dynamo.BillingMode.PAY_PER_REQUEST,
         });
 
         // Create an RDS PostgreSQL instance
-        const dbInstance = new rds.DatabaseInstance(this, "DbInstance", {
+        const kratosDB = new rds.DatabaseInstance(this, "KratosDB", {
             engine: rds.DatabaseInstanceEngine.postgres({
                 version: rds.PostgresEngineVersion.VER_13_3,
             }),
@@ -42,6 +44,31 @@ export class AwscdkStack extends cdk.Stack {
             multiAz: false,
             autoMinorVersionUpgrade: true,
         });
+
+        const initializer = new CdkResourceInitializer(this, "KratosDBInit", {
+            config: {
+                credsSecretName,
+            },
+            fnLogRetention: RetentionDays.FIVE_MONTHS,
+            fnCode: DockerImageCode.fromImageAsset(
+                `${__dirname}/rds-init-fn-code`,
+                {}
+            ),
+            fnTimeout: Duration.minutes(2),
+            fnSecurityGroups: [],
+            vpc,
+            subnetsSelection: vpc.selectSubnets({
+                subnetType: SubnetType.PRIVATE_WITH_NAT,
+            }),
+        });
+        // manage resources dependency
+        initializer.customResource.node.addDependency(kratosDB);
+
+        // allow the initializer function to connect to the RDS instance
+        kratosDB.connections.allowFrom(initializer.function, ec2.Port.tcp(3306));
+
+        // allow initializer function to read RDS instance creds secret
+        creds.grantRead(initializer.function);
 
         // ECR repositories
         const sveltekitRepository = ecs.ContainerImage.fromRegistry(
@@ -77,6 +104,8 @@ export class AwscdkStack extends cdk.Stack {
         crudTask.addContainer("CrudContainer", {
             image: crudRepository,
         });
+        dynamoTable.grantReadWriteData(crudTask.taskRole);
+
 
         const filterTask = new ecs.FargateTaskDefinition(this, "FilterTask", {
             memoryLimitMiB: 512,
@@ -131,7 +160,7 @@ export class AwscdkStack extends cdk.Stack {
                     desiredCount: 1,
                 }
             );
-
+        
         const oryKratosService =
             new ecs_patterns.ApplicationLoadBalancedFargateService(
                 this,
@@ -203,5 +232,7 @@ export class AwscdkStack extends cdk.Stack {
             ),
             recordName: "sml.town",
         });
+
+        // Set up database connection
     }
 }

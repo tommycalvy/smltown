@@ -15,27 +15,3 @@ gazelle(
     ],
     command = "update-repos",
 )
-
-platform(
-    name = "linux",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-        "@bazel_tools//tools/cpp:clang-cl"
-    ],
-)
-
-toolchain(
-    name = "my_toolchain",
-    exec_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-        "@bazel_tools//tools/cpp:clang-cl",
-    ],
-    target_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-    ],
-    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
-    toolchain = "clang",
-)

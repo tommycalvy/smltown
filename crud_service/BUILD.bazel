@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_binary")
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 
 go_library(
     name = "crud_service_lib",
@@ -17,4 +18,13 @@ go_binary(
     name = "crud_service",
     embed = [":crud_service_lib"],
     visibility = ["//visibility:public"],
+)
+
+container_image(
+    name = "amazon_image",
+    base = "@amazonlinux//image",
+    files = [":crud_service"],
+    entrypoint = ["/crud_service"],
+    architecture = "arm64",
+    operating_system = "linux",
 )
