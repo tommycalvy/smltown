@@ -4,7 +4,134 @@
 
 # Bazel bootstrapping
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "io_bazel_rules_go",
+    sha256 = "6b65cb7917b4d1709f9410ffe00ecf3e160edf674b78c54a894471320862184f",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.39.0/rules_go-v0.39.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.39.0/rules_go-v0.39.0.zip",
+    ],
+)
+
+http_archive(
+    name = "bazel_gazelle",
+    sha256 = "ecba0f04f96b4960a5b250c8e8eeec42281035970aa8852dda73098274d14a1d",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.29.0/bazel-gazelle-v0.29.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.29.0/bazel-gazelle-v0.29.0.tar.gz",
+    ],
+)
+
+http_archive(
+  name = "com_github_grpc_grpc",
+  patch_cmds = [
+        """sed -i.bak 's/go_register_toolchains(version = "1.18")/go_register_toolchains()/g' bazel/grpc_extra_deps.bzl""",
+    ],
+  sha256 = "76900ab068da86378395a8e125b5cc43dfae671e09ff6462ddfef18676e2165a",
+  strip_prefix = "grpc-1.50.0",
+  urls = ["https://github.com/grpc/grpc/archive/v1.50.0.tar.gz"],
+)
+
+# Rules Proto GRPC Boilerplate
+
+http_archive(
+    name = "rules_proto_grpc",
+    sha256 = "fb7fc7a3c19a92b2f15ed7c4ffb2983e956625c1436f57a3430b897ba9864059",
+    strip_prefix = "rules_proto_grpc-4.3.0",
+    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.3.0.tar.gz"],
+)
+
+load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
+
+rules_proto_grpc_toolchains()
+
+rules_proto_grpc_repos()
+
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+
+rules_proto_dependencies()
+
+rules_proto_toolchains()
+
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+
+############################################################
+# Define your own dependencies here using go_repository.
+# Else, dependencies declared by rules_go/gazelle will be used.
+# The first declaration of an external repository "wins".
+############################################################
+
+# Load the go dependencies
+load("//:deps.bzl", "go_dependencies")
+# gazelle:repository_macro deps.bzl%go_dependencies
+go_dependencies()
+
+go_rules_dependencies()
+
+go_register_toolchains(version = "1.19.5")
+
+gazelle_dependencies()
+
+# Rules Docker
+
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "b1e80761a8a8243d03ebca8845e9cc1ba6c82ce7c5179ce2b295cd36f7e394bf",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.25.0/rules_docker-v0.25.0.tar.gz"],
+)
+
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+container_repositories()
+
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+
+container_deps()
+
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+
+container_pull(
+    name = "amazonlinux",
+    architecture = "arm64",
+    os = "linux",
+    registry = "index.docker.io",
+    repository = "library/amazonlinux",
+    # tag = "2023.0.20230322.0",
+    digest = "sha256:11ed3e57e4bf082e5438b7a443401b7621abca75b05245c1e5b04a55c7d2eb9d",
+)
+
+
+
+
+
+
+
+# C++ GRPC Rules
+
+load("@rules_proto_grpc//cpp:repositories.bzl", rules_proto_grpc_cpp_repos = "cpp_repos")
+
+rules_proto_grpc_cpp_repos()
+
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
+
+grpc_deps()
+
+load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
+
+grpc_extra_deps()
+
+# Golang GRPC Rules
+
+load("@rules_proto_grpc//go:repositories.bzl", rules_proto_grpc_go_repos = "go_repos")
+rules_proto_grpc_go_repos()
+
+
 
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
@@ -24,139 +151,33 @@ load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_
 
 hedron_compile_commands_setup()
 
-# Rules Proto GRPC Boilerplate
+
+# Bazel Zig CC
+# The CC toolchains
+
+BAZEL_ZIG_CC_VERSION = "v1.0.1"
 
 http_archive(
-    name = "rules_proto_grpc",
-    sha256 = "fb7fc7a3c19a92b2f15ed7c4ffb2983e956625c1436f57a3430b897ba9864059",
-    strip_prefix = "rules_proto_grpc-4.3.0",
-    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.3.0.tar.gz"],
-)
-
-http_archive(
-    name = "io_bazel_rules_go",
-    sha256 = "56d8c5a5c91e1af73eca71a6fab2ced959b67c86d12ba37feedb0a2dfea441a6",
+    name = "bazel-zig-cc",
+    sha256 = "e9f82bfb74b3df5ca0e67f4d4989e7f1f7ce3386c295fd7fda881ab91f83e509",
+    strip_prefix = "bazel-zig-cc-{}".format(BAZEL_ZIG_CC_VERSION),
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.37.0/rules_go-v0.37.0.zip",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.37.0/rules_go-v0.37.0.zip",
+        "https://mirror.bazel.build/github.com/uber/bazel-zig-cc/releases/download/{0}/{0}.tar.gz".format(BAZEL_ZIG_CC_VERSION),
+        "https://github.com/uber/bazel-zig-cc/releases/download/{0}/{0}.tar.gz".format(BAZEL_ZIG_CC_VERSION),
     ],
 )
 
-http_archive(
-    name = "bazel_gazelle",
-    sha256 = "ecba0f04f96b4960a5b250c8e8eeec42281035970aa8852dda73098274d14a1d",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.29.0/bazel-gazelle-v0.29.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.29.0/bazel-gazelle-v0.29.0.tar.gz",
-    ],
-)
+load("@bazel-zig-cc//toolchain:defs.bzl", zig_toolchains = "toolchains")
 
-# CPP GRPC Rules
+# version, url_formats and host_platform_sha256 are optional for those who
+# want to control their Zig SDK version.
+zig_toolchains()
 
-load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
 
-rules_proto_grpc_toolchains()
 
-rules_proto_grpc_repos()
 
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
-rules_proto_dependencies()
-
-rules_proto_toolchains()
-
-load("@rules_proto_grpc//cpp:repositories.bzl", rules_proto_grpc_cpp_repos = "cpp_repos")
-
-rules_proto_grpc_cpp_repos()
-
-load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
-
-grpc_deps()
-
-load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
-
-grpc_extra_deps()
-
-# Golang GRPC Rules
-# bazel run //:gazelle
-
-load("@rules_proto_grpc//:repositories.bzl", "bazel_gazelle", "io_bazel_rules_go")  # buildifier: disable=same-origin-load
-
-io_bazel_rules_go()
-
-bazel_gazelle()
-
-load("@rules_proto_grpc//go:repositories.bzl", rules_proto_grpc_go_repos = "go_repos")
-
-rules_proto_grpc_go_repos()
-
-load("@io_bazel_rules_go//go:deps.bzl", "go_download_sdk", "go_register_toolchains", "go_rules_dependencies")
-
-go_download_sdk(
-    name = "go_sdk",
-    goos = "linux",
-    goarch = "arm64",
-    version = "1.20.3",
-    sdks = {
-        # NOTE: In most cases the whole sdks attribute is not needed.
-        # There are 2 "common" reasons you might want it:
-        #
-        # 1. You need to use an modified GO SDK, or an unsupported version
-        #    (for example, a beta or release candidate)
-        #
-        # 2. You want to avoid the dependency on the index file for the
-        #    SHA-256 checksums. In this case, You can get the expected
-        #    filenames and checksums from https://go.dev/dl/
-        "linux_arm64": ("go1.20.3.linux-arm64.tar.gz", "86b0ed0f2b2df50fa8036eea875d1cf2d76cefdacf247c44639a1464b7e36b95"),
-        "darwin_arm64": ("go1.20.3.darwin-arm64.tar.gz", "eb186529f13f901e7a2c4438a05c2cd90d74706aaa0a888469b2a4a617b6ee54"),
-    },
-)
-
-go_rules_dependencies()
-
-go_register_toolchains()
-
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
-load("//:deps.bzl", "go_dependencies")
-
-# gazelle:repository_macro deps.bzl%go_dependencies
-go_dependencies()
-
-gazelle_dependencies()
-
-# Golang Repositories
-
-go_repository(
-    name = "com_github_go_kit_kit",
-    build_file_proto_mode = "disable_global",
-    importpath = "github.com/go-kit/kit",  # Import path used in the .go files
-    sum = "h1:e4o3o3IsBfAKQh5Qbbiqyfu97Ku7jrO/JbohvztANh4=",
-    version = "v0.12.0",
-)
-
-go_repository(
-    name = "com_github_go_kit_log",
-    build_file_proto_mode = "disable_global",
-    importpath = "github.com/go-kit/log",  # Import path used in the .go files
-    sum = "h1:7i2K3eKTos3Vc0enKCfnVcgHh2olr/MyfboYq7cAcFw=",
-    version = "v0.2.0",
-)
-
-go_repository(
-    name = "com_github_aws_aws_sdk_go_v2_feature_dynamodb_attributevalue",
-    build_file_proto_mode = "disable_global",
-    importpath = "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue",
-    sum = "h1:bKbdstt7+PzIRSIXZ11Yo8Qh8t0AHn6jEYUfsbVcLjE=",
-    version = "v1.10.0",
-)
-
-go_repository(
-    name = "com_github_gorilla_mux",
-    build_file_proto_mode = "disable_global",
-    importpath = "github.com/gorilla/mux",
-    sum = "h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=",
-    version = "v1.8.0",
-)
+# PHTree
 
 http_archive(
     name = "phtree",
@@ -323,59 +344,5 @@ http_archive(
     ],
 )
 
-# Rules Docker
 
-http_archive(
-    name = "io_bazel_rules_docker",
-    sha256 = "b1e80761a8a8243d03ebca8845e9cc1ba6c82ce7c5179ce2b295cd36f7e394bf",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.25.0/rules_docker-v0.25.0.tar.gz"],
-)
 
-load(
-    "@io_bazel_rules_docker//repositories:repositories.bzl",
-    container_repositories = "repositories",
-)
-container_repositories()
-
-load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
-
-container_deps()
-
-load(
-    "@io_bazel_rules_docker//cc:image.bzl",
-    _cc_image_repos = "repositories",
-)
-
-_cc_image_repos()
-
-load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
-
-container_pull(
-    name = "amazonlinux",
-    architecture = "arm64",
-    os = "linux",
-    registry = "index.docker.io",
-    repository = "library/amazonlinux",
-    # tag = "2023.0.20230322.0",
-    digest = "sha256:11ed3e57e4bf082e5438b7a443401b7621abca75b05245c1e5b04a55c7d2eb9d",
-)
-
-# Bazel Zig CC
-
-BAZEL_ZIG_CC_VERSION = "v1.0.1"
-
-http_archive(
-    name = "bazel-zig-cc",
-    sha256 = "e9f82bfb74b3df5ca0e67f4d4989e7f1f7ce3386c295fd7fda881ab91f83e509",
-    strip_prefix = "bazel-zig-cc-{}".format(BAZEL_ZIG_CC_VERSION),
-    urls = [
-        "https://mirror.bazel.build/github.com/uber/bazel-zig-cc/releases/download/{0}/{0}.tar.gz".format(BAZEL_ZIG_CC_VERSION),
-        "https://github.com/uber/bazel-zig-cc/releases/download/{0}/{0}.tar.gz".format(BAZEL_ZIG_CC_VERSION),
-    ],
-)
-
-load("@bazel-zig-cc//toolchain:defs.bzl", zig_toolchains = "toolchains")
-
-# version, url_formats and host_platform_sha256 are optional for those who
-# want to control their Zig SDK version.
-zig_toolchains()

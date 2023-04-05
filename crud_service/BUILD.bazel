@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_binary")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 
 go_library(
@@ -22,9 +22,9 @@ go_binary(
 
 container_image(
     name = "amazon_image",
-    base = "@amazonlinux//image",
-    files = [":crud_service"],
-    entrypoint = ["/crud_service"],
     architecture = "arm64",
+    base = "@amazonlinux//image",
+    entrypoint = ["/crud_service"],
+    files = [":crud_service"],
     operating_system = "linux",
 )

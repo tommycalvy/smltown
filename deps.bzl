@@ -2,6 +2,34 @@ load("@bazel_gazelle//:deps.bzl", "go_repository")
 
 def go_dependencies():
     go_repository(
+        name = "com_github_go_kit_kit",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/go-kit/kit",  # Import path used in the .go files
+        sum = "h1:e4o3o3IsBfAKQh5Qbbiqyfu97Ku7jrO/JbohvztANh4=",
+        version = "v0.12.0",
+    )
+    go_repository(
+        name = "com_github_go_kit_log",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/go-kit/log",  # Import path used in the .go files
+        sum = "h1:7i2K3eKTos3Vc0enKCfnVcgHh2olr/MyfboYq7cAcFw=",
+        version = "v0.2.0",
+    )
+    go_repository(
+        name = "com_github_aws_aws_sdk_go_v2_feature_dynamodb_attributevalue",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue",
+        sum = "h1:bKbdstt7+PzIRSIXZ11Yo8Qh8t0AHn6jEYUfsbVcLjE=",
+        version = "v1.10.0",
+    )
+    go_repository(
+        name = "com_github_gorilla_mux",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/gorilla/mux",
+        sum = "h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=",
+        version = "v1.8.0",
+    )
+    go_repository(
         name = "com_github_afex_hystrix_go",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/afex/hystrix-go",

@@ -5,8 +5,14 @@
 #include "dynamo_repository.h"
 #include "grpc_server.h"
 #include "phtree_posts.h"
+#include <signal.h>
 
 
+void signal_callback_handler(int signum) {
+   std::cout << "Caught signal " << signum << std::endl;
+   // Terminate program
+   exit(signum);
+}
 
 int main() {
     std::cout << "Running Filter Service" << std::endl;
@@ -21,6 +27,7 @@ int main() {
     
     //postdb.print_post();
     //postdb.print_post();
+    signal(SIGINT, signal_callback_handler);
     RunServer(postdb);
     return 0;
 }

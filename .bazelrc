@@ -1,4 +1,5 @@
 build --cxxopt="-std=c++17"
+build --@io_bazel_rules_docker//transitions:enable=false
 
 build:linux_amd64 --incompatible_enable_cc_toolchain_resolution
 build:linux_amd64 --platforms @zig_sdk//platform:linux_amd64

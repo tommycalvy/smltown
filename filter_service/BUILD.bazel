@@ -1,7 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 
-
 package(default_visibility = ["//visibility:public"])
 
 cc_binary(
@@ -22,11 +21,9 @@ cc_binary(
 
 container_image(
     name = "amazon_image",
-    base = "@amazonlinux//image",
-    files = [":filter_service"],
-    entrypoint = ["/filter_service"],
     architecture = "arm64",
+    base = "@amazonlinux//image",
+    entrypoint = ["/filter_service"],
+    files = [":filter_service"],
     operating_system = "linux",
 )
-
-
