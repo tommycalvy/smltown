@@ -3,6 +3,12 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 # gazelle:prefix github.com/tommycalvy/smltown
 # gazelle:exclude crud_service/protos
 # gazelle:exclude external
+# gazelle:exclude protos
+# gazelle:exclude filter_service
+# gazelle:exclude awscdk
+# gazelle:exclude sveltekit
+# gazelle:exclude dynamodb
+# gazelle:exclude ory
 gazelle(name = "gazelle")
 
 gazelle(
@@ -16,12 +22,20 @@ gazelle(
     command = "update-repos",
 )
 
-package(default_visibility = ["//visibility:public"])
+load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
 
-platform(
-    name = "linux_arm64",
-    exec_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:aarch64",
-    ],
+refresh_compile_commands(
+    name = "refresh_compile_commands",
+
+    # Specify the targets of interest.
+    # For example, specify a dict of targets and any flags required to build.
+    targets = {
+      "//filter_service": "",
+      "//protos:cpp_protos": "",
+    },
+    # No need to add flags already in .bazelrc. They're automatically picked up.
+    # If you don't need flags, a list of targets is also okay, as is a single target string.
+    # Wildcard patterns, like //... for everything, *are* allowed here, just like a build.
+      # As are additional targets (+) and subtractions (-), like in bazel query https://docs.bazel.build/versions/main/query.html#expressions
+    # And if you're working on a header-only library, specify a test or binary target that compiles it.
 )
