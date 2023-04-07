@@ -27,4 +27,5 @@ container_image(
     entrypoint = ["/crud_service"],
     files = [":crud_service"],
     operating_system = "linux",
+    ports = ["5656"],
 )

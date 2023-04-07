@@ -24,14 +24,14 @@ type repo struct {
 	TableName 		string
 }
 
-func NewUserRepo(tableName string) Repository {
+func NewUserRepo(tableName string, dynamoDBEndpoint string) Repository {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		// CHANGE THIS TO us-east-1 TO USE AWS proper
 		config.WithRegion("localhost"),
 		// Comment the below out if not using localhost
 		config.WithEndpointResolver(aws.EndpointResolverFunc(
 			func(service, region string) (aws.Endpoint, error) {
-				return aws.Endpoint{URL: "http://localhost:8000", SigningRegion: "localhost"}, nil 
+				return aws.Endpoint{URL: dynamoDBEndpoint, SigningRegion: "localhost"}, nil 
 			})),
 	)
     if err != nil {

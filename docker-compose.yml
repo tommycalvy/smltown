@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+    dynamodb-local:
+        command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+        image: "amazon/dynamodb-local:latest"
+        container_name: dynamodb-local
+        ports:
+            - "8000:8000"
+        volumes:
+            - "./dynamodb/dynamodb-data:/home/dynamodblocal/data"
+        working_dir: /home/dynamodblocal
+    filter_service:
+        restart: unless-stopped
+        image: "bazel/filter_service:amazon_image"
+        container_name: filter_service
+        env_file:
+            - "./filter_service/.env"
+        ports:
+            - "50051:50051"
+    crud_service:
+        restart: unless-stopped
+        image: "bazel/crud_service:amazon_image"
+        container_name: crud_service
+        env_file:
+            - "./crud_service/.env"
+        ports:
+            - "5656:5656"
+
+    

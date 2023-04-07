@@ -2,7 +2,6 @@ package post
 
 import (
 	"context"
-	"flag"
 	"log"
 
 	pb "github.com/tommycalvy/smltown/crud_service/protos"
@@ -12,18 +11,13 @@ import (
 )
 
 
-var (
-	serverAddr         = flag.String("addr", "localhost:50051", "The server address in the format of host:port")
-)
-
-
 type filterRepo struct {
 	client 			pb.FilterServiceClient
 	Conn 			*grpc.ClientConn
 }
 
-func NewFilterServiceRepo() FilterServiceRepository {
-	conn, err := grpc.Dial(*serverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func NewFilterServiceRepo(filterServiceEndpoint string) FilterServiceRepository {
+	conn, err := grpc.Dial(filterServiceEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}

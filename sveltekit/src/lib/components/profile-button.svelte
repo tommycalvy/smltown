@@ -85,6 +85,11 @@
 					</form>
 				</li>
 			{/if}
+			{#if userSession.admin}
+				<li>
+					<a href="/admin">Admin</a>
+				</li>
+			{/if}
 		{/if}
 		<li>
 			<label class="label cursor-pointer w-full px-4 py-1.5">

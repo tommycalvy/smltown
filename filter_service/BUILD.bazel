@@ -26,4 +26,5 @@ container_image(
     entrypoint = ["/filter_service"],
     files = [":filter_service"],
     operating_system = "linux",
+    ports = ["50051"],
 )

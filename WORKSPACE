@@ -1,6 +1,6 @@
 # Please Run:
 # bazel run //:gazelle
-# bazel run @hedron_compile_commands//:refresh_all
+# bazel run :refresh_compile_commands
 
 # Bazel bootstrapping
 
@@ -135,7 +135,7 @@ rules_proto_grpc_go_repos()
 
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
-# bazel run @hedron_compile_commands//:refresh_all
+# bazel run :refresh_compile_commands
 http_archive(
     name = "hedron_compile_commands",
 

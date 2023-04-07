@@ -32,9 +32,12 @@ func main() {
 	{
 		tableName := os.Getenv("AWS_TABLE_NAME")
 		fmt.Println("Table Name: ", tableName)
-		userRepo := user.NewUserRepo(tableName)
-		dynamoPostRepo := post.NewDynamoPostRepo(tableName)
-		filterServiceRepo := post.NewFilterServiceRepo()
+		dynamoDBEndpoint := os.Getenv("DYNAMODB_ENDPOINT")
+		fmt.Println("DynamoDB Endpoint: ", dynamoDBEndpoint)
+		userRepo := user.NewUserRepo(tableName, dynamoDBEndpoint)
+		dynamoPostRepo := post.NewDynamoPostRepo(tableName, dynamoDBEndpoint)
+		filterServiceEndpoint := os.Getenv("FILTER_SERVICE_ENDPOINT")
+		filterServiceRepo := post.NewFilterServiceRepo(filterServiceEndpoint)
 		defer filterServiceRepo.CloseConn()
 
 
