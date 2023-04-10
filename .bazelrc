@@ -4,7 +4,3 @@ build --@io_bazel_rules_docker//transitions:enable=false
 build:linux_arm64 --incompatible_enable_cc_toolchain_resolution
 build:linux_arm64 --platforms @zig_sdk//platform:linux_arm64
 build:linux_arm64 --extra_toolchains @zig_sdk//toolchain:linux_arm64_gnu.2.34
-
-build:linux_aarch64 --incompatible_enable_cc_toolchain_resolution
-build:linux_aarch64 --platforms @zig_sdk//platform:linux_aarch64
-build:linux_aarch64 --extra_toolchains @zig_sdk//toolchain:aarch64-linux-gnu.2.34

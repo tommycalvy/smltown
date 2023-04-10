@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
 	import '$lib/app.css';
-	import NavSearch from '$lib/components/nav-search.svelte';
 	import ProfileButton from '$lib/components/profile-button.svelte';
 	import SignupButton from '$lib/components/signup-button.svelte';
 	import LoginButton from '$lib/components/login-button.svelte';
@@ -15,15 +14,11 @@
 </svelte:head>
 
 <div class="bg-base-300 w-screen h-screen">
-	<nav class="navbar bg-base-200 px-4 min-h-6">
-		<div class="basis-1/3 flex justify-start gap-4">
+	<nav class="navbar bg-base-200 px-4 min-h-6 justify-between">
+		<div class="flex justify-start gap-4">
 			<a href="/"><h1 class="font-logo text-[1.75rem] text-sky-500">SMLTOWN</h1></a>
 		</div>
-		<div class="basis-1/3 flex justify-center">
-			<NavSearch />
-		</div>
-
-		<div class=" basis-1/3 flex justify-end gap-4">
+		<div class="flex justify-end gap-4">
 			{#if !data.user}
 				{#if $page.form}
 					{#if $page.form.loginUi}

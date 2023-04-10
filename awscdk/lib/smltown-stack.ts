@@ -9,11 +9,20 @@ import * as route53 from "aws-cdk-lib/aws-route53";
 import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as targets from "aws-cdk-lib/aws-route53-targets/lib";
+import { RetentionDays } from "aws-cdk-lib/aws-logs";
 import { CdkResourceInitializer } from "./resource-initializer";
 
 export class SmltownStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
+
+        const instanceIdentifier = "KratosDB";
+        const credsSecretName =
+            `/${id}/rds/creds/${instanceIdentifier}`.toLowerCase();
+        const creds = new rds.DatabaseSecret(this, "MyKratosDBCredentials", {
+            secretName: credsSecretName,
+            username: "admin",
+        });
 
         // Create a VPC
         const vpc = new ec2.Vpc(this, "Vpc", {
@@ -27,48 +36,29 @@ export class SmltownStack extends cdk.Stack {
 
         // Create a DynamoDB table
         const dynamoTable = new dynamo.Table(this, "DynamoTable", {
-            partitionKey: { name: "id", type: dynamo.AttributeType.STRING },
+            partitionKey: { name: "PK", type: dynamo.AttributeType.STRING },
+            sortKey: { name: "SK", type: dynamo.AttributeType.NUMBER },
             billingMode: dynamo.BillingMode.PAY_PER_REQUEST,
         });
 
         // Create an RDS PostgreSQL instance
         const kratosDB = new rds.DatabaseInstance(this, "KratosDB", {
+            vpc: vpc,
+            port: 5432,
+            credentials: rds.Credentials.fromSecret(creds),
+            databaseName: "kratos",
+            allocatedStorage: 20,
+            instanceIdentifier,
             engine: rds.DatabaseInstanceEngine.postgres({
-                version: rds.PostgresEngineVersion.VER_13_3,
+                version: rds.PostgresEngineVersion.VER_15_2,
             }),
             instanceType: ec2.InstanceType.of(
-                ec2.InstanceClass.BURSTABLE2,
-                ec2.InstanceSize.SMALL
+                ec2.InstanceClass.T4G,
+                ec2.InstanceSize.MICRO
             ),
-            vpc: vpc,
             multiAz: false,
             autoMinorVersionUpgrade: true,
         });
-
-        const initializer = new CdkResourceInitializer(this, "KratosDBInit", {
-            config: {
-                credsSecretName,
-            },
-            fnLogRetention: RetentionDays.FIVE_MONTHS,
-            fnCode: DockerImageCode.fromImageAsset(
-                `${__dirname}/rds-init-fn-code`,
-                {}
-            ),
-            fnTimeout: Duration.minutes(2),
-            fnSecurityGroups: [],
-            vpc,
-            subnetsSelection: vpc.selectSubnets({
-                subnetType: SubnetType.PRIVATE_WITH_NAT,
-            }),
-        });
-        // manage resources dependency
-        initializer.customResource.node.addDependency(kratosDB);
-
-        // allow the initializer function to connect to the RDS instance
-        kratosDB.connections.allowFrom(initializer.function, ec2.Port.tcp(3306));
-
-        // allow initializer function to read RDS instance creds secret
-        creds.grantRead(initializer.function);
 
         // ECR repositories
         const sveltekitRepository = ecs.ContainerImage.fromRegistry(
@@ -106,7 +96,6 @@ export class SmltownStack extends cdk.Stack {
         });
         dynamoTable.grantReadWriteData(crudTask.taskRole);
 
-
         const filterTask = new ecs.FargateTaskDefinition(this, "FilterTask", {
             memoryLimitMiB: 512,
             cpu: 256,
@@ -123,8 +112,27 @@ export class SmltownStack extends cdk.Stack {
                 cpu: 256,
             }
         );
-        oryKratosTask.addContainer("OryKratosContainer", {
-            image: oryKratosRepository,
+        const oryKratosContainer = oryKratosTask.addContainer(
+            "OryKratosContainer",
+            {
+                image: oryKratosRepository,
+            }
+        );
+
+        const oryKratosMigrateContainer = oryKratosTask.addContainer(
+            "OryKratosMigrateContainer",
+            {
+                image: oryKratosRepository,
+                command: [
+                    "migrate -c /etc/config/kratos/kratos.yml sql -e --yes",
+                ],
+            }
+        );
+
+        // Add container dependency
+        oryKratosContainer.addContainerDependencies({
+            container: oryKratosMigrateContainer,
+            condition: ecs.ContainerDependencyCondition.SUCCESS,
         });
 
         const sveltekitService =
@@ -147,6 +155,7 @@ export class SmltownStack extends cdk.Stack {
                     cluster: cluster,
                     taskDefinition: crudTask,
                     desiredCount: 1,
+                    publicLoadBalancer: false,
                 }
             );
 
@@ -158,9 +167,10 @@ export class SmltownStack extends cdk.Stack {
                     cluster: cluster,
                     taskDefinition: filterTask,
                     desiredCount: 1,
+                    publicLoadBalancer: false,
                 }
             );
-        
+
         const oryKratosService =
             new ecs_patterns.ApplicationLoadBalancedFargateService(
                 this,
@@ -169,6 +179,7 @@ export class SmltownStack extends cdk.Stack {
                     cluster: cluster,
                     taskDefinition: oryKratosTask,
                     desiredCount: 1,
+                    publicLoadBalancer: false,
                 }
             );
 
