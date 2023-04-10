@@ -120,7 +120,7 @@ class PhTreePostsDB {
             usernameCode = usernameToCodeMap.size() + 1;
             usernameToCodeMap[p.username] = usernameCode;
         }
-
+        std::cout << "usernameCode: " << usernameCode << std::endl;
         int64_t channel1Code;
         if (channelToCodeMap.count(p.channel1)) {
             channel1Code = channelToCodeMap.at(p.channel1);
@@ -128,7 +128,7 @@ class PhTreePostsDB {
             channel1Code = channelToCodeMap.size() + 1;
             channelToCodeMap[p.channel1] = channel1Code;
         }
-
+        std::cout << "channel1Code: " << channel1Code << std::endl;
         int64_t channel2Code;
         if (channelToCodeMap.count(p.channel2)) {
             channel2Code = channelToCodeMap.at(p.channel2);
@@ -136,14 +136,17 @@ class PhTreePostsDB {
             channel2Code = channelToCodeMap.size() + 1;
             channelToCodeMap[p.channel2] = channel2Code;
         }
-
+        std::cout << "channel2Code: " << channel2Code << std::endl;
         int64_t latitude = int64_t((std::stod(p.latitude) + 90) * 1000);
         int64_t longitude = int64_t((std::stod(p.longitude) + 180) * 1000);
-
+        std::cout << "latitude: " << latitude << std::endl;
         // Change votes so that 0 is a lot and a lot is 0
         // floor(100,000/x)
+        if (p.votes == 0) {
+            p.votes = 1;
+        }
         int64_t votes = int64_t(floor(100000 / double(p.votes)));
-
+        std::cout << "votes: " << votes << std::endl;
         PhPoint<7> key({
             usernameCode,
             p.timestamp,
@@ -158,11 +161,11 @@ class PhTreePostsDB {
     }
 
     int add_post(Post p) {
-
+        std::cout << "Inside add_post" << std::endl;
         PhPoint<7> key = post_to_key(p);        
-
+        std::cout << "Created key from post" << std::endl;
         std::string* value = new std::string(p.username);
-
+        std::cout << "Created value from post" << std::endl;
         auto pair = phtree.emplace(key, value);
         if (!pair.second) {
             std::cout << "Couldn't insert into PhTree named phTree" << std::endl;

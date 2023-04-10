@@ -37,7 +37,7 @@ class FilterServiceImpl final : public FilterService::Service {
 
 
         Status AddPost(ServerContext* context, const filterservice::Post* nPost, filterservice::Response* res) override {
-            
+            std::cout << "In AddPost gRPC implementation" << std::endl;
             PhTreePostsDB::Post p = {
                 .username = nPost->username(),
                 .timestamp = nPost->timestamp(),
@@ -47,7 +47,7 @@ class FilterServiceImpl final : public FilterService::Service {
                 .channel2 = nPost->channel2(),
                 .votes = nPost->votes(),
             };
-
+            std::cout << "Made it right before calling add_post" << std::endl;
             int success = _postdb.add_post(p);
             if (success < 0) {
                 std::cout << "Error adding post!" << std::endl;
@@ -65,7 +65,7 @@ class FilterServiceImpl final : public FilterService::Service {
         // GetHotPostsNearMe function in the FilterService class
         Status GetHotPostsNearMe(ServerContext* context, const filterservice::Filter* f, filterservice::PostIDs* postIDs) override {
             // Get the filters from the request
-
+            std::cout << "In GetHotPostsNearMe gRPC implementation" << std::endl;
             PhTreePostsDB::Filter phF = {
                 .timestamp = f->timestamp(),
                 .latitude = f->latitude(),
@@ -78,10 +78,10 @@ class FilterServiceImpl final : public FilterService::Service {
 
             // Create a vector of posts
             std::vector<PhTreePostsDB::Post> posts;
-
+            std::cout << "Made it right before calling get_hot_posts" << std::endl;
             // Call the get_hot_posts_near_me function
             std::vector postIDVec = _postdb.get_hot_posts(phF);
-
+            std::cout << "Made it right after calling get_hot_posts" << std::endl;
             // Check if the function was successful
             if (postIDVec.size() == 0) {
                 std::cout << "No posts returned" << std::endl;
