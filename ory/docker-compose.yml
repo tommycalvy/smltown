@@ -24,30 +24,18 @@ services:
     kratos-migrate:
         depends_on:
             - postgres
-        image: oryd/kratos:v0.11.1
+        image: bazel/ory/kratos:amazon_image
         restart: on-failure
         command:
-            migrate -c /etc/config/kratos/kratos.yml sql -e --yes
-        volumes:
-            -
-                type: bind
-                source: ./kratos
-                target: /etc/config/kratos
+            migrate -c kratos-production.yml sql -e --yes
         networks:
             - ory
     kratos:
         depends_on:
             - kratos-migrate
-        image: oryd/kratos:v0.11.1
+        image: bazel/ory/kratos:amazon_image
         restart: unless-stopped
-        command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
-        volumes:
-            -
-                type: bind
-                source: ./kratos
-                target: /etc/config/kratos
-        env_file:
-            - .env
+        command: serve -c kratos-production.yml --dev --watch-courier
         ports:
             - 4433:4433
             - 4434:4434
@@ -56,20 +44,13 @@ services:
     kratos-import:
         depends_on:
             - kratos
-        image: oryd/kratos:v0.11.1
+        image: bazel/ory/kratos:amazon_image
         restart: "no"
         entrypoint: ["/bin/sh","-c"]
         command: 
             - |
               sleep 30
-              kratos import identities /etc/config/kratos/admin.json
-        volumes:
-            -
-                type: bind
-                source: ./kratos
-                target: /etc/config/kratos
-        env_file:
-            - .env
+              kratos import identities admin.json
         networks:
             - ory
 networks:

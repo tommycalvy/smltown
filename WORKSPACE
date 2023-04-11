@@ -111,7 +111,7 @@ container_pull(
     architecture="arm64",
     os="linux",
     registry="index.docker.io",
-    repository="library/oryd/kratos",
+    repository="oryd/kratos",
     # tag = "v0.11.1",
     digest = "sha256:93bf7aafd9b0f569584ceacbb590a31ff10eea827ab5cc440a70f1c1290655c0"
 )
@@ -137,10 +137,8 @@ load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 grpc_extra_deps()
 
 # Golang GRPC Rules
-
 load("@rules_proto_grpc//go:repositories.bzl", rules_proto_grpc_go_repos = "go_repos")
 rules_proto_grpc_go_repos()
-
 
 
 # Hedron's Compile Commands Extractor for Bazel
