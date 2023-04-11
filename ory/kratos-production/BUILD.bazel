@@ -1,0 +1,11 @@
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+
+container_image(
+    name = "amazon_image",
+    architecture = "arm64",
+    base = "@orydkratos//image",
+    entrypoint = ["/filter_service"],
+    files = [":filter_service"],
+    operating_system = "linux",
+    ports = ["4433", "4434"],
+)

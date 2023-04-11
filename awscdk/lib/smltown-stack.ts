@@ -112,6 +112,7 @@ export class SmltownStack extends cdk.Stack {
                 cpu: 256,
             }
         );
+
         const oryKratosContainer = oryKratosTask.addContainer(
             "OryKratosContainer",
             {

@@ -106,6 +106,16 @@ container_pull(
     digest = "sha256:11ed3e57e4bf082e5438b7a443401b7621abca75b05245c1e5b04a55c7d2eb9d",
 )
 
+container_pull(
+    name="orydkratos",
+    architecture="arm64",
+    os="linux",
+    registry="index.docker.io",
+    repository="library/oryd/kratos",
+    # tag = "v0.11.1",
+    digest = "sha256:93bf7aafd9b0f569584ceacbb590a31ff10eea827ab5cc440a70f1c1290655c0"
+)
+
 
 
 
