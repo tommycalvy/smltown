@@ -9,6 +9,9 @@ container_image(
         "identity.schema.json",
     ],
     directory = "/home/ory",
+    env = {
+        "KRATOS_ADMIN_URL": "http://kratos:4434",
+    },
     architecture = "arm64",
     operating_system = "linux",
     ports = ["4433", "4434"],

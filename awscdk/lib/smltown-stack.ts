@@ -85,6 +85,16 @@ export class SmltownStack extends cdk.Stack {
         );
         sveltekitTask.addContainer("SvelteKitContainer", {
             image: sveltekitRepository,
+            environment: {
+                KRATOS_PUBLIC_URL: "http://localhost:4433",
+                KRATOS_ADMIN_URL: "http://localhost:4434",
+                CRUD_SERVICE_URL: "http://localhost:5656",
+                ORIGIN: "https://sml.town",
+                PROTOCOL_HEADER: "x-forwarded-proto", 
+                HOST_HEADER: "x-forwarded-host",
+                ADDRESS_HEADER: "X-Forwarded-For",
+                XFF_DEPTH: "1",
+            }
         });
 
         const crudTask = new ecs.FargateTaskDefinition(this, "CrudTask", {
