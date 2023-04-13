@@ -345,10 +345,10 @@ export const load = (async ({ locals, cookies, request, url }) => {
 				openVerifyEmailModal: false
 			};
 		},
-		({ response }) => {
+		(error) => {
 			const err = 'Error with createLoginFlow or createRegistrationFlow';
 			console.log(err);
-			console.log(response);
+			console.log(error);
 			throw error(500, 'Internal Error');
 		}
 	);

@@ -18,7 +18,7 @@ export const handle = (async ({ event, resolve }) => {
 			},
 			({ response }) => {
 				event.locals.userSession = undefined;
-				if (response.status === 401) {
+				if (response.status && response.status === 401) {
 					console.log('User has cookies but is not authenticated');
 				} else {
 					const err = new Error('Error with ory toSession call');
