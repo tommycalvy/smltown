@@ -18,7 +18,7 @@ export const handle = (async ({ event, resolve }) => {
 			},
 			({ response }) => {
 				event.locals.userSession = undefined;
-				if (response.status && response.status === 401) {
+				if (response.status === 401) {
 					console.log('User has cookies but is not authenticated');
 				} else {
 					const err = new Error('Error with ory toSession call');
@@ -29,6 +29,15 @@ export const handle = (async ({ event, resolve }) => {
 		);
 	} else {
 		event.locals.userSession = undefined;
+	}
+
+	//Set post slider range
+	const postRangeCookie = event.cookies.get('postRange') ?? '1984';
+	const postRange = parseInt(postRangeCookie);
+	if (!isNaN(postRange) && postRange >= 5 && postRange <= 4086) {
+		event.locals.postRange = postRange;
+	} else {
+		event.locals.postRange = 1984;
 	}
 
 	const theme = event.cookies.get('theme');
@@ -43,6 +52,8 @@ export const handle = (async ({ event, resolve }) => {
 	const response = await resolve(event, {
 		transformPageChunk: ({ html }) => html.replace('data-theme=""', `data-theme="dark"`)
 	});
+
+	
 	return response;
 }) satisfies Handle;
 

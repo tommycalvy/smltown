@@ -37,7 +37,7 @@ export const load = (async ({ locals, getClientAddress }) => {
 			longitude: lon,
 			channel1: 'General',
 			channel2: '',
-			georange: 2000,
+			georange: locals.postRange,
 			minresults: 10,
 		};
 		const hotresponse = await fetch(`${CRUD_SERVICE_URL}/posts/v0/gethotpostsnearme`, {
@@ -437,7 +437,28 @@ export const actions = {
 		return {
 			createPost: 'Success! Post Created.'
 		};
-	}
+	},
+	getPosts: async ({ locals, request }) => {
+		const formData = Object.fromEntries(await request.formData());
+		const postSchema = z.object({
+			postRange: z.preprocess((range) => Number(range), z.number().min(5).max(4086)),
+			latitude: z.preprocess((lat) => Number(lat), z.number().min(-90).max(90).transform((lat) => lat.toFixed(3))),
+			longitude: z.preprocess((lon) => Number(lon), z.number().min(-180).max(180).transform((lat) => lat.toFixed(3))),
+		});
+		const postData = postSchema.safeParse(formData);
+		if (!postData.success) {
+			const errors = postData.error.errors.map((error) => {
+				return {
+					field: error.path[0],
+					message: error.message
+				};
+			});
+			return fail(400, { errors });
+		}
+		return {
+			getPosts: 'Success!'
+		}
+	},
 } satisfies Actions;
 
 const isLoginFlow = (response: object): response is LoginFlow => {

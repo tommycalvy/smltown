@@ -12,7 +12,7 @@ services:
             max-size: 10m
             max-file: "3"
         ports:
-          - '5432:5432'
+          - '127.0.0.1:5432:5432'
         volumes:
           - ./ory/postgres-data:/var/lib/postgresql/data
           # copy the sql script to create tables
@@ -31,8 +31,8 @@ services:
         restart: unless-stopped
         command: serve -c kratos-production.yml --dev --watch-courier
         ports:
-            - 4433:4433
-            - 4434:4434
+            - 127.0.0.1:4433:4433
+            - 127.0.0.1:4434:4434
     kratos-import:
         depends_on:
             - kratos
@@ -48,7 +48,7 @@ services:
         image: "amazon/dynamodb-local:latest"
         container_name: dynamodb-local
         ports:
-            - "8000:8000"
+            - "127.0.0.1:8000:8000"
         volumes:
             - "./dynamodb/dynamodb-data:/home/dynamodblocal/data"
         working_dir: /home/dynamodblocal
@@ -59,7 +59,7 @@ services:
         environment:
             SERVER_PORT: 50051
         ports:
-            - "50051:50051"
+            - "127.0.0.1:50051:50051"
     crud_service:
         restart: unless-stopped
         image: "bazel/crud_service:amazon_image"
@@ -74,7 +74,7 @@ services:
             AWS_SESSION_TOKEN: "TOKEN"
             AWS_REGION: "us-east-1"
         ports:
-            - "5656:5656"
+            - "127.0.0.1:5656:5656"
     sveltekit:
         restart: unless-stopped
         image: "sveltekit-docker:latest"

@@ -6,6 +6,7 @@ declare global {
 		interface Locals {
 			theme: Theme,
 			userSession: UserSession | undefined,
+			postRange: number,
 		}
 		// interface PageData {}
 		// interface Platform {}
