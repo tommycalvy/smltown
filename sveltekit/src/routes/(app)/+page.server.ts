@@ -411,25 +411,24 @@ export const actions = {
 		};
 
 		console.log(post);
-		return fetch(`${CRUD_SERVICE_URL}/posts/v0/`, {
+		const res = await fetch(`${CRUD_SERVICE_URL}/posts/v0/`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json; charset=utf-8'
 			},
 			body: JSON.stringify({ Post: post })
-		}).then(
-			(response) => {
-				console.log('success?');
-				console.log(response);
-				return {
-					createPost: 'Success! Post Created.'
-				};
-			},
-			({ request }) => {
-				console.log(request);
-				return fail(400, { createPost: 'Error: Crud_Service Error' });
-			}
-		);
+		});
+		if (!res.ok) {
+			const err = new Error('Error with createPost');
+			console.log(err);
+			console.log(res);
+			throw error(500, 'Error creating post');
+		}
+		const data = await res.json();
+		console.log(data);
+		return {
+			createPost: 'Success! Post Created.'
+		};
 	}
 } satisfies Actions;
 

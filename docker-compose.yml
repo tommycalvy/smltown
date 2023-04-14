@@ -69,6 +69,10 @@ services:
             AWS_TABLE_ENDPOINT: "http://localhost:8000"
             FILTER_SERVICE_ENDPOINT: "filter_service:50051"
             DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
+            AWS_ACCESS_KEY_ID: "AKID"
+            AWS_SECRET_ACCESS_KEY: "SECRET"
+            AWS_SESSION_TOKEN: "TOKEN"
+            AWS_REGION: "us-east-1"
         ports:
             - "5656:5656"
     sveltekit:
@@ -79,8 +83,8 @@ services:
             KRATOS_PUBLIC_URL: "http://kratos:4433"
             KRATOS_ADMIN_URL: "http://kratos:4434"
             CRUD_SERVICE_URL: "http://crud_service:5656"
-            ORIGIN: "http://sveltekit:3000"
+            ORIGIN: "http://localhost:3000"
         ports:
-            - "3000:3000"
+            - "127.0.0.1:3000:3000"
 
     
