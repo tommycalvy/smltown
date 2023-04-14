@@ -28,6 +28,8 @@ int main() {
     //postdb.print_post();
     //postdb.print_post();
     signal(SIGINT, signal_callback_handler);
+    signal(SIGTERM, signal_callback_handler);
+    signal(SIGKILL, signal_callback_handler);
     RunServer(postdb);
     return 0;
 }

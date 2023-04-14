@@ -84,6 +84,7 @@ services:
             KRATOS_ADMIN_URL: "http://kratos:4434"
             CRUD_SERVICE_URL: "http://crud_service:5656"
             ORIGIN: "http://localhost:3000"
+            ENVIRONMENT: "development"
         ports:
             - "127.0.0.1:3000:3000"
 

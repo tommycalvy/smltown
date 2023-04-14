@@ -12,17 +12,25 @@ import type {
 import { redirect, fail } from '@sveltejs/kit';
 import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
 import type { Filter, Post } from '$lib/types';
-import { CRUD_SERVICE_URL } from '$env/static/private';
+import { CRUD_SERVICE_URL, ENVIRONMENT } from '$env/static/private';
 import { z } from 'zod';
 
 export const load = (async ({ locals, getClientAddress }) => {
 	try {
-		let ip = getClientAddress();
-		if (ip === '127.0.0.1') ip = '';
+		let ip: string;
+		if (ENVIRONMENT === 'development') {
+			ip = '';
+		} else {
+			ip = getClientAddress();
+		}
+		console.log('ip: ' + ip);
 		const ipresponse = await fetch(`http://ip-api.com/json/${ip}?fields=lat,lon`);
+		if (!ipresponse.ok) throw new Error('ipresponse not ok');
 		const coords: { lat: number; lon: number } = await ipresponse.json();
 		const lat = Number(coords.lat).toFixed(3);
 		const lon = Number(coords.lon).toFixed(3);
+		console.log('lat: ' + lat);
+		console.log('lon: ' + lon);
 		const filter: Filter = {
 			timestamp: 0,
 			latitude: lat,

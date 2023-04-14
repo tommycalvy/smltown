@@ -71,7 +71,7 @@ func (s *service) CreatePost(ctx context.Context, p post.Post) error {
 
 func (s *service) GetHotPostsNearMe(ctx context.Context, f post.Filter) ([]post.Post, error) {
 	if f.Timestamp == 0 {
-		f.Timestamp = time.Now().UnixNano()
+		f.Timestamp = time.Now().Unix()
 	}
 	postIDs, err := s.filterServicePosts.GetHotPostsNearMe(ctx, f)
 	if err != nil {
