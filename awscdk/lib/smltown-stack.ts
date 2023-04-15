@@ -8,9 +8,14 @@ import * as dynamo from "aws-cdk-lib/aws-dynamodb";
 import * as route53 from "aws-cdk-lib/aws-route53";
 import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import * as targets from "aws-cdk-lib/aws-route53-targets/lib";
 import { RetentionDays } from "aws-cdk-lib/aws-logs";
 import { CdkResourceInitializer } from "./resource-initializer";
+import { DockerImageCode } from 'aws-cdk-lib/aws-lambda';
+import * as ecr from "aws-cdk-lib/aws-ecr";
+import { aws_certificatemanager as certificatemanager } from 'aws-cdk-lib';
+import { PublicHostedZone } from 'aws-cdk-lib/aws-route53';
+import { aws_route53_targets as route53_targets } from "aws-cdk-lib";
+import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 
 export class SmltownStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -25,14 +30,33 @@ export class SmltownStack extends cdk.Stack {
         });
 
         // Create a VPC
-        const vpc = new ec2.Vpc(this, "Vpc", {
-            maxAzs: 2,
-        });
+        const vpc = new ec2.Vpc(this, "Vpc", { maxAzs: 1 });
 
         // Create an ECS cluster
-        const cluster = new ecs.Cluster(this, "Cluster", {
+        const cluster = new ecs.Cluster(this, "SmltownCluster", {
+            clusterName: "SmltownCluster",
+            containerInsights: true,
             vpc: vpc,
         });
+
+        // ECR repositories
+        const sveltekitServiceImage = ecs.ContainerImage.fromRegistry(
+            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/sveltekit"
+        );
+        const crudServiceImage = ecs.ContainerImage.fromRegistry(
+            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/crud"
+        );
+        const filterServiceImage = ecs.ContainerImage.fromRegistry(
+            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/filter"
+        );
+        const oryKratosImage = ecs.ContainerImage.fromRegistry(
+            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/ory-kratos"
+        );
+
+        // A new ecr Repository for for the resource initializer
+        
+
+        const oryKratosRepo = new ecr.Repository(this, 'OryKratosRepo');
 
         // Create a DynamoDB table
         const dynamoTable = new dynamo.Table(this, "DynamoTable", {
@@ -59,140 +83,170 @@ export class SmltownStack extends cdk.Stack {
             multiAz: false,
             autoMinorVersionUpgrade: true,
         });
+        // Creates a dsn string for the RDS instance from the credentials secret
+        const username = creds.secretValueFromJson("username").toString();
+        const password = creds.secretValueFromJson("password").toString();
+        const dsn = `postgresql://${username}:${password}@${kratosDB.dbInstanceEndpointAddress}:5432/kratos`;
 
-        // ECR repositories
-        const sveltekitRepository = ecs.ContainerImage.fromRegistry(
-            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/sveltekit"
-        );
-        const crudRepository = ecs.ContainerImage.fromRegistry(
-            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/crud"
-        );
-        const filterRepository = ecs.ContainerImage.fromRegistry(
-            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/filter"
-        );
-        const oryKratosRepository = ecs.ContainerImage.fromRegistry(
-            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/ory-kratos"
-        );
-
-        // Create Task Definitions and Services
-        const sveltekitTask = new ecs.FargateTaskDefinition(
-            this,
-            "SvelteKitTask",
-            {
-                memoryLimitMiB: 512,
-                cpu: 256,
-            }
-        );
-        sveltekitTask.addContainer("SvelteKitContainer", {
-            image: sveltekitRepository,
-            environment: {
-                KRATOS_PUBLIC_URL: "http://localhost:4433",
-                KRATOS_ADMIN_URL: "http://localhost:4434",
-                CRUD_SERVICE_URL: "http://localhost:5656",
-                ORIGIN: "https://sml.town",
-                PROTOCOL_HEADER: "x-forwarded-proto", 
-                HOST_HEADER: "x-forwarded-host",
-                ADDRESS_HEADER: "X-Forwarded-For",
-                XFF_DEPTH: "1",
-            }
+        // Initialize the RDS KratosDB instance
+        const initializer = new CdkResourceInitializer(this, 'KratosDBInit', {
+            config: {
+                credsSecretName
+            },
+            fnLogRetention: RetentionDays.FIVE_MONTHS,
+            fnCode: DockerImageCode.fromEcr(oryKratosRepo),
+            fnTimeout: cdk.Duration.minutes(2),
+            fnSecurityGroups: [],
+            vpc,
+            subnetsSelection: vpc.selectSubnets({
+                subnetType: SubnetType.PRIVATE_WITH_NAT
+            })
         });
+        // manage resources dependency
+        initializer.customResource.node.addDependency(kratosDB);
+    
+        // allow the initializer function to connect to the RDS instance
+        kratosDB.connections.allowFrom(initializer.function, ec2.Port.tcp(5432));
+    
+        // allow initializer function to read RDS instance creds secret
+        creds.grantRead(initializer.function);
 
-        const crudTask = new ecs.FargateTaskDefinition(this, "CrudTask", {
+
+        const oryKratosTask = new ecs.FargateTaskDefinition(this, "OryKratosTask", {
             memoryLimitMiB: 512,
             cpu: 256,
         });
-        crudTask.addContainer("CrudContainer", {
-            image: crudRepository,
-        });
-        dynamoTable.grantReadWriteData(crudTask.taskRole);
-
-        const filterTask = new ecs.FargateTaskDefinition(this, "FilterTask", {
-            memoryLimitMiB: 512,
-            cpu: 256,
-        });
-        filterTask.addContainer("FilterContainer", {
-            image: filterRepository,
+        oryKratosTask.addContainer("OryKratosContainer", {
+            image: oryKratosImage,
         });
 
-        const oryKratosTask = new ecs.FargateTaskDefinition(
+        const sveltekitService = new ecs_patterns.ApplicationLoadBalancedFargateService(
             this,
-            "OryKratosTask",
+            "SvelteKitService",
             {
+                cluster: cluster,
+                circuitBreaker: {
+                    rollback: true,
+                },
                 memoryLimitMiB: 512,
                 cpu: 256,
+                taskImageOptions: {
+                    image: ecs.ContainerImage.fromRegistry("#sveltekitImagePlaceholder"),
+                    containerPort: 3000,
+                    environment: {
+                        KRATOS_PUBLIC_URL:  "http://localhost:4433",
+                        KRATOS_ADMIN_URL:   "http://localhost:4434",
+                        CRUD_SERVICE_URL:   "http://localhost:5656",
+                        ORIGIN:             "https://sml.town",
+                        PROTOCOL_HEADER:    "x-forwarded-proto", 
+                        HOST_HEADER:        "x-forwarded-host",
+                        ADDRESS_HEADER:     "X-Forwarded-For",
+                        XFF_DEPTH:          "1",
+                    },
+                },
+                desiredCount: 1,
+                publicLoadBalancer: true,
+                domainName: "sml.town",
+                domainZone: new PublicHostedZone(this, 'HostedZone', { zoneName: 'sml.town' }),
+                protocol: ApplicationProtocol.HTTPS,
             }
         );
 
-        const oryKratosContainer = oryKratosTask.addContainer(
-            "OryKratosContainer",
+        const crudService = new ecs_patterns.ApplicationLoadBalancedFargateService(
+            this,
+            "CrudService",
             {
-                image: oryKratosRepository,
+                cluster: cluster,
+                circuitBreaker: {
+                    rollback: true,
+                },
+                memoryLimitMiB: 512,
+                cpu: 256,
+                taskImageOptions: {
+                    image: ecs.ContainerImage.fromRegistry("#crudServiceImagePlaceholder"),
+                    containerPort: 5656,
+                    environment: {
+                        AWS_TABLE_NAME: "SMLTOWN",
+                        AWS_TABLE_ENDPOINT: "http://localhost:8000",
+                        FILTER_SERVICE_ENDPOINT: "http://localhost:5051",
+                        DYNAMODB_ENDPOINT: "http://dynamodb-local:8000",
+                        AWS_ACCESS_KEY_ID: "AKID",
+                        AWS_SECRET_ACCESS_KEY: "SECRET",
+                        AWS_SESSION_TOKEN: "TOKEN",
+                        AWS_REGION: "us-east-1",
+                    }
+                },
+                desiredCount: 1,
+                publicLoadBalancer: false,
             }
         );
+        crudService.service.connections.allowFrom(sveltekitService.service, ec2.Port.tcp(5656));
 
-        const oryKratosMigrateContainer = oryKratosTask.addContainer(
-            "OryKratosMigrateContainer",
+        dynamoTable.grantReadWriteData(crudService.service.taskDefinition.taskRole);
+
+        const filterService = new ecs_patterns.ApplicationLoadBalancedFargateService(
+            this,
+            "FilterService",
             {
-                image: oryKratosRepository,
-                command: [
-                    "migrate -c /etc/config/kratos/kratos.yml sql -e --yes",
+                cluster: cluster,
+                circuitBreaker: {
+                    rollback: true,
+                },
+                memoryLimitMiB: 512,
+                cpu: 256,
+                taskImageOptions: {
+                    image: ecs.ContainerImage.fromRegistry("#filterServiceImagePlaceholder"),
+                    containerPort: 5051,
+                    environment: {
+                        SERVER_PORT: "5051"
+                    },
+                },
+                desiredCount: 1,
+                publicLoadBalancer: false,
+            }
+        );
+        filterService.service.connections.allowFrom(crudService.service, ec2.Port.tcp(5051));
+
+        const oryKratosService = new ecs_patterns.ApplicationMultipleTargetGroupsFargateService(
+            this,
+            "OryKratosService",
+            {
+                cluster: cluster,
+                memoryLimitMiB: 512,
+                cpu: 256,
+                desiredCount: 1,
+                taskImageOptions: {
+                    image: ecs.ContainerImage.fromRegistry("#filterServiceImagePlaceholder"),
+                    
+                    environment: {
+                        DSN: dsn
+                    },
+                },
+                loadBalancers: [
+                    {
+                        name: "oryKratosPublic",
+                        publicLoadBalancer: false,
+                        
+                        listeners: [{ name: "publicListener" }]
+                    },
+                    {
+                        name: "oryKratosAdmin",
+                        publicLoadBalancer: false,
+                        listeners: [{ name: "adminListener" }]
+                    }
                 ],
-            }
-        );
-
-        // Add container dependency
-        oryKratosContainer.addContainerDependencies({
-            container: oryKratosMigrateContainer,
-            condition: ecs.ContainerDependencyCondition.SUCCESS,
-        });
-
-        const sveltekitService =
-            new ecs_patterns.ApplicationLoadBalancedFargateService(
-                this,
-                "SvelteKitService",
-                {
-                    cluster: cluster,
-                    taskDefinition: sveltekitTask,
-                    desiredCount: 1,
-                    publicLoadBalancer: true,
-                }
-            );
-
-        const crudService =
-            new ecs_patterns.ApplicationLoadBalancedFargateService(
-                this,
-                "CrudService",
-                {
-                    cluster: cluster,
-                    taskDefinition: crudTask,
-                    desiredCount: 1,
-                    publicLoadBalancer: false,
-                }
-            );
-
-        const filterService =
-            new ecs_patterns.ApplicationLoadBalancedFargateService(
-                this,
-                "FilterService",
-                {
-                    cluster: cluster,
-                    taskDefinition: filterTask,
-                    desiredCount: 1,
-                    publicLoadBalancer: false,
-                }
-            );
-
-        const oryKratosService =
-            new ecs_patterns.ApplicationLoadBalancedFargateService(
-                this,
-                "OryKratosService",
-                {
-                    cluster: cluster,
-                    taskDefinition: oryKratosTask,
-                    desiredCount: 1,
-                    publicLoadBalancer: false,
-                }
-            );
+                targetGroups: [
+                    {
+                      containerPort: 4433,
+                      listener: 'publicListener',
+                    },
+                    {
+                      containerPort: 4434,
+                      listener: 'adminListener',
+                    },
+                ],
+            });
+        kratosDB.connections.allowFrom(oryKratosService.service, ec2.Port.tcp(5432));
 
         // Configure Scaling Policies
         const scalingOptions = {
@@ -224,37 +278,5 @@ export class SmltownStack extends cdk.Stack {
                 targetUtilizationPercent: 70,
             });
 
-        // Set up domain and certificate
-        const hostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
-            domainName: "sml.town",
-        });
-
-        const certificate = new acm.DnsValidatedCertificate(
-            this,
-            "SiteCertificate",
-            {
-                domainName: "sml.town",
-                hostedZone: hostedZone,
-                region: "us-east-1", // ACM certificate must be in us-east-1 for CloudFront
-            }
-        );
-
-        const sveltekitLoadBalancer = sveltekitService.loadBalancer;
-        sveltekitLoadBalancer.addListeners("HttpsListener", {
-            port: 443,
-            protocol: elbv2.ApplicationProtocol.HTTPS,
-            certificateArns: [certificate.certificateArn],
-        });
-
-        // Route53 record
-        new route53.ARecord(this, "AliasRecord", {
-            zone: hostedZone,
-            target: route53.RecordTarget.fromAlias(
-                new route53_targets.LoadBalancerTarget(sveltekitLoadBalancer)
-            ),
-            recordName: "sml.town",
-        });
-
-        // Set up database connection
     }
 }
