@@ -10,7 +10,7 @@
 <div class="flex justify-center h-full w-full mt-1">
 	<div class="flex flex-col justify-start items-center w-[40rem] gap-5 py-4">
 		<CreatePostForm userSession={data.userSession} />
-		<PostRangeSlider />
+		<PostRangeSlider rangeInput={data.rangeInput}/>
 		{#if data.posts}
 			{#if data.posts.length === 0}
 				<div class="flex flex-col justify-center items-center w-full h-full">

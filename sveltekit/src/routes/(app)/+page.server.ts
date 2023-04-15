@@ -17,27 +17,34 @@ import { z } from 'zod';
 
 export const load = (async ({ locals, getClientAddress }) => {
 	try {
-		let ip: string;
-		if (ENVIRONMENT === 'development') {
-			ip = '';
+		let lat: string;
+		let lon: string;
+		if (!locals.latitude || !locals.longitude) {
+			let ip: string;
+			if (ENVIRONMENT === 'development') {
+				ip = '';
+			} else {
+				ip = getClientAddress();
+			}
+			console.log('ip: ' + ip);
+			const ipresponse = await fetch(`http://ip-api.com/json/${ip}?fields=lat,lon`);
+			if (!ipresponse.ok) throw new Error('ipresponse not ok');
+			const coords: { lat: number; lon: number } = await ipresponse.json();
+			lat = Number(coords.lat).toFixed(3);
+			lon = Number(coords.lon).toFixed(3);
 		} else {
-			ip = getClientAddress();
+			lat = locals.latitude;
+			lon = locals.longitude;
 		}
-		console.log('ip: ' + ip);
-		const ipresponse = await fetch(`http://ip-api.com/json/${ip}?fields=lat,lon`);
-		if (!ipresponse.ok) throw new Error('ipresponse not ok');
-		const coords: { lat: number; lon: number } = await ipresponse.json();
-		const lat = Number(coords.lat).toFixed(3);
-		const lon = Number(coords.lon).toFixed(3);
 		console.log('lat: ' + lat);
 		console.log('lon: ' + lon);
 		const filter: Filter = {
 			timestamp: 0,
 			latitude: lat,
 			longitude: lon,
-			channel1: 'General',
+			channel1: '',
 			channel2: '',
-			georange: locals.postRange,
+			georange: locals.rangeInput,
 			minresults: 10,
 		};
 		const hotresponse = await fetch(`${CRUD_SERVICE_URL}/posts/v0/gethotpostsnearme`, {
@@ -54,6 +61,7 @@ export const load = (async ({ locals, getClientAddress }) => {
 			userSession: locals.userSession,
 			title: 'SMLTOWN',
 			posts: posts,
+			rangeInput: locals.rangeInput,
 		};
 	} catch (error) {
 		console.log('Error with getting ipaddress or hotpostsnearme');
@@ -62,6 +70,7 @@ export const load = (async ({ locals, getClientAddress }) => {
 			userSession: locals.userSession,
 			title: 'SMLTOWN',
 			posts: undefined,
+			rangeInput: locals.rangeInput,
 		};
 	}
 }) satisfies PageServerLoad;
@@ -434,6 +443,8 @@ export const actions = {
 		}
 		const data = await res.json();
 		console.log(data);
+		locals.latitude = postData.data.latitude;
+		locals.longitude = postData.data.longitude;
 		return {
 			createPost: 'Success! Post Created.'
 		};
@@ -441,7 +452,7 @@ export const actions = {
 	getPosts: async ({ locals, request }) => {
 		const formData = Object.fromEntries(await request.formData());
 		const postSchema = z.object({
-			postRange: z.preprocess((range) => Number(range), z.number().min(5).max(4086)),
+			rangeInput: z.preprocess((range) => Number(range), z.number().min(5).max(1000)),
 			latitude: z.preprocess((lat) => Number(lat), z.number().min(-90).max(90).transform((lat) => lat.toFixed(3))),
 			longitude: z.preprocess((lon) => Number(lon), z.number().min(-180).max(180).transform((lat) => lat.toFixed(3))),
 		});
@@ -455,6 +466,9 @@ export const actions = {
 			});
 			return fail(400, { errors });
 		}
+		locals.rangeInput = postData.data.rangeInput;
+		locals.latitude = postData.data.latitude;
+		locals.longitude = postData.data.longitude;
 		return {
 			getPosts: 'Success!'
 		}

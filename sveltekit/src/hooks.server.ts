@@ -32,12 +32,12 @@ export const handle = (async ({ event, resolve }) => {
 	}
 
 	//Set post slider range
-	const postRangeCookie = event.cookies.get('postRange') ?? '1984';
-	const postRange = parseInt(postRangeCookie);
-	if (!isNaN(postRange) && postRange >= 5 && postRange <= 4086) {
-		event.locals.postRange = postRange;
+	const rangeInputCookie = event.cookies.get('rangeInput') ?? '814';
+	const rangeInput = parseInt(rangeInputCookie);
+	if (!isNaN(rangeInput) && rangeInput >= 5 && rangeInput <= 1000) {
+		event.locals.rangeInput = rangeInput;
 	} else {
-		event.locals.postRange = 1984;
+		event.locals.rangeInput = 1984;
 	}
 
 	const theme = event.cookies.get('theme');
