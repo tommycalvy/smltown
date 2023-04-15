@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
 import { error, fail } from '@sveltejs/kit';
-import { CRUD_SERVICE_URL } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import { identity } from "$lib/server/auth";
 import type { User } from "$lib/types";
 
@@ -56,7 +56,7 @@ export const actions = {
 				"OryId": id, 
 			}
 			console.log(user);
-			return fetch(`${CRUD_SERVICE_URL}/users/v0/`, {
+			return fetch(`${env.CRUD_SERVICE_URL}/users/v0/`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json; charset=utf-8'
@@ -79,7 +79,7 @@ export const actions = {
 		})
 		
 	},
-	getUserByUsername: async (event) => {
+	getUserByUsername: async () => {
 		// TODO log the user in
 	}
 } satisfies Actions;

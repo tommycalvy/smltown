@@ -11,7 +11,7 @@ export const load = (async ({ locals, request, url, cookies }) => {
 	
 
 	if (!refresh) {
-		if (locals.user) {
+		if (locals.userSession) {
 			console.log('User detected. Redirecting to /');
 			throw redirect(303, '/');
 		}

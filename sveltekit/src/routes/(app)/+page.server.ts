@@ -12,7 +12,7 @@ import type {
 import { redirect, fail } from '@sveltejs/kit';
 import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
 import type { Filter, Post } from '$lib/types';
-import { CRUD_SERVICE_URL, ENVIRONMENT } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { z } from 'zod';
 
 export const load = (async ({ locals, getClientAddress }) => {
@@ -21,7 +21,7 @@ export const load = (async ({ locals, getClientAddress }) => {
 		let lon: string;
 		if (!locals.latitude || !locals.longitude) {
 			let ip: string;
-			if (ENVIRONMENT === 'development') {
+			if (env.ENVIRONMENT === 'development') {
 				ip = '';
 			} else {
 				ip = getClientAddress();
@@ -47,7 +47,7 @@ export const load = (async ({ locals, getClientAddress }) => {
 			georange: locals.rangeInput,
 			minresults: 10,
 		};
-		const hotresponse = await fetch(`${CRUD_SERVICE_URL}/posts/v0/gethotpostsnearme`, {
+		const hotresponse = await fetch(`${env.CRUD_SERVICE_URL}/posts/v0/gethotpostsnearme`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json; charset=utf-8'
@@ -428,7 +428,7 @@ export const actions = {
 		};
 
 		console.log(post);
-		const res = await fetch(`${CRUD_SERVICE_URL}/posts/v0/`, {
+		const res = await fetch(`${env.CRUD_SERVICE_URL}/posts/v0/`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json; charset=utf-8'

@@ -1,9 +1,8 @@
 import { Configuration, FrontendApi, IdentityApi } from '@ory/kratos-client';
-import { KRATOS_PUBLIC_URL } from '$env/static/private';
-import { KRATOS_ADMIN_URL } from "$env/static/private";
+import { env } from '$env/dynamic/private';
 export const auth = new FrontendApi(
 	new Configuration({
-		basePath: KRATOS_PUBLIC_URL,
+		basePath: env.KRATOS_PUBLIC_URL,
 		baseOptions: {
 			withCredentials: true
 		}
@@ -12,7 +11,7 @@ export const auth = new FrontendApi(
 
 export const identity = new IdentityApi(
 	new Configuration({
-		basePath: KRATOS_ADMIN_URL,
+		basePath: env.KRATOS_ADMIN_URL,
 		baseOptions: {
 			withCredentials: true
 		}

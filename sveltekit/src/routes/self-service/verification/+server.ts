@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { KRATOS_PUBLIC_URL } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { GetCookieByPrefix } from "$lib/utils";
 
 export const GET = (({ url, request, cookies }) => {
@@ -23,7 +23,7 @@ export const GET = (({ url, request, cookies }) => {
 	}
 
 	const verificationHeaders = cookie ? new Headers({ cookie }) : undefined;
-	return fetch(`${KRATOS_PUBLIC_URL}/self-service/verification?flow=${flowId}&token=${token}`, {
+	return fetch(`${env.KRATOS_PUBLIC_URL}/self-service/verification?flow=${flowId}&token=${token}`, {
 		headers: verificationHeaders
 	}).then(() => {
 
