@@ -30,7 +30,21 @@ export class SmltownStack extends cdk.Stack {
         });
 
         // Create a VPC
-        const vpc = new ec2.Vpc(this, "Vpc", { maxAzs: 1 });
+        const vpc = new ec2.Vpc(this, "Vpc", { 
+            maxAzs: 1,
+            subnetConfiguration: [
+                {
+                  cidrMask: 24,
+                  name: 'public',
+                  subnetType: ec2.SubnetType.PUBLIC,
+                },
+                {
+                  cidrMask: 24,
+                  name: 'private',
+                  subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+                },
+             ]
+        });
 
         // Create an ECS cluster
         const cluster = new ecs.Cluster(this, "SmltownCluster", {
@@ -39,23 +53,7 @@ export class SmltownStack extends cdk.Stack {
             vpc: vpc,
         });
 
-        // ECR repositories
-        const sveltekitServiceImage = ecs.ContainerImage.fromRegistry(
-            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/sveltekit"
-        );
-        const crudServiceImage = ecs.ContainerImage.fromRegistry(
-            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/crud"
-        );
-        const filterServiceImage = ecs.ContainerImage.fromRegistry(
-            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/filter"
-        );
-        const oryKratosImage = ecs.ContainerImage.fromRegistry(
-            "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/ory-kratos"
-        );
-
         // A new ecr Repository for for the resource initializer
-        
-
         const oryKratosRepo = new ecr.Repository(this, 'OryKratosRepo');
 
         // Create a DynamoDB table
@@ -82,6 +80,7 @@ export class SmltownStack extends cdk.Stack {
             ),
             multiAz: false,
             autoMinorVersionUpgrade: true,
+            subnetGroup: 
         });
         // Creates a dsn string for the RDS instance from the credentials secret
         const username = creds.secretValueFromJson("username").toString();
@@ -216,8 +215,7 @@ export class SmltownStack extends cdk.Stack {
                 cpu: 256,
                 desiredCount: 1,
                 taskImageOptions: {
-                    image: ecs.ContainerImage.fromRegistry("#filterServiceImagePlaceholder"),
-                    
+                    image: ecs.ContainerImage.fromRegistry("#oryKratosImagePlaceholder"),
                     environment: {
                         DSN: dsn
                     },
