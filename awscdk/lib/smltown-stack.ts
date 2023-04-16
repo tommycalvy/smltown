@@ -5,16 +5,8 @@ import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as dynamo from "aws-cdk-lib/aws-dynamodb";
-import * as route53 from "aws-cdk-lib/aws-route53";
-import * as acm from "aws-cdk-lib/aws-certificatemanager";
-import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import { RetentionDays } from "aws-cdk-lib/aws-logs";
-import { CdkResourceInitializer } from "./resource-initializer";
-import { DockerImageCode } from 'aws-cdk-lib/aws-lambda';
 import * as ecr from "aws-cdk-lib/aws-ecr";
-import { aws_certificatemanager as certificatemanager } from 'aws-cdk-lib';
 import { PublicHostedZone } from 'aws-cdk-lib/aws-route53';
-import { aws_route53_targets as route53_targets } from "aws-cdk-lib";
 import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 
 export class SmltownStack extends cdk.Stack {
@@ -53,8 +45,30 @@ export class SmltownStack extends cdk.Stack {
             vpc: vpc,
         });
 
-        // A new ecr Repository for for the resource initializer
-        const oryKratosRepo = new ecr.Repository(this, 'OryKratosRepo');
+        // Amazon ECR Repositories
+        const sveltekitRepo = ecr.Repository.fromRepositoryName(
+            this,
+            "sveltekitRepo",
+            "book-service"
+        );
+    
+        const crudRepo = ecr.Repository.fromRepositoryName(
+            this,
+            "crudRepo",
+            "author-service"
+        );
+
+        const filterRepo = ecr.Repository.fromRepositoryName(
+            this,
+            "filterRepo",
+            "book-service"
+        );
+    
+        const kratosRepo = ecr.Repository.fromRepositoryName(
+            this,
+            "kratosRepo",
+            "author-service"
+        );
 
         // Create a DynamoDB table
         const dynamoTable = new dynamo.Table(this, "DynamoTable", {
@@ -80,44 +94,65 @@ export class SmltownStack extends cdk.Stack {
             ),
             multiAz: false,
             autoMinorVersionUpgrade: true,
-            subnetGroup: 
+            subnetGroup: new rds.SubnetGroup(this, "KratosDBSubnetGroup", {
+                vpc: vpc,
+                description: "Subnet group for KratosDB",
+                vpcSubnets: {
+                    subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+                },
+            }),
         });
         // Creates a dsn string for the RDS instance from the credentials secret
         const username = creds.secretValueFromJson("username").toString();
         const password = creds.secretValueFromJson("password").toString();
         const dsn = `postgresql://${username}:${password}@${kratosDB.dbInstanceEndpointAddress}:5432/kratos`;
 
-        // Initialize the RDS KratosDB instance
-        const initializer = new CdkResourceInitializer(this, 'KratosDBInit', {
-            config: {
-                credsSecretName
-            },
-            fnLogRetention: RetentionDays.FIVE_MONTHS,
-            fnCode: DockerImageCode.fromEcr(oryKratosRepo),
-            fnTimeout: cdk.Duration.minutes(2),
-            fnSecurityGroups: [],
-            vpc,
-            subnetsSelection: vpc.selectSubnets({
-                subnetType: SubnetType.PRIVATE_WITH_NAT
-            })
-        });
-        // manage resources dependency
-        initializer.customResource.node.addDependency(kratosDB);
-    
-        // allow the initializer function to connect to the RDS instance
-        kratosDB.connections.allowFrom(initializer.function, ec2.Port.tcp(5432));
-    
-        // allow initializer function to read RDS instance creds secret
-        creds.grantRead(initializer.function);
+        
+        // Create a new Fargate task that initializes the database using the ory kratros image with the migrate command
+        const kratosMigrateTask = new ecs.FargateTaskDefinition(
+            this,
+            "KratosMigrateTask",
+            {
+                memoryLimitMiB: 512,
+                cpu: 256,
+                runtimePlatform: {
+                    operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
+                    cpuArchitecture: ecs.CpuArchitecture.ARM64,
+                },
+            }
+        );
+        const kratosMigrateContainer = kratosMigrateTask.addContainer(
+            "KratosMigrateContainer",
+            {
+                image: ecs.ContainerImage.fromRegistry(
+                    "oryd/kratos:v0.7.0-alpha.1-sqlite"
+                ),
+                command: ["migrate", "-c", "kratos-production.yml", "sql", "-e", "--yes"],
+                environment: {
+                    DSN: dsn,
+                },
 
+            }
+        );
+        kratosMigrateContainer.addPortMappings({
+            containerPort: 4433,
+            hostPort: 4433,
+            protocol: ecs.Protocol.TCP,
+        });
+        const kratosMigrateService = new ecs.FargateService(
+            this,
+            "KratosMigrateService",
+            {
+                cluster: cluster,
+                taskDefinition: kratosMigrateTask,
+                desiredCount: 1,
+                vpcSubnets: {
+                    subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+                },
 
-        const oryKratosTask = new ecs.FargateTaskDefinition(this, "OryKratosTask", {
-            memoryLimitMiB: 512,
-            cpu: 256,
-        });
-        oryKratosTask.addContainer("OryKratosContainer", {
-            image: oryKratosImage,
-        });
+            }
+        );
+        kratosDB.connections.allowFrom(kratosMigrateService, ec2.Port.tcp(5432));
 
         const sveltekitService = new ecs_patterns.ApplicationLoadBalancedFargateService(
             this,
@@ -129,6 +164,10 @@ export class SmltownStack extends cdk.Stack {
                 },
                 memoryLimitMiB: 512,
                 cpu: 256,
+                runtimePlatform: {
+                    operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
+                    cpuArchitecture: ecs.CpuArchitecture.ARM64,
+                },
                 taskImageOptions: {
                     image: ecs.ContainerImage.fromRegistry("#sveltekitImagePlaceholder"),
                     containerPort: 3000,
@@ -148,6 +187,7 @@ export class SmltownStack extends cdk.Stack {
                 domainName: "sml.town",
                 domainZone: new PublicHostedZone(this, 'HostedZone', { zoneName: 'sml.town' }),
                 protocol: ApplicationProtocol.HTTPS,
+
             }
         );
 
@@ -161,6 +201,10 @@ export class SmltownStack extends cdk.Stack {
                 },
                 memoryLimitMiB: 512,
                 cpu: 256,
+                runtimePlatform: {
+                    operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
+                    cpuArchitecture: ecs.CpuArchitecture.ARM64,
+                },
                 taskImageOptions: {
                     image: ecs.ContainerImage.fromRegistry("#crudServiceImagePlaceholder"),
                     containerPort: 5656,
@@ -193,6 +237,10 @@ export class SmltownStack extends cdk.Stack {
                 },
                 memoryLimitMiB: 512,
                 cpu: 256,
+                runtimePlatform: {
+                    operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
+                    cpuArchitecture: ecs.CpuArchitecture.ARM64,
+                },
                 taskImageOptions: {
                     image: ecs.ContainerImage.fromRegistry("#filterServiceImagePlaceholder"),
                     containerPort: 5051,
@@ -213,6 +261,10 @@ export class SmltownStack extends cdk.Stack {
                 cluster: cluster,
                 memoryLimitMiB: 512,
                 cpu: 256,
+                runtimePlatform: {
+                    operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
+                    cpuArchitecture: ecs.CpuArchitecture.ARM64,
+                },
                 desiredCount: 1,
                 taskImageOptions: {
                     image: ecs.ContainerImage.fromRegistry("#oryKratosImagePlaceholder"),
@@ -244,6 +296,8 @@ export class SmltownStack extends cdk.Stack {
                     },
                 ],
             });
+        oryKratosService.service.connections.allowFrom(sveltekitService.service, ec2.Port.tcp(4433));
+        oryKratosService.service.connections.allowFrom(sveltekitService.service, ec2.Port.tcp(4434));
         kratosDB.connections.allowFrom(oryKratosService.service, ec2.Port.tcp(5432));
 
         // Configure Scaling Policies
@@ -275,6 +329,9 @@ export class SmltownStack extends cdk.Stack {
             .scaleOnCpuUtilization("OryKratosCpuScaling", {
                 targetUtilizationPercent: 70,
             });
+
+        
+
 
     }
 }
