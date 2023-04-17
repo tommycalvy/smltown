@@ -20,6 +20,24 @@ type dynamoRepo struct {
 
 func NewDynamoPostRepo(tableName string, dynamoDBEndpoint string) DynamoRepository {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion("us-east-1"),
+	)
+    if err != nil {
+        log.Printf("unable to load SDK config, %v", err)
+    }
+
+    // Using the Config value, create the DynamoDB client
+    dynamo := dynamodb.NewFromConfig(cfg)
+
+	return &dynamoRepo{
+		Dynamo:		dynamo,
+		TableName:  tableName,
+	}
+}
+
+/*
+func NewDynamoPostRepo(tableName string, dynamoDBEndpoint string) DynamoRepository {
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		// CHANGE THIS TO us-east-1 TO USE AWS proper
 		config.WithRegion("localhost"),
 		// Comment the below out if not using localhost
@@ -40,6 +58,7 @@ func NewDynamoPostRepo(tableName string, dynamoDBEndpoint string) DynamoReposito
 		TableName:  tableName,
 	}
 }
+*/
 
 func (r *dynamoRepo) CreatePost(ctx context.Context, p Post) error {
 	log.Printf("Username=%v", p.Username)

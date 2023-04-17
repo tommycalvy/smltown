@@ -16,7 +16,10 @@ bazel run :refresh_compile_commands
 
 To build and test the docker images locally, run:
 
-For Ory Kratos:
+For Ory Kratos (for local development):
+bazel run //ory/kratos:local_image
+
+For Ory Kratos (for production):
 bazel run //ory/kratos:amazon_image
 
 For filter_service:
@@ -30,3 +33,4 @@ docker build ./sveltekit --no-cache -t sveltekit-docker:latest
 
 Then from root directory run:
 docker-compose up
+

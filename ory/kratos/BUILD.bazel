@@ -13,3 +13,17 @@ container_image(
     operating_system = "linux",
     ports = ["4433", "4434"],
 )
+
+container_image(
+    name = "local_image",
+    base = "@orydkratos//image",
+    files = [
+        "admin.json",
+        "kratos.yml",
+        "identity.schema.json",
+    ],
+    directory = "/home/ory",
+    architecture = "arm64",
+    operating_system = "linux",
+    ports = ["4433", "4434"],
+)

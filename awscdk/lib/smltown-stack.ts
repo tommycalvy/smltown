@@ -8,16 +8,15 @@ import * as dynamo from "aws-cdk-lib/aws-dynamodb";
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import { PublicHostedZone } from 'aws-cdk-lib/aws-route53';
 import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import { DockerImageCode } from "aws-cdk-lib/aws-lambda";
 
 export class SmltownStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
         const instanceIdentifier = "KratosDB";
-        const credsSecretName =
-            `/${id}/rds/creds/${instanceIdentifier}`.toLowerCase();
         const creds = new rds.DatabaseSecret(this, "MyKratosDBCredentials", {
-            secretName: credsSecretName,
+            secretName: `/${id}/rds/creds/${instanceIdentifier}`.toLowerCase(),
             username: "admin",
         });
 
@@ -38,6 +37,8 @@ export class SmltownStack extends cdk.Stack {
              ]
         });
 
+        
+
         // Create an ECS cluster
         const cluster = new ecs.Cluster(this, "SmltownCluster", {
             clusterName: "SmltownCluster",
@@ -46,29 +47,33 @@ export class SmltownStack extends cdk.Stack {
         });
 
         // Amazon ECR Repositories
-        const sveltekitRepo = ecr.Repository.fromRepositoryName(
+        const sveltekitServiceRepo = ecr.Repository.fromRepositoryName(
             this,
-            "sveltekitRepo",
-            "book-service"
+            "SveltekitServiceRepo",
+            "smltown_sveltekit_service"
         );
     
-        const crudRepo = ecr.Repository.fromRepositoryName(
+        const crudServiceRepo = ecr.Repository.fromRepositoryName(
             this,
-            "crudRepo",
-            "author-service"
+            "CrudServiceRepo",
+            "smltown_crud_service"
         );
 
-        const filterRepo = ecr.Repository.fromRepositoryName(
+        const filterServiceRepo = ecr.Repository.fromRepositoryName(
             this,
-            "filterRepo",
-            "book-service"
+            "FilterServiceRepo",
+            "smltown_filter_service"
         );
     
-        const kratosRepo = ecr.Repository.fromRepositoryName(
+        const oryKratosRepo = ecr.Repository.fromRepositoryName(
             this,
-            "kratosRepo",
-            "author-service"
+            "OryKratosRepo",
+            "smltown_ory_kratos"
         );
+
+        DockerImageCode.fromEcr(oryKratosRepo, {
+            tagOrDigest: "0.1"
+        })
 
         // Create a DynamoDB table
         const dynamoTable = new dynamo.Table(this, "DynamoTable", {
@@ -105,7 +110,7 @@ export class SmltownStack extends cdk.Stack {
         // Creates a dsn string for the RDS instance from the credentials secret
         const username = creds.secretValueFromJson("username").toString();
         const password = creds.secretValueFromJson("password").toString();
-        const dsn = `postgresql://${username}:${password}@${kratosDB.dbInstanceEndpointAddress}:5432/kratos`;
+        const dsn = `postgres://${username}:${password}@${kratosDB.dbInstanceEndpointAddress}:5432/kratos`;
 
         
         // Create a new Fargate task that initializes the database using the ory kratros image with the migrate command
@@ -124,14 +129,12 @@ export class SmltownStack extends cdk.Stack {
         const kratosMigrateContainer = kratosMigrateTask.addContainer(
             "KratosMigrateContainer",
             {
-                image: ecs.ContainerImage.fromRegistry(
-                    "oryd/kratos:v0.7.0-alpha.1-sqlite"
-                ),
+                image: ecs.ContainerImage.fromEcrRepository(oryKratosRepo, "0.1"),
                 command: ["migrate", "-c", "kratos-production.yml", "sql", "-e", "--yes"],
                 environment: {
                     DSN: dsn,
                 },
-
+                
             }
         );
         kratosMigrateContainer.addPortMappings({
@@ -154,6 +157,30 @@ export class SmltownStack extends cdk.Stack {
         );
         kratosDB.connections.allowFrom(kratosMigrateService, ec2.Port.tcp(5432));
 
+        const svelteServiceTask = new ecs.FargateTaskDefinition(
+            this,
+            "SvelteServiceTask",
+            {
+                memoryLimitMiB: 512,
+                cpu: 256,
+                runtimePlatform: {
+                    operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
+                    cpuArchitecture: ecs.CpuArchitecture.ARM64,
+                },
+            }
+        );
+        const svelteServiceContainer = svelteServiceTask.addContainer(
+            "SvelteServiceContainer",
+            {
+                image: ecs.ContainerImage.fromEcrRepository(sveltekitServiceRepo, "0.1"),
+                command: ["serve", "-c", "kratos-production.yml", "--dev", "--watch-courier"],
+                environment: {
+                    DSN: dsn,
+                },
+
+            }
+        );
+
         const sveltekitService = new ecs_patterns.ApplicationLoadBalancedFargateService(
             this,
             "SvelteKitService",
@@ -169,7 +196,7 @@ export class SmltownStack extends cdk.Stack {
                     cpuArchitecture: ecs.CpuArchitecture.ARM64,
                 },
                 taskImageOptions: {
-                    image: ecs.ContainerImage.fromRegistry("#sveltekitImagePlaceholder"),
+                    image: ecs.ContainerImage.fromEcrRepository(sveltekitServiceRepo, "0.1"),
                     containerPort: 3000,
                     environment: {
                         KRATOS_PUBLIC_URL:  "http://localhost:4433",
@@ -187,7 +214,6 @@ export class SmltownStack extends cdk.Stack {
                 domainName: "sml.town",
                 domainZone: new PublicHostedZone(this, 'HostedZone', { zoneName: 'sml.town' }),
                 protocol: ApplicationProtocol.HTTPS,
-
             }
         );
 
@@ -206,7 +232,7 @@ export class SmltownStack extends cdk.Stack {
                     cpuArchitecture: ecs.CpuArchitecture.ARM64,
                 },
                 taskImageOptions: {
-                    image: ecs.ContainerImage.fromRegistry("#crudServiceImagePlaceholder"),
+                    image: ecs.ContainerImage.fromEcrRepository(crudServiceRepo, "0.1"),
                     containerPort: 5656,
                     environment: {
                         AWS_TABLE_NAME: "SMLTOWN",
@@ -242,7 +268,7 @@ export class SmltownStack extends cdk.Stack {
                     cpuArchitecture: ecs.CpuArchitecture.ARM64,
                 },
                 taskImageOptions: {
-                    image: ecs.ContainerImage.fromRegistry("#filterServiceImagePlaceholder"),
+                    image: ecs.ContainerImage.fromEcrRepository(filterServiceRepo, "0.1"),
                     containerPort: 5051,
                     environment: {
                         SERVER_PORT: "5051"
@@ -267,7 +293,8 @@ export class SmltownStack extends cdk.Stack {
                 },
                 desiredCount: 1,
                 taskImageOptions: {
-                    image: ecs.ContainerImage.fromRegistry("#oryKratosImagePlaceholder"),
+                    image: ecs.ContainerImage.fromEcrRepository(oryKratosRepo, "0.1"),
+                    command: ["serve", "-c", "kratos-production.yml", "--dev", "--watch-courier"],
                     environment: {
                         DSN: dsn
                     },
@@ -308,7 +335,7 @@ export class SmltownStack extends cdk.Stack {
 
         sveltekitService.service
             .autoScaleTaskCount(scalingOptions)
-            .scaleOnCpuUtilization("SvelteKitCpuScaling", {
+            .scaleOnCpuUtilization("SveltekitCpuScaling", {
                 targetUtilizationPercent: 70,
             });
 
