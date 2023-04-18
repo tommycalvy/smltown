@@ -13,6 +13,7 @@ bazel run //:gazelle
 To make generated and external files available for c++ files:
 bazel run :refresh_compile_commands
 
+In order to test locally you need to create a dynamodb table 
 
 To build and test the docker images locally, run:
 

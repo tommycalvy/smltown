@@ -11,8 +11,6 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/go-kit/log"
 	"github.com/gorilla/mux"
-
-	"github.com/tommycalvy/smltown/crud_service/profile"
 )
 
 var (
@@ -152,11 +150,17 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	})
 }
 
+var (
+	ErrInvalidArgument 	= errors.New("invalid argument")
+	ErrNotFound        	= errors.New("not found")
+	ErrRepo 			= errors.New("unable to handle repo request")
+)
+
 func codeFrom(err error) int {
 	switch err {
-	case profile.ErrNotFound:
+	case ErrNotFound:
 		return http.StatusNotFound
-	case profile.ErrInvalidArgument:
+	case ErrInvalidArgument:
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError

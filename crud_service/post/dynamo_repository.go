@@ -18,10 +18,8 @@ type dynamoRepo struct {
 	TableName 		string
 }
 
-func NewDynamoPostRepo(tableName string, dynamoDBEndpoint string) DynamoRepository {
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion("us-east-1"),
-	)
+func NewDynamoPostRepo(tableName string) DynamoRepository {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
     if err != nil {
         log.Printf("unable to load SDK config, %v", err)
     }

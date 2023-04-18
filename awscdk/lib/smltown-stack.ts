@@ -8,12 +8,15 @@ import * as dynamo from "aws-cdk-lib/aws-dynamodb";
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import { PublicHostedZone } from 'aws-cdk-lib/aws-route53';
 import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import { DockerImageCode } from "aws-cdk-lib/aws-lambda";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 export class SmltownStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
+        const account = cdk.Stack.of(this).account;
+        const region = cdk.Stack.of(this).region;
+        const dynamodbTableName = "SMLTOWN";
         const instanceIdentifier = "KratosDB";
         const creds = new rds.DatabaseSecret(this, "MyKratosDBCredentials", {
             secretName: `/${id}/rds/creds/${instanceIdentifier}`.toLowerCase(),
@@ -22,7 +25,7 @@ export class SmltownStack extends cdk.Stack {
 
         // Create a VPC
         const vpc = new ec2.Vpc(this, "Vpc", { 
-            maxAzs: 1,
+            maxAzs: 2,
             subnetConfiguration: [
                 {
                   cidrMask: 24,
@@ -71,15 +74,13 @@ export class SmltownStack extends cdk.Stack {
             "smltown_ory_kratos"
         );
 
-        DockerImageCode.fromEcr(oryKratosRepo, {
-            tagOrDigest: "0.1"
-        })
+        
 
-        // Create a DynamoDB table
-        const dynamoTable = new dynamo.Table(this, "DynamoTable", {
-            partitionKey: { name: "PK", type: dynamo.AttributeType.STRING },
-            sortKey: { name: "SK", type: dynamo.AttributeType.NUMBER },
-            billingMode: dynamo.BillingMode.PAY_PER_REQUEST,
+        // Create a policy to grant read and write access to the DynamoDB table SMLTOWN in us-east-1
+        const dynamoDbPolicy = new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:DeleteItem", "dynamodb:BatchGetItem", "dynamodb:BatchWriteItem", "dynamodb:Query", "dynamodb:Scan"],
+            resources: [`arn:aws:dynamodb:${region}:${account}:table/${dynamodbTableName}`],
         });
 
         // Create an RDS PostgreSQL instance
@@ -124,9 +125,10 @@ export class SmltownStack extends cdk.Stack {
                     operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
                     cpuArchitecture: ecs.CpuArchitecture.ARM64,
                 },
+                
             }
         );
-        const kratosMigrateContainer = kratosMigrateTask.addContainer(
+        kratosMigrateTask.addContainer(
             "KratosMigrateContainer",
             {
                 image: ecs.ContainerImage.fromEcrRepository(oryKratosRepo, "0.1"),
@@ -134,21 +136,23 @@ export class SmltownStack extends cdk.Stack {
                 environment: {
                     DSN: dsn,
                 },
-                
+                portMappings: [
+                    {
+                        containerPort: 4433,
+                        hostPort: 4433,
+                        protocol: ecs.Protocol.TCP,
+                    },
+                ],
             }
         );
-        kratosMigrateContainer.addPortMappings({
-            containerPort: 4433,
-            hostPort: 4433,
-            protocol: ecs.Protocol.TCP,
-        });
+      
         const kratosMigrateService = new ecs.FargateService(
             this,
             "KratosMigrateService",
             {
                 cluster: cluster,
                 taskDefinition: kratosMigrateTask,
-                desiredCount: 1,
+                desiredCount: 0,
                 vpcSubnets: {
                     subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
                 },
@@ -157,9 +161,10 @@ export class SmltownStack extends cdk.Stack {
         );
         kratosDB.connections.allowFrom(kratosMigrateService, ec2.Port.tcp(5432));
 
-        const svelteServiceTask = new ecs.FargateTaskDefinition(
+         // Create a new Fargate task that serves the ory kratos service
+         const oryKratosTask = new ecs.FargateTaskDefinition(
             this,
-            "SvelteServiceTask",
+            "OryKratosTask",
             {
                 memoryLimitMiB: 512,
                 cpu: 256,
@@ -167,19 +172,33 @@ export class SmltownStack extends cdk.Stack {
                     operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
                     cpuArchitecture: ecs.CpuArchitecture.ARM64,
                 },
+                
             }
         );
-        const svelteServiceContainer = svelteServiceTask.addContainer(
-            "SvelteServiceContainer",
+        oryKratosTask.addContainer(
+            "OryKratosContainer",
             {
-                image: ecs.ContainerImage.fromEcrRepository(sveltekitServiceRepo, "0.1"),
-                command: ["serve", "-c", "kratos-production.yml", "--dev", "--watch-courier"],
+                image: ecs.ContainerImage.fromEcrRepository(oryKratosRepo, "0.1"),
+                command: ["serve", "-c", "kratos-production.yml", "--watch-courier"],
                 environment: {
                     DSN: dsn,
                 },
-
+                portMappings: [
+                    {
+                        containerPort: 4433,
+                        hostPort: 4433,
+                        protocol: ecs.Protocol.TCP,
+                    },
+                    {
+                        containerPort: 4434,
+                        hostPort: 4434,
+                        protocol: ecs.Protocol.TCP,
+                    },
+                ],
             }
         );
+
+               
 
         const sveltekitService = new ecs_patterns.ApplicationLoadBalancedFargateService(
             this,
@@ -235,14 +254,9 @@ export class SmltownStack extends cdk.Stack {
                     image: ecs.ContainerImage.fromEcrRepository(crudServiceRepo, "0.1"),
                     containerPort: 5656,
                     environment: {
-                        AWS_TABLE_NAME: "SMLTOWN",
-                        AWS_TABLE_ENDPOINT: "http://localhost:8000",
                         FILTER_SERVICE_ENDPOINT: "http://localhost:5051",
-                        DYNAMODB_ENDPOINT: "http://dynamodb-local:8000",
-                        AWS_ACCESS_KEY_ID: "AKID",
-                        AWS_SECRET_ACCESS_KEY: "SECRET",
-                        AWS_SESSION_TOKEN: "TOKEN",
-                        AWS_REGION: "us-east-1",
+                        AWS_TABLE_NAME: dynamodbTableName,
+                        AWS_REGION: region,
                     }
                 },
                 desiredCount: 1,
@@ -251,7 +265,7 @@ export class SmltownStack extends cdk.Stack {
         );
         crudService.service.connections.allowFrom(sveltekitService.service, ec2.Port.tcp(5656));
 
-        dynamoTable.grantReadWriteData(crudService.service.taskDefinition.taskRole);
+        crudService.service.taskDefinition.taskRole.addToPrincipalPolicy(dynamoDbPolicy);
 
         const filterService = new ecs_patterns.ApplicationLoadBalancedFargateService(
             this,
@@ -271,7 +285,9 @@ export class SmltownStack extends cdk.Stack {
                     image: ecs.ContainerImage.fromEcrRepository(filterServiceRepo, "0.1"),
                     containerPort: 5051,
                     environment: {
-                        SERVER_PORT: "5051"
+                        SERVER_PORT: "5051",
+                        AWS_TABLE_NAME: dynamodbTableName,
+                        AWS_REGION: region,
                     },
                 },
                 desiredCount: 1,
@@ -279,6 +295,7 @@ export class SmltownStack extends cdk.Stack {
             }
         );
         filterService.service.connections.allowFrom(crudService.service, ec2.Port.tcp(5051));
+        filterService.service.taskDefinition.taskRole.addToPrincipalPolicy(dynamoDbPolicy);
 
         const oryKratosService = new ecs_patterns.ApplicationMultipleTargetGroupsFargateService(
             this,
@@ -291,19 +308,12 @@ export class SmltownStack extends cdk.Stack {
                     operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
                     cpuArchitecture: ecs.CpuArchitecture.ARM64,
                 },
-                desiredCount: 1,
-                taskImageOptions: {
-                    image: ecs.ContainerImage.fromEcrRepository(oryKratosRepo, "0.1"),
-                    command: ["serve", "-c", "kratos-production.yml", "--dev", "--watch-courier"],
-                    environment: {
-                        DSN: dsn
-                    },
-                },
+                desiredCount: 0,
+                taskDefinition: oryKratosTask,
                 loadBalancers: [
                     {
                         name: "oryKratosPublic",
                         publicLoadBalancer: false,
-                        
                         listeners: [{ name: "publicListener" }]
                     },
                     {
@@ -358,6 +368,53 @@ export class SmltownStack extends cdk.Stack {
             });
 
         
+        // Create a new Fargate task that imports the admin identity
+        const kratosImportTask = new ecs.FargateTaskDefinition(
+            this,
+            "KratosImportTask",
+            {
+                memoryLimitMiB: 512,
+                cpu: 256,
+                runtimePlatform: {
+                    operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
+                    cpuArchitecture: ecs.CpuArchitecture.ARM64,
+                },
+                
+            }
+        );
+        kratosImportTask.addContainer(
+            "KratosImportContainer",
+            {
+                image: ecs.ContainerImage.fromEcrRepository(oryKratosRepo, "0.1"),
+                command: ["import", "identities", "admin.json"],
+                environment: {
+                    KRATOS_ADMIN_URL: "http://localhost:4434",
+                    DSN: dsn,
+                },
+                portMappings: [
+                    {
+                        containerPort: 4433,
+                        hostPort: 4433,
+                        protocol: ecs.Protocol.TCP,
+                    },
+                ],
+            }
+        );
+        
+        const kratosImportService = new ecs.FargateService(
+            this,
+            "KratosImportService",
+            {
+                cluster: cluster,
+                taskDefinition: kratosMigrateTask,
+                desiredCount: 0,
+                vpcSubnets: {
+                    subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+                },
+
+            }
+        );
+        kratosDB.connections.allowFrom(kratosImportService, ec2.Port.tcp(5432));
 
 
     }

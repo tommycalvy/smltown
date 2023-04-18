@@ -43,21 +43,16 @@ services:
             - |
               sleep 30
               kratos import identities admin.json --endpoint http://kratos:4434
-    dynamodb-local:
-        command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
-        image: "amazon/dynamodb-local:latest"
-        container_name: dynamodb-local
-        ports:
-            - "127.0.0.1:8000:8000"
-        volumes:
-            - "./dynamodb/dynamodb-data:/home/dynamodblocal/data"
-        working_dir: /home/dynamodblocal
     filter_service:
         restart: unless-stopped
         image: "bazel/filter_service:amazon_image"
         container_name: filter_service
         environment:
             SERVER_PORT: 50051
+            AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+            AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+            AWS_TABLE_NAME: "SMLTOWN"
+            AWS_REGION: "us-east-1"
         ports:
             - "127.0.0.1:50051:50051"
     crud_service:
@@ -65,13 +60,10 @@ services:
         image: "bazel/crud_service:amazon_image"
         container_name: crud_service
         environment:
-            AWS_TABLE_NAME: "SMLTOWN"
-            AWS_TABLE_ENDPOINT: "http://localhost:8000"
             FILTER_SERVICE_ENDPOINT: "filter_service:50051"
-            DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
-            AWS_ACCESS_KEY_ID: "AKID"
-            AWS_SECRET_ACCESS_KEY: "SECRET"
-            AWS_SESSION_TOKEN: "TOKEN"
+            AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+            AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+            AWS_TABLE_NAME: "SMLTOWN"
             AWS_REGION: "us-east-1"
         ports:
             - "127.0.0.1:5656:5656"
