@@ -12,7 +12,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//crud_service/post",
-        "//crud_service/profile",
         "//crud_service/user",
         "@com_github_go_kit_kit//endpoint",
         "@com_github_go_kit_kit//log",

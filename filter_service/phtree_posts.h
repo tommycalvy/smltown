@@ -196,6 +196,11 @@ class PhTreePostsDB {
         return 1;
     }
 
+    int print_total_posts() {
+        std::cout << "Total posts: " << phtree.size() << std::endl;
+        return 0;
+    }
+
     std::vector<PostID> get_hot_posts(Filter f) {
         std::cout << "Filter:" << std::endl;
         std::cout << "Username:    " << f.username << std::endl;

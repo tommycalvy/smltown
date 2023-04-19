@@ -109,8 +109,8 @@ export class SmltownStack extends cdk.Stack {
             }),
         });
         // Creates a dsn string for the RDS instance from the credentials secret
-        const username = creds.secretValueFromJson("username").toString();
-        const password = creds.secretValueFromJson("password").toString();
+        const username = creds.secretValueFromJson("username").unsafeUnwrap();
+        const password = creds.secretValueFromJson("password").unsafeUnwrap();
         const dsn = `postgres://${username}:${password}@${kratosDB.dbInstanceEndpointAddress}:5432/kratos`;
 
         
@@ -251,7 +251,7 @@ export class SmltownStack extends cdk.Stack {
                     cpuArchitecture: ecs.CpuArchitecture.ARM64,
                 },
                 taskImageOptions: {
-                    image: ecs.ContainerImage.fromEcrRepository(crudServiceRepo, "0.1"),
+                    image: ecs.ContainerImage.fromEcrRepository(crudServiceRepo, "0.2"),
                     containerPort: 5656,
                     environment: {
                         FILTER_SERVICE_ENDPOINT: "http://localhost:5051",
@@ -308,7 +308,7 @@ export class SmltownStack extends cdk.Stack {
                     operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
                     cpuArchitecture: ecs.CpuArchitecture.ARM64,
                 },
-                desiredCount: 0,
+                desiredCount: 1,
                 taskDefinition: oryKratosTask,
                 loadBalancers: [
                     {

@@ -18,15 +18,16 @@ int main() {
     std::cout << "Running Filter Service" << std::endl;
     PhTreePostsDB postdb = PhTreePostsDB();
     /*
+    const char* table_name = std::getenv("AWS_TABLE_NAME");
+    
     ScopedAwsSDK sdkScoped;
 	{
-		ScopedDynamoTable table("SMLTOWN", postdb);
+		ScopedDynamoTable table(table_name, postdb);
 		table.get_all_posts_from_dynamo();
 	}
-    */
     
-    //postdb.print_post();
-    //postdb.print_post();
+    postdb.print_total_posts();
+    */
     signal(SIGINT, signal_callback_handler);
     signal(SIGTERM, signal_callback_handler);
     signal(SIGKILL, signal_callback_handler);
