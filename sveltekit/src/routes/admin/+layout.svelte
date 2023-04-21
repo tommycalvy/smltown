@@ -1,6 +1,7 @@
 <script lang="ts">
 	import NavSearch from '$lib/components/nav-search.svelte';
     import { page } from '$app/stores';
+	import '$lib/app.css';
 </script>
 
 <div class="bg-base-300 w-screen h-screen">

@@ -5,13 +5,21 @@
 	import SignupButton from '$lib/components/signup-button.svelte';
 	import LoginButton from '$lib/components/login-button.svelte';
 	import { page } from '$app/stores';
+	import Geolocation from 'svelte-geolocation';
+	import {latitude, longitude, coords } from '$lib/stores/geolocation';
+
+	document.cookie = `latitude=${$latitude};max-age=3600;path="/";samesite=strict;secure`;
+	document.cookie = `longitude=${$longitude};max-age=3600;path="/";samesite=strict;secure`;
 
 	export let data: LayoutData;
 </script>
 
 <svelte:head>
-	<title>{$page.data.title}</title>
+	<title>{$page.data.title}</title>9
 </svelte:head>
+
+<Geolocation getPosition bind:coords={$coords} />
+
 
 <div class="bg-base-300 w-screen h-screen">
 	<nav class="navbar bg-base-200 px-4 min-h-6 justify-between">

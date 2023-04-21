@@ -22,7 +22,7 @@ class FilterServiceImpl final : public FilterService::Service {
 
         std::string getServerAddress() {
             std::string server_host("0.0.0.0");
-            std::string server_port("5051");
+            std::string server_port("50051");
             if (std::getenv("SERVER_PORT")) {
                 server_port = std::getenv("SERVER_PORT");
             }
