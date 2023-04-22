@@ -1,6 +1,7 @@
 import { writable, derived } from 'svelte/store';
+import type { GeolocationCoords } from "svelte-geolocation/types/Geolocation.svelte";
 
-export const coords = writable<[longitude: number, latitude: number]>([-1, -1]);
+export const coords = writable<GeolocationCoords>([-1, -1]);
 
 export const latitude = derived(
 	coords,

@@ -33,6 +33,24 @@ export const handle = (async ({ event, resolve }) => {
 		event.locals.userSession = undefined;
 	}
 
+	//Set longitude
+	const longitudeCookie = event.cookies.get('longitude') ?? "-1.000";
+	const longitude = parseFloat(longitudeCookie);
+	if (!isNaN(longitude) && longitude >= -180 && longitude <= 180) {
+		event.locals.longitude = longitude.toFixed(3);
+	} else {
+		event.locals.longitude = "-1.0000";
+	}
+
+	//Set latitude
+	const latitudeCookie = event.cookies.get('latitude') ?? "-1.000";
+	const latitude = parseFloat(latitudeCookie);
+	if (!isNaN(latitude) && latitude >= -90 && latitude <= 90) {
+		event.locals.latitude = latitude.toFixed(3);
+	} else {
+		event.locals.latitude = "-1.000";
+	}
+
 	//Set post slider range
 	const rangeInputCookie = event.cookies.get('rangeInput') ?? '814';
 	const rangeInput = parseInt(rangeInputCookie);

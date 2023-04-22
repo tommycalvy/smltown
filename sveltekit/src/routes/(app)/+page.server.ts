@@ -19,13 +19,8 @@ export const load = (async ({ locals, getClientAddress }) => {
 	try {
 		let lat: string;
 		let lon: string;
-		if (!locals.latitude || !locals.longitude) {
-			let ip: string;
-			if (env.ENVIRONMENT === 'development') {
-				ip = '';
-			} else {
-				ip = getClientAddress();
-			}
+		if (!locals.latitude || !locals.longitude || locals.latitude === "-1.000" || locals.longitude === "-1.000") {
+			const ip = env.ENVIRONMENT === 'development' ? '' : getClientAddress();
 			console.log('ip: ' + ip);
 			const ipresponse = await fetch(`http://ip-api.com/json/${ip}?fields=lat,lon`);
 			if (!ipresponse.ok) throw new Error('ipresponse not ok');

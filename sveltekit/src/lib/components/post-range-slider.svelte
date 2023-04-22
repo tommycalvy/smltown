@@ -10,6 +10,8 @@
 	// Submit the form on change of the input
 	async function onChange(event: WithTarget<Event, HTMLInputElement>) {
 		document.cookie = `rangeInput=${rangeInput};max-age=31536000;path="/";samesite=strict;secure`;
+		document.cookie = `latitude=${$latitude.toFixed(3)};max-age=3600;path="/";samesite=strict;secure`;
+		document.cookie = `longitude=${$longitude.toFixed(3)};max-age=3600;path="/";samesite=strict;secure`;
 		form.submit();
 	}
 </script>

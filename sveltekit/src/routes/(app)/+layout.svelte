@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
+	import { onMount } from "svelte";
 	import '$lib/app.css';
 	import ProfileButton from '$lib/components/profile-button.svelte';
 	import SignupButton from '$lib/components/signup-button.svelte';
@@ -7,19 +8,28 @@
 	import { page } from '$app/stores';
 	import Geolocation from 'svelte-geolocation';
 	import {latitude, longitude, coords } from '$lib/stores/geolocation';
+	import type { GeolocationError } from "svelte-geolocation/types/Geolocation.svelte";
+	import EnableGeolocationButton from "$lib/components/enable-geolocation-button.svelte";
 
-	document.cookie = `latitude=${$latitude};max-age=3600;path="/";samesite=strict;secure`;
-	document.cookie = `longitude=${$longitude};max-age=3600;path="/";samesite=strict;secure`;
+	let ismounted = false;
+	let gerror: GeolocationError = false;
+
+	onMount(async () => {
+		document.cookie = `latitude=${$latitude.toFixed(3)};max-age=3600;path="/";samesite=strict;secure`;
+		document.cookie = `longitude=${$longitude.toFixed(3)};max-age=3600;path="/";samesite=strict;secure`;
+		ismounted = true;
+	});
 
 	export let data: LayoutData;
 </script>
 
 <svelte:head>
-	<title>{$page.data.title}</title>9
+	<title>{$page.data.title}</title>
 </svelte:head>
 
-<Geolocation getPosition bind:coords={$coords} />
-
+{#if ismounted}
+	<Geolocation getPosition bind:coords={$coords} bind:error={gerror}/>
+{/if}
 
 <div class="bg-base-300 w-screen h-screen">
 	<nav class="navbar bg-base-200 px-4 min-h-6 justify-between">
@@ -27,6 +37,9 @@
 			<a href="/"><h1 class="font-logo text-[1.75rem] text-sky-500">SMLTOWN</h1></a>
 		</div>
 		<div class="flex justify-end gap-4">
+			{#if $latitude === -1 && $longitude === -1 && gerror}
+				<EnableGeolocationButton />
+			{/if}
 			{#if !data.user}
 				{#if $page.form}
 					{#if $page.form.loginUi}
