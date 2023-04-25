@@ -4,7 +4,6 @@
     import type { Post } from "$lib/types";
 
     export let post: Post;
-    console.log(post.timestamp);
 
     // Function to convert timestamp to how many hours or days or weeks or months or years ago
     function timestampToAgo(timestamp: number) : string {

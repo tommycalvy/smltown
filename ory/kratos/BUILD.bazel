@@ -7,6 +7,7 @@ container_image(
         "admin.json",
         "kratos-production.yml",
         "identity.schema.json",
+        "us-east-1-bundle.pem"
     ],
     directory = "/home/ory",
     architecture = "arm64",
@@ -20,7 +21,7 @@ container_image(
     files = [
         "admin.json",
         "kratos.yml",
-        "identity.schema.json",
+        "identity.schema.json"
     ],
     directory = "/home/ory",
     architecture = "arm64",

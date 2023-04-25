@@ -1,5 +1,11 @@
+<script lang="ts">
+	import { enableGeolocationModal } from "$lib/stores/enable-geolocation-modal";
+
+	enableGeolocationModal.set(false);
+</script>
+
 <label for="modal-login" class="btn btn-sm btn-warning">Enable Geolocation</label>
-<input type="checkbox" id="modal-login" class="modal-toggle"/>
+<input type="checkbox" id="modal-login" class="modal-toggle" bind:checked={$enableGeolocationModal}/>
 <label for="modal-login" class="modal duration-0 bg-black bg-opacity-80">
 	<label class="modal-box relative duration-0" for="">
 		<div class=" modal-action absolute top-0 right-0 m-1">

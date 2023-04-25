@@ -26,6 +26,8 @@ services:
             - postgres
         image: bazel/ory/kratos:amazon_image
         restart: on-failure
+        environment:
+            DSN: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
         command:
             migrate -c kratos-production.yml sql -e --yes
         networks:

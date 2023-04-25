@@ -2,11 +2,13 @@
 	import ProfileIcon from '$lib/icons/profile-icon.svelte';
 	import { loginModal } from '$lib/stores/login-modal';
 	import type { UserSession, WithTarget } from '$lib/types';
-	import Geolocation from 'svelte-geolocation';
+	import { latitude, longitude, gerror } from "$lib/stores/geolocation";
+	import { enableGeolocationModal } from "$lib/stores/enable-geolocation-modal";
 
 	export let userSession: UserSession | undefined;
 
 	let coords: [number, number] = [-1, -1];
+	$: error = $gerror === false ? 'false' : 'true';
 
 	let postForm: 'flex' | 'hidden' = 'hidden';
 
@@ -19,13 +21,16 @@
 		loginModal.update((open) => !open);
 	}
 
+	function openGeolocationWarning() {
+		enableGeolocationModal.update((open) => !open);
+	}
+
 	function onInputFocus(event: WithTarget<FocusEvent, HTMLInputElement>) {
 		placeholderText = 'Title';
 		postForm = 'flex';
 		if (event.currentTarget.value === '') {
 			postFormInput++;
 		}
-		console.log(postFormInput);
 	}
 
 	function onTextAreaFocus(event: WithTarget<FocusEvent, HTMLTextAreaElement>) {
@@ -34,7 +39,6 @@
 		if (event.currentTarget.value === '') {
 			postFormInput++;
 		}
-		console.log(postFormInput);
 	}
 
 	function onInputBlur(event: WithTarget<FocusEvent, HTMLInputElement>) {
@@ -46,7 +50,6 @@
 			postForm = 'hidden';
 			placeholderText = 'Create Post';
 		}
-		console.log(postFormInput);
 	}
 
 	function onTextAreaBlur(event: WithTarget<FocusEvent, HTMLTextAreaElement>) {
@@ -58,7 +61,6 @@
 			postForm = 'hidden';
 			placeholderText = 'Create Post';
 		}
-		console.log(postFormInput);
 	}
 
 	let channels1 = ['General', 'News', 'Events'];
@@ -75,18 +77,15 @@
 	}
 </script>
 
-{#if postForm === 'flex'}
-	<Geolocation getPosition bind:coords />
-{/if}
-
 <form
 	action="?/createPost"
 	method="POST"
 	enctype="application/x-www-form-urlencoded"
 	class="flex gap-3 w-full bg-base-100 group rounded-md p-4"
 >
-	<input type="hidden" name="latitude" bind:value={coords[1]} />
-	<input type="hidden" name="longitude" bind:value={coords[0]} />
+	<input type="hidden" name="latitude" bind:value={$latitude} />
+	<input type="hidden" name="longitude" bind:value={$longitude} />
+	<input type="hidden" name="gerror" bind:value={error} />
 	<div class="w-10">
 		{#if userSession}
 			<a href={`/profile/${userSession.username}`}>
@@ -104,15 +103,26 @@
 	</div>
 	<div class="flex flex-col gap-3 w-full">
 		{#if userSession}
-			<input
-				name="title"
-				type="text"
-				placeholder={placeholderText}
-				class="input input-bordered w-full peer"
-				required
-				on:focus={onInputFocus}
-				on:blur={onInputBlur}
-			/>
+			{#if $latitude === -1 && $longitude === -1 && gerror}
+				<input
+					name="title"
+					type="text"
+					placeholder={placeholderText}
+					class="input input-bordered w-full peer"
+					required
+					on:focus={openGeolocationWarning}
+				/>
+			{:else}
+				<input
+					name="title"
+					type="text"
+					placeholder={placeholderText}
+					class="input input-bordered w-full peer"
+					required
+					on:focus={onInputFocus}
+					on:blur={onInputBlur}
+				/>
+			{/if}
 			<div class={`${postForm} group-focus-within:flex flex-col gap-3 peer-valid:flex w-full`}>
 				<textarea
 					name="body"

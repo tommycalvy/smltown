@@ -3,8 +3,6 @@ import { isTheme } from '$lib/types';
 import { auth } from '$lib/server/auth';
 
 export const handle = (async ({ event, resolve }) => {
-	console.log('hooks.server.ts');
-	console.log(event.request.headers);
 	const cookieEncoded = event.request.headers.get('cookie') ?? undefined;
 	if (cookieEncoded) {
 		const cookie = decodeURIComponent(cookieEncoded);

@@ -15,12 +15,13 @@ import type { Filter, Post } from '$lib/types';
 import { env } from '$env/dynamic/private';
 import { z } from 'zod';
 
-export const load = (async ({ locals, getClientAddress }) => {
+export const load = (async ({ locals, request }) => {
 	try {
 		let lat: string;
 		let lon: string;
 		if (!locals.latitude || !locals.longitude || locals.latitude === "-1.000" || locals.longitude === "-1.000") {
-			const ip = env.ENVIRONMENT === 'development' ? '' : getClientAddress();
+			const ipList = request.headers.get('x-forwarded-for') ?? undefined;
+			const ip = ipList ? ipList.split(",").pop() ?? '' : '';
 			console.log('ip: ' + ip);
 			const ipresponse = await fetch(`http://ip-api.com/json/${ip}?fields=lat,lon`);
 			if (!ipresponse.ok) throw new Error('ipresponse not ok');
@@ -398,6 +399,9 @@ export const actions = {
 			channel2: z.string().min(1).max(30),
 			latitude: z.preprocess((lat) => Number(lat), z.number().min(-90).max(90).transform((lat) => lat.toFixed(3))),
 			longitude: z.preprocess((lon) => Number(lon), z.number().min(-180).max(180).transform((lat) => lat.toFixed(3))),
+			// Match if gerror is true or false
+			gerror: z.string().regex(/^(true|false)$/),
+
 		});
 		const postData = postSchema.safeParse(formData);
 		if (!postData.success) {
@@ -408,6 +412,11 @@ export const actions = {
 				};
 			});
 			return fail(400, { errors });
+		}
+		if (postData.data.gerror === 'true') {
+			const err = new Error('Error creating post: no geolocation');
+			console.log(err);
+			throw fail(400, { errors: [{ field: 'gerror', message: 'Error with geolocation' }] });
 		}
 
 		const post: Post = {

@@ -3,3 +3,4 @@ kratos-production.yml
 postgres-data
 admin.json
 .env
+us-east-1-bundle.pem

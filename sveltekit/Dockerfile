@@ -10,7 +10,7 @@ COPY . .
 RUN npm ci
 
 # remove potential security issues
-RUN npm audit fix
+RUN npm audit fix --audit-level=high
     
 # build SvelteKit app
 RUN npm run build
@@ -28,7 +28,7 @@ COPY --from=0 /app/package*.json ./
 RUN npm ci --production --ignore-scripts
 
 # remove potential security issues
-RUN npm audit fix
+RUN npm audit fix --audit-level=high
 
 # copy built SvelteKit app to /app
 COPY --from=0 /app/build ./

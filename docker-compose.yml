@@ -4,9 +4,9 @@ services:
         image: postgres
         restart: unless-stopped
         environment:
-            POSTGRES_USER: "ory_user"
-            POSTGRES_PASSWORD: "ory_pass"
-            POSTGRES_DB: "ory_data"
+            POSTGRES_USER: "ory_user1"
+            POSTGRES_PASSWORD: "ory_pass1"
+            POSTGRES_DB: "ory_data1"
         logging:
           options:
             max-size: 10m
@@ -22,6 +22,8 @@ services:
             - postgres
         image: bazel/ory/kratos:amazon_image
         restart: on-failure
+        environment:
+            DSN: "postgres://ory_user1:ory_pass1@postgres:5432/ory_data1?sslmode=disable&max_conns=20&max_idle_conns=4"
         command:
             migrate -c kratos-production.yml sql -e --yes
     kratos:
@@ -29,6 +31,12 @@ services:
             - kratos-migrate
         image: bazel/ory/kratos:amazon_image
         restart: unless-stopped
+        environment:
+            DSN: "postgres://ory_user1:ory_pass1@postgres:5432/ory_data1?sslmode=disable&max_conns=20&max_idle_conns=4"
+            SERVE_PUBLIC_URL: "http://localhost:4433"
+            SERVE_PUBLIC_HOST: "0.0.0.0"
+            SERVE_ADMIN_URL: "http://localhost:4434"
+            SERVE_PUBLIC_ADMIN: "0.0.0.0"
         command: serve -c kratos-production.yml --dev --watch-courier
         ports:
             - 127.0.0.1:4433:4433
@@ -38,6 +46,8 @@ services:
             - kratos
         image: bazel/ory/kratos:amazon_image
         restart: "no"
+        environment:
+            DSN: "postgres://ory_user1:ory_pass1@postgres:5432/ory_data1?sslmode=disable&max_conns=20&max_idle_conns=4"
         entrypoint: ["/bin/sh","-c"]
         command: 
             - |
