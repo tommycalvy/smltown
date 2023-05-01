@@ -9,6 +9,7 @@ import * as route53 from 'aws-cdk-lib/aws-route53';
 import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 
 export class SmltownStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -18,20 +19,24 @@ export class SmltownStack extends cdk.Stack {
         const region = cdk.Stack.of(this).region;
         const dynamodbTableName = "SMLTOWN";
         const instanceIdentifier = "KratosDB";
+        /*
         const creds = new rds.DatabaseSecret(this, "MyKratosDBCredentials", {
             secretName: `/${id}/rds/creds/${instanceIdentifier}`.toLowerCase(),
             username: "orykratosadmin",
             excludeCharacters: " %^+=~`#$&*()-_|[]{}:;<>.?!'/@\"\\",
         });
+        */
+        const username = 'orykratosadmin';
 
         // Create a VPC
         const vpc = new ec2.Vpc(this, "Vpc", {
             maxAzs: 2,
+            natGateways: 1,
             subnetConfiguration: [
                 {
-                  cidrMask: 24,
-                  name: 'public',
-                  subnetType: ec2.SubnetType.PUBLIC,
+                    cidrMask: 24,
+                    name: 'public',
+                    subnetType: ec2.SubnetType.PUBLIC,
                 },
                 {
                     cidrMask: 24,
@@ -98,11 +103,14 @@ export class SmltownStack extends cdk.Stack {
         });
 
         // KRATOS DATABASE
-        const kratosDB = new rds.DatabaseInstance(this, "KratosDB", {
+        const kratosDB = new rds.DatabaseInstanceFromSnapshot(this, "KratosDB", {
             vpc: vpc,
             port: 5432,
-            credentials: rds.Credentials.fromSecret(creds),
-            databaseName: "kratos",
+            snapshotIdentifier: "smltown-kratosdb-4-28-23",
+            credentials: rds.SnapshotCredentials.fromGeneratedSecret(username, {
+                excludeCharacters: " %^+=~`#$&*()-_|[]{}:;<>.?!'/@\"\\",
+            }),
+            //databaseName: "kratos",
             allocatedStorage: 20,
             instanceIdentifier,
             engine: rds.DatabaseInstanceEngine.postgres({
@@ -121,10 +129,30 @@ export class SmltownStack extends cdk.Stack {
             }),
         });
         // Creates a dsn string for the RDS instance from the credentials secret
-        const username = creds.secretValueFromJson("username").unsafeUnwrap();
-        const password = creds.secretValueFromJson("password").unsafeUnwrap();
+        //const username = creds.secretValueFromJson("username").unsafeUnwrap();
+        //const password = creds.secretValueFromJson("password").unsafeUnwrap();
+        //const username = kratosDB.secret?.secretValueFromJson("username").unsafeUnwrap() ?? "";
+        //const password = kratosDB.secret?.secretValueFromJson("password").unsafeUnwrap() ?? "";
+        //const dbSecret = rds.Secret.fromSecretCompleteArn(this, 'KratosDBSecret', kratosDB.secret.secretCompleteArn);
+        const dbSecret = rds.DatabaseSecret.fromSecretCompleteArn(this, 'KratosDBSecret', kratosDB.secret?.secretFullArn ?? "");
+        /*
+        const dsnString = dbSecret.secretValueFromJson('password').toString().concat(
+        '://',
+        dbSecret.secretValueFromJson('username').toString(),
+        ':',
+        dbSecret.secretValueFromJson('password').toString(),
+        '@',
+        kratosDB.instanceEndpoint.hostname,
+        ':',
+        kratosDB.instanceEndpoint.port.toString(),
+        '/',
+        'kratos' // The database name
+        );
+        */
+       const password = dbSecret.secretValueFromJson('password').unsafeUnwrap();
         const dsn = `postgres://${username}:${password}@${kratosDB.dbInstanceEndpointAddress}:5432/kratos?sslmode=verify-full&sslrootcert=/home/ory/us-east-1-bundle.pem`;
-
+        // dsn = `postgres://orykratosadmin:${password}@${kratosDB.dbInstanceEndpointAddress}:5432/kratos?sslmode=verify-full&sslrootcert=/home/ory/us-east-1-bundle.pem`;
+        
         
         // KRATOS MIGRATE SERVICE
         const kratosMigrateTask = new ecs.FargateTaskDefinition(
@@ -218,7 +246,7 @@ export class SmltownStack extends cdk.Stack {
             {
                 cluster: cluster,
                 taskDefinition: oryKratosTask,
-                desiredCount: 0,
+                desiredCount: 1,
                 vpcSubnets: vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS }),
                 cloudMapOptions: {
                     name: "ory-kratos-service"

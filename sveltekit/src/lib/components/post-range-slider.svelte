@@ -6,7 +6,7 @@
 
 	let form: HTMLFormElement;
 
-	$: postRange = Math.floor(Math.pow(rangeInput / 100, 3.6) + 0.1 * rangeInput + 5);
+	$: postRange = Math.floor(Math.pow(rangeInput / 100, 4.1) + 0.1 * rangeInput + 5);
 	// Submit the form on change of the input
 	async function onChange(event: WithTarget<Event, HTMLInputElement>) {
 		document.cookie = `rangeInput=${rangeInput};max-age=31536000;path="/";samesite=strict;secure`;
@@ -39,7 +39,7 @@
 			on:change={onChange}
 		/>
 		<div class="flex justify-between">
-			<output for="rangeInput" class="w-11">{postRange}</output>
+			<output for="rangeInput" class="w-12">{postRange}</output>
 			<output for="rangeInput">mi</output>
 		</div>
 	</div>

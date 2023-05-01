@@ -17,7 +17,7 @@ void signal_callback_handler(int signum) {
 int main() {
     std::cout << "Running Filter Service" << std::endl;
     PhTreePostsDB postdb = PhTreePostsDB();
-    /*
+    
     const char* table_name = std::getenv("AWS_TABLE_NAME");
     
     ScopedAwsSDK sdkScoped;
@@ -27,7 +27,7 @@ int main() {
 	}
     
     postdb.print_total_posts();
-    */
+
     signal(SIGINT, signal_callback_handler);
     signal(SIGTERM, signal_callback_handler);
     signal(SIGKILL, signal_callback_handler);
