@@ -1,12 +1,13 @@
 <script lang="ts">
 	import type { WithTarget } from '$lib/types';
 	import {latitude, longitude } from '$lib/stores/geolocation';
+	import { SliderInputToMiles } from "$lib/utils";
 
 	export let rangeInput = 814;
 
 	let form: HTMLFormElement;
 
-	$: postRange = Math.floor(Math.pow(rangeInput / 100, 4.1) + 0.1 * rangeInput + 5);
+	$: postRange = SliderInputToMiles(rangeInput);
 	// Submit the form on change of the input
 	async function onChange(event: WithTarget<Event, HTMLInputElement>) {
 		document.cookie = `rangeInput=${rangeInput};max-age=31536000;path="/";samesite=strict;secure`;

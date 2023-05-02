@@ -10,7 +10,7 @@ import type {
 	VerificationFlow
 } from '@ory/kratos-client';
 import { redirect, fail } from '@sveltejs/kit';
-import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies } from '$lib/utils';
+import { DeleteCookiesByPrefix, GetCookieByPrefix, SetCookies, SliderInputToMiles } from '$lib/utils';
 import type { Filter, Post } from '$lib/types';
 import { env } from '$env/dynamic/private';
 import { z } from 'zod';
@@ -40,7 +40,7 @@ export const load = (async ({ locals, request }) => {
 			longitude: lon,
 			channel1: '',
 			channel2: '',
-			georange: locals.rangeInput,
+			georange: SliderInputToMiles(locals.rangeInput),
 			minresults: 10,
 		};
 		const hotresponse = await fetch(`${env.CRUD_SERVICE_URL}/posts/v0/gethotpostsnearme`, {

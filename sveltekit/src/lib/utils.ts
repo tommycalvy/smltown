@@ -138,3 +138,7 @@ export const DeleteCookiesByPrefix = ( cookieHeader: string | undefined, { cooki
 		}
 	}
 }
+
+export const SliderInputToMiles = (rangeInput: number) => {
+	return Math.floor(Math.pow(rangeInput / 100, 4.1) + 0.1 * rangeInput + 5);
+}

@@ -371,7 +371,7 @@ export class SmltownStack extends cdk.Stack {
                 },
                 taskImageOptions: {
                     containerName: "sveltekit_service",
-                    image: ecs.ContainerImage.fromEcrRepository(sveltekitServiceRepo, "0.6"),
+                    image: ecs.ContainerImage.fromEcrRepository(sveltekitServiceRepo, "0.7"),
                     containerPort: 3000,
                     environment: {
                         KRATOS_PUBLIC_URL:  "http://ory-kratos-service.smltown:4433",
